@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ErrataLab — Débogueur cognitif</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-stamp">ERRATA·LAB</span>
+      <span class="brand-sub">débogueur cognitif — cahiers d'exercices</span>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab active" data-view="analyze">🔬 Analyser</button>
+      <button class="tab" data-view="history">📓 Historique</button>
+      <button class="tab" data-view="dashboard">📊 Tableau de bord</button>
+      <button class="tab" data-view="quiz">🎯 Quiz-pièges</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="view-analyze" class="view active">
+      <div class="panel">
+        <h2>Photographier une page de cahier</h2>
+        <p class="muted">Envoyez une photo d'un exercice corrigé ou raturé. L'OCR Mistral extrait le texte et les formules, puis l'agent isole chaque erreur et identifie le piège cognitif.</p>
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+          <div class="dz-empty" id="dz-empty">
+            <div class="dz-icon">📷</div>
+            <p><strong>Glissez une photo ici</strong> ou cliquez pour choisir</p>
+            <p class="muted small">JPEG · PNG · WebP — 12 Mo max</p>
+          </div>
+          <img id="dz-preview" class="dz-preview hidden" alt="Aperçu" />
+        </div>
+        <div class="row">
+          <button id="btn-analyze" class="btn primary" disabled>Analyser la page</button>
+          <button id="btn-reset" class="btn ghost hidden">Réinitialiser</button>
+        </div>
+        <div id="analyze-status" class="status hidden"></div>
+      </div>
+
+      <div id="analyze-result" class="hidden"></div>
+    </section>
+
+    <section id="view-history" class="view">
+      <div class="panel">
+        <div class="row space-between">
+          <h2>Registre des erreurs</h2>
+          <div class="row gap-small">
+            <select id="filter-subject" class="input">
+              <option value="">Toutes matières</option>
+              <option value="mathematiques">Mathématiques</option>
+              <option value="physique">Physique</option>
+              <option value="langues">Langues</option>
+              <option value="autre">Autre</option>
+            </select>
+            <select id="filter-trap" class="input">
+              <option value="">Tous pièges</option>
+              <option value="signe">Erreur de signe</option>
+              <option value="confusion_regle">Confusion de règle</option>
+              <option value="inattention">Inattention</option>
+              <option value="formule_mal_appliquee">Formule mal appliquée</option>
+              <option value="calcul">Glissement de calcul</option>
+              <option value="vocabulaire">Vocabulaire / notation</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+        </div>
+        <div id="history-list" class="error-list"></div>
+      </div>
+    </section>
+
+    <section id="view-dashboard" class="view">
+      <div id="dashboard-content"></div>
+    </section>
+
+    <section id="view-quiz" class="view">
+      <div class="panel">
+        <h2>Mini-quiz pièges sur mesure</h2>
+        <p class="muted">5 questions inédites conçues pour vous piéger sur vos erreurs les plus fréquentes de la semaine. Explication détaillée après chaque réponse.</p>
+        <button id="btn-quiz" class="btn primary">Générer mon quiz du jour</button>
+      </div>
+      <div id="quiz-area"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>ErrataLab — chaque erreur est une donnée, chaque rature un signal.</span>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
