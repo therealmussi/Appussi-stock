@@ -1,0 +1,187 @@
+:root {
+  --bg: #10141c;
+  --panel: rgba(16, 22, 33, 0.88);
+  --accent: #ffb703;
+  --text: #f4f7fb;
+  --muted: #9fb0c3;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app { position: fixed; inset: 0; }
+
+#game {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  background: #0b0f16;
+}
+
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px;
+  pointer-events: none;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: rgba(8, 12, 20, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: clamp(12px, 1.7vw, 15px);
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.chip strong { color: var(--accent); }
+
+#chip-ball {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  pointer-events: none;
+  max-width: 60vw;
+  white-space: normal;
+}
+
+#toast {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  transform: translate(-50%, -50%) scale(0.85);
+  padding: 14px 26px;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: clamp(20px, 4.5vw, 34px);
+  letter-spacing: 0.03em;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  pointer-events: none;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(10, 14, 22, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+#toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#toast.good { color: #ffd166; border-color: rgba(255, 209, 102, 0.7); }
+#toast.bad { color: #aab6c5; }
+
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 8, 14, 0.7);
+  backdrop-filter: blur(5px);
+  overflow-y: auto;
+}
+
+.panel {
+  width: 100%;
+  max-width: 430px;
+  text-align: center;
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 26px 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.panel h1 {
+  margin: 0 0 6px;
+  font-size: clamp(24px, 6vw, 34px);
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.panel .subtitle { margin: 0 0 14px; color: var(--muted); }
+
+.rules {
+  margin: 0 0 18px;
+  padding-left: 0;
+  list-style: none;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #dbe4ee;
+}
+
+.rules li { margin: 7px 0; padding-left: 20px; position: relative; }
+.rules li::before { content: "▸"; position: absolute; left: 2px; color: var(--accent); }
+
+.big-score {
+  font-size: clamp(40px, 12vw, 64px);
+  font-weight: 900;
+  color: var(--accent);
+  margin: 4px 0 2px;
+}
+
+.best { color: var(--muted); margin: 0 0 14px; }
+
+#round-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.rchip {
+  border-radius: 10px;
+  padding: 5px 9px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.rchip.ok { background: rgba(255, 209, 102, 0.16); color: #ffd166; border-color: rgba(255, 209, 102, 0.5); }
+.rchip.ko { background: rgba(255, 255, 255, 0.06); color: #8b98a9; }
+
+button.primary {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  font-size: 17px;
+  color: #1c1500;
+  background: linear-gradient(180deg, #ffd166, var(--accent));
+  padding: 13px 44px;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(255, 183, 3, 0.35);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+button.primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+button.primary:active { transform: translateY(1px); }
+
+.hidden { display: none !important; }
