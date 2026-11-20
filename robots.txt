@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://therealmussi.github.io/Appussi-stock/sitemap.xml
