@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#10141c" />
+  <meta name="description" content="Sport Shot Challenge: palla sportiva casuale, traguardo casuale. Canestro, goal o lancio di distanza in dieci round." />
+  <title>Sport Shot Challenge</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div class="chip" id="chip-round">Round <strong>–</strong></div>
+      <div class="chip" id="chip-objective">–</div>
+      <div class="chip" id="chip-wind">–</div>
+      <div class="chip" id="chip-score">Punti <strong>0</strong></div>
+    </div>
+
+    <div class="chip" id="chip-ball">–</div>
+
+    <div id="toast"></div>
+
+    <div id="overlay">
+      <div class="panel" id="panel-start">
+        <h1>Sport Shot Challenge</h1>
+        <p class="subtitle">Palla casuale. Obiettivo casuale. Dieci round.</p>
+        <ul class="rules">
+          <li>A ogni round ricevi una palla di uno sport qualsiasi: ognuna pesa, rimbalza e vola in modo diverso.</li>
+          <li>L'obiettivo cambia a caso: <strong>canestro</strong> 🏀, <strong>goal</strong> ⚽ o <strong>lancio di distanza</strong> 📏.</li>
+          <li>Trascina il dito (o il mouse) sul campo come una fionda: più tiri indietro, più potenza.</li>
+          <li>Guarda il vento: cambia a ogni round e sposta la palla in volo.</li>
+          <li>Canestro e goal valgono <strong>+3</strong>. Nella distanza ogni 8 metri valgono <strong>1 punto</strong>. Risultati consecutivi danno <strong>bonus</strong>.</li>
+        </ul>
+        <button class="primary" id="btn-start">Gioca</button>
+      </div>
+
+      <div class="panel hidden" id="panel-end">
+        <h1>Fine partita!</h1>
+        <p class="big-score"><span id="final-score">0</span> punti</p>
+        <p class="best" id="best-line"></p>
+        <div id="round-chips"></div>
+        <button class="primary" id="btn-restart">Rigioca</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
+</html>
