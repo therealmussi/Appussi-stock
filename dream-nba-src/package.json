@@ -1,11 +1,11 @@
 {
-  "name": "copero-nba",
+  "name": "dream-nba",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && cp pages-readme.md ../dream-nba/README.md",
     "preview": "vite preview"
   },
   "dependencies": {

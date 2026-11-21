@@ -73,7 +73,7 @@ export default function Wheel({ segments, targetIndex, spinning, onLanded, size 
       </div>
 
       <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 h-16 w-16 rounded-full bg-[#0a0d14] border-2 border-white/25 flex items-center justify-center font-black text-amber-400" style={{ fontSize: 15 }}>
-        COPERO
+        DREAM
       </div>
 
       <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2 -translate-y-2 text-2xl drop-shadow-lg">▼</div>
