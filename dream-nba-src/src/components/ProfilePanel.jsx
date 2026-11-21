@@ -62,6 +62,7 @@ export default function ProfilePanel({ career, onClose }) {
         <div className="mt-5 text-white/40 text-xs text-center">
           Età {career.age} · Draft n.{career.draftPick} · Peak OVR {career.peakOvr}
         </div>
+        <div className="mt-2 text-white/20 text-[10px] text-center">Developed by Matteo Mussillon</div>
       </div>
     </div>
   );

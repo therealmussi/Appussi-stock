@@ -230,8 +230,9 @@ export function simAwards(season, career, devDelta = 0) {
   const awards = [];
   const isRookie = career.seasons.length === 0;
 
-  if (isRookie && season.ppg >= 15) {
-    const p = clamp((season.ppg - 13) * 0.07 + (season.seed <= 3 ? 0.05 : 0), 0.25, 0.9);
+  if (isRookie && season.ppg >= 11) {
+    const pickBoost = career.draftPick <= 3 ? 0.14 : career.draftPick <= 5 ? 0.09 : career.draftPick <= 10 ? 0.03 : career.draftPick >= 20 ? -0.08 : 0;
+    const p = clamp((season.ppg - 9) * 0.06 + pickBoost + (season.seed <= 3 ? 0.05 : 0), 0.06, 0.88);
     if (chance(p)) awards.push('roy');
   }
 
@@ -255,8 +256,8 @@ export function simAwards(season, career, devDelta = 0) {
     awards.push('dpoy');
   }
 
-  if (isRookie && season.ppg >= 12) {
-    const p = clamp((season.ppg - 10) * 0.06, 0.2, 0.85);
+  if (isRookie && season.ppg >= 10) {
+    const p = clamp((season.ppg - 8) * 0.07, 0.15, 0.8);
     if (chance(p)) awards.push('allRookie');
   }
 
@@ -297,6 +298,14 @@ function simSeries(p, stopAtSeven = false) {
   return { mine, theirs, wentSeven: mine === 3 && theirs === 3 };
 }
 
+function playoffOpponent(str, excludeIds) {
+  const candidates = TEAMS.filter((t) => !excludeIds.has(t.id));
+  const ranked = candidates
+    .map((t) => ({ t, dist: Math.abs(t.rating - str + jitter(2)) }))
+    .sort((a, b) => a.dist - b.dist);
+  return pickFrom(ranked.slice(0, 4)).t;
+}
+
 export function simPlayoffs(season, career) {
   if (season.mode === 'out') {
     season.playoffs = { result: 'out', rounds: [] };
@@ -306,6 +315,7 @@ export function simPlayoffs(season, career) {
   const team = teamById(season.teamId);
   const myStr = team.rating - (season.seed - 1) * 1.4 + playerBoost(career);
   const rounds = [];
+  const seen = new Set([season.teamId]);
 
   for (let idx = 0; idx < PLAYOFF_ROUNDS.length; idx += 1) {
     const name = PLAYOFF_ROUNDS[idx];
@@ -314,11 +324,13 @@ export function simPlayoffs(season, career) {
     const oppStr = isFinals
       ? 91 - (oppSeed - 1) * 1.5 + jitter(2.5)
       : clamp(team.rating - (oppSeed - 1) * 1.4 + jitter(3), 62, 97);
+    const opp = playoffOpponent(oppStr, seen);
+    seen.add(opp.id);
     const winChance = seriesWinChance(myStr, oppStr);
     const res = simSeries(winChance, isFinals);
 
     if (isFinals && res.wentSeven) {
-      rounds.push({ name, oppSeed, mine: 3, theirs: 3, chance: winChance });
+      rounds.push({ name, oppSeed, oppTeamId: opp.id, mine: 3, theirs: 3, chance: winChance });
       return {
         season,
         pending: true,
@@ -326,7 +338,7 @@ export function simPlayoffs(season, career) {
       };
     }
 
-    rounds.push({ name, oppSeed, mine: res.mine, theirs: res.theirs, chance: winChance });
+    rounds.push({ name, oppSeed, oppTeamId: opp.id, mine: res.mine, theirs: res.theirs, chance: winChance });
     if (res.theirs === 4) {
       season.playoffs = { result: name, rounds };
       return { season, pending: false };
@@ -366,16 +378,37 @@ export function resolveGame7(season, career, pendingState, win) {
 // ---------------- Free Agency ----------------
 
 export function faWheel(career) {
-  const pool = shuffle(TEAMS.filter((t) => t.id !== career.teamId))
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 12);
+  const ovr = career.ovr;
+  const tiers = [
+    { id: 'contender', min: 87, max: 99, weight: clamp(0.4 + (ovr - 78) * 0.05, 0.2, 0.8) },
+    { id: 'playoff', min: 81, max: 86, weight: clamp(0.34 + (ovr - 78) * 0.02, 0.15, 0.5) },
+    { id: 'playin', min: 76, max: 80, weight: clamp(0.2 - (ovr - 78) * 0.01, 0.08, 0.26) },
+    { id: 'rebuild', min: 60, max: 75, weight: clamp(0.14 - (ovr - 78) * 0.012, 0.04, 0.2) },
+  ];
 
-  const offers = shuffle(pool).slice(0, 4).map((t) => ({
-    stay: false,
-    team: t,
-    years: rndInt(2, 4),
-    role: t.rating >= 87 ? 'Titolo subito' : t.rating >= 81 ? 'Ruolo chiave' : t.rating >= 76 ? 'Protagonista' : 'Progetto personale',
-  }));
+  const used = new Set([career.teamId]);
+  const offers = [];
+  const push = (tier, tierId) => {
+    let candidates = TEAMS.filter((t) => !used.has(t.id) && t.rating >= tier.min && t.rating <= tier.max);
+    if (!candidates.length) candidates = TEAMS.filter((t) => !used.has(t.id));
+    const team = pickFrom(candidates);
+    used.add(team.id);
+    offers.push({
+      stay: false,
+      team,
+      tierId,
+      years: rndInt(2, 4),
+      role: team.rating >= 87 ? 'Titolo subito' : team.rating >= 81 ? 'Ruolo chiave' : team.rating >= 76 ? 'Protagonista' : 'Progetto personale',
+    });
+  };
+
+  for (let i = 0; i < 3; i += 1) {
+    const tier = weightedPick(tiers.filter((t) => !offers.some((o) => o.tierId === t.id)));
+    push(tier, tier.id);
+  }
+
+  const surprise = pickFrom(TEAMS.filter((t) => !used.has(t.id) && t.rating < 81));
+  push({ min: surprise.rating, max: surprise.rating }, 'surprise');
 
   return [...offers, {
     stay: true,

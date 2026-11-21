@@ -52,7 +52,7 @@ export default function FaSpin({ offers, onDone }) {
           📞 Ascolta le offerte
         </button>
       )}
-      {spinning && <p className="text-white/40 text-sm animate-pulse">Il telefono dell\'agente squilla…</p>}
+      {spinning && <p className="text-white/40 text-sm animate-pulse">Il telefono dell’agente squilla…</p>}
     </div>
   );
 }
