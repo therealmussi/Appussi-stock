@@ -27,6 +27,18 @@ export default function SeasonResult({ career, season, onContinue }) {
           <StatBox label="APG" value={season.apg} />
           <StatBox label="MIN" value={season.minutes} tone="text-white/70" />
         </div>
+
+        {season.events?.length > 0 && (
+          <div className="mt-5 pt-4 border-t border-white/5 space-y-2">
+            <div className="text-[11px] uppercase tracking-widest text-white/40">Stagione saliente</div>
+            {season.events.map((ev) => (
+              <div key={ev.id} className="anim-pop">
+                <Chip tone={ev.tone}>{ev.icon} {ev.label}{ev.ppg !== 0 ? ` (${ev.ppg > 0 ? '+' : ''}${ev.ppg} PPG)` : ''}</Chip>
+                <p className="text-xs text-white/50 mt-1 italic">{ev.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <button

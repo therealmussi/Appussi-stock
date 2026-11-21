@@ -12,6 +12,7 @@ import {
   DEV_OUTCOMES, DEV_TABLE, DEV_OUTCOME_OLD, DEV_TABLE_OLD,
   draftPickWeight, DRAFT_FLAVOR_TOP5, DRAFT_FLAVOR_TOP10, DRAFT_FLAVOR_REST,
   retireChance, SCORE_WEIGHTS, verdictFor, randomName,
+  SEASON_EVENTS, SEASON_EVENT_TABLE,
 } from '../data/events.js';
 
 // ---------------- RNG helpers ----------------
@@ -56,10 +57,12 @@ export function createCareer({ name, roleId, archetypeId }) {
     contractYears: 0,
     draftPick: null,
     minutesBoost: 0,
+    jersey: rndInt(0, 99),
     retired: false,
     autoRetired: false,
+    events: [],
     seasons: [],
-    trophies: { ring: 0, finalsMvp: 0, mvp: 0, dpoy: 0, roy: 0, mip: 0, allStar: 0, allNBA: 0 },
+    trophies: { ring: 0, finalsMvp: 0, mvp: 0, dpoy: 0, roy: 0, mip: 0, allStar: 0, allNBA: 0, scoringChamp: 0, allDefense: 0, allRookie: 0 },
   };
 }
 
@@ -169,9 +172,13 @@ export function simSeason(career) {
   );
 
   const base = ovr - 60;
-  const ppg = round1(clamp(base * 0.85 * arch.scoring * ROLE_SCORING[career.roleId] + jitter(2.2), 3, 38));
+  let ppg = clamp(base * 0.85 * arch.scoring * ROLE_SCORING[career.roleId] + jitter(2.2), 3, 38);
   const rpg = round1(clamp(ppg * ROLE_REB[career.roleId] * arch.rebounding * rnd(0.85, 1.15), 0.5, 16));
   const apg = round1(clamp(ppg * ROLE_PASS[career.roleId] * arch.playmaking * rnd(0.85, 1.15), 0.3, 13));
+
+  const events = rollSeasonEvents();
+  for (const ev of events) ppg += ev.ppg;
+  ppg = round1(ppg);
 
   const teamStrength = team.rating + (ovr > 80 ? (ovr - 80) * 0.25 : 0);
   const wins = clamp(Math.round(41 + (teamStrength - 74) * 2.1 + jitter(6)), 17, 66);
@@ -192,9 +199,10 @@ export function simSeason(career) {
     age: career.age,
     ovr,
     minutes: Math.round(minutes),
-    ppg: Math.max(2, ppg),
+    ppg,
     rpg,
     apg,
+    events,
     wins,
     losses: SEASON_GAMES - wins,
     mode,
@@ -245,6 +253,19 @@ export function simAwards(season, career, devDelta = 0) {
   const defensiveProfile = arch.defense >= 1.2 || career.roleId === 'C';
   if (defensiveProfile && career.ovr >= 86 && season.ppg >= 12 && chance(0.33)) {
     awards.push('dpoy');
+  }
+
+  if (isRookie && season.ppg >= 12) {
+    const p = clamp((season.ppg - 10) * 0.06, 0.2, 0.85);
+    if (chance(p)) awards.push('allRookie');
+  }
+
+  if (season.ppg >= 30) {
+    if (chance(clamp((season.ppg - 28) * 0.25, 0.15, 0.8))) awards.push('scoringChamp');
+  }
+
+  if (defensiveProfile && career.ovr >= 84 && chance(0.3)) {
+    awards.push('allDefense');
   }
 
   if (season.ppg >= 28 && season.wins >= 52 && career.ovr >= 89) {
@@ -400,11 +421,30 @@ export function careerSummary(career) {
   score += career.seasons.length * SCORE_WEIGHTS.longevity;
   score = Math.round(score);
 
+  let pts = 0, reb = 0, ast = 0;
+  for (const s of career.seasons) {
+    pts += s.ppg * SEASON_GAMES;
+    reb += s.rpg * SEASON_GAMES;
+    ast += s.apg * SEASON_GAMES;
+  }
+
+  const milestones = [];
+  const add = (cond, label) => { if (cond) milestones.push(label); };
+  add(pts >= 30000, 'Club dei 30.000 punti 👑');
+  add(pts >= 20000, '20.000 punti in carriera 🥇');
+  add(reb >= 10000, '10.000 rimbalzi 🏋️');
+  add(ast >= 8000, '8.000 assist 🧠');
+  add(t.ring >= 5, 'Dynastia: 5 anelli 💍');
+  add(t.mvp >= 2, 'MVP pluripremiato 🐐');
+  add(career.seasons.length >= 20, '20 stagioni di servizio 🦴');
+
   return {
     years: career.seasons.length,
     teams: teamsWorn(career),
     peakOvr: career.peakOvr || career.ovr,
     averages: careerAverages(career),
+    totals: { pts: Math.round(pts), reb: Math.round(reb), ast: Math.round(ast) },
+    milestones,
     totalWins,
     trophies: t,
     careerScore: score,
@@ -423,4 +463,43 @@ export function commitTrophies(career, awards) {
 export function commitSeason(career, season) {
   career.seasons.push(season);
   career.peakOvr = Math.max(career.peakOvr, season.ovr);
+}
+
+// ---------------- Eventi salienti della stagione regolare ----------------
+
+function rollSeasonEvents() {
+  const events = [];
+  const roll = () => {
+    const chosen = weightedPick(SEASON_EVENT_TABLE);
+    const meta = SEASON_EVENTS[chosen.id];
+    return { type: chosen.id, ...meta, text: pickFrom(meta.texts) };
+  };
+
+  const first = roll();
+  events.push(first);
+  if (first.ppg !== 0 && chance(0.35)) events.push(roll());
+
+  return events.map((ev, i) => ({
+    id: `${ev.type}_${i}`,
+    type: ev.type,
+    icon: ev.icon,
+    label: ev.label,
+    tone: ev.tone,
+    ppg: ev.ppg,
+    text: ev.text,
+  }));
+}
+
+// ---------------- Profilo attributi (solo presentazione) ----------------
+
+export function playerAttributes(career) {
+  const arch = archetypeOf(career);
+  const role = career.roleId;
+  const top = (x) => Math.round(clamp(x, 40, 99));
+  return {
+    scoring: top(career.ovr - 5 + (arch.scoring - 0.95) * 35 + (role === 'SG' || role === 'SF' ? 4 : 0)),
+    playmaking: top(career.ovr - 5 + (arch.playmaking - 1) * 40 + (role === 'PG' ? 6 : 0)),
+    defense: top(career.ovr - 5 + (arch.defense - 1) * 40 + (role === 'C' ? 3 : 0)),
+    rebounding: top(career.ovr - 5 + (arch.rebounding - 1) * 40 + (role === 'C' || role === 'PF' ? 6 : 0)),
+  };
 }

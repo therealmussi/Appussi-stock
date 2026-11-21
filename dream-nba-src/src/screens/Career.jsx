@@ -1,6 +1,5 @@
-import { Crest, Chip } from '../components/ui.jsx';
-import { ROLES, AWARDS_META, roleLabel } from '../data/events.js';
-import { GAME } from '../data/events.js';
+import { Crest, Chip, Trophy } from '../components/ui.jsx';
+import { ROLES, AWARDS_META, GAME, roleLabel } from '../data/events.js';
 
 const TONES = {
   gold: 'from-yellow-500/25 border-yellow-400/50',
@@ -11,7 +10,9 @@ const TONES = {
   rose: 'from-rose-500/25 border-rose-400/50',
 };
 
-const ORDER = ['mvp', 'finalsMvp', 'dpoy', 'allNBA', 'allStar', 'mip', 'roy'];
+const ORDER = ['ring', 'finalsMvp', 'mvp', 'dpoy', 'scoringChamp', 'allNBA', 'allDefense', 'allStar', 'mip', 'allRookie', 'roy'];
+
+const fmtK = (n) => (n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`);
 
 export default function Career({ career, summary, onRestart }) {
   const role = ROLES.find((r) => r.id === career.roleId);
@@ -23,7 +24,7 @@ export default function Career({ career, summary, onRestart }) {
       <h1 className="text-2xl font-black text-center tracking-wide">BACHECA DI FINE CARRIERA</h1>
 
       <div className={`rounded-3xl p-6 text-center border bg-gradient-to-b ${TONES[verdict.tone] || TONES.slate} anim-pop`}>
-        <div className="text-6xl">{verdict.tone === 'rose' ? '😔' : '🗿'}</div>
+        <div className="flex justify-center">{summary.trophies.ring > 0 ? <Trophy size={84} /> : <div className="text-6xl">{verdict.tone === 'rose' ? '😔' : '🗿'}</div>}</div>
         <h2 className="text-3xl font-black mt-2 shimmer-text">{summary.careerScore}</h2>
         <div className="text-[11px] uppercase tracking-[0.2em] text-white/40">Career Score</div>
         <div className="text-2xl font-black mt-3">{verdict.label}</div>
@@ -38,6 +39,10 @@ export default function Career({ career, summary, onRestart }) {
             <div className="text-3xl font-black">{summary.years}</div>
             <div className="text-[10px] uppercase text-white/40 tracking-wider">Anni (età {GAME.START_AGE}–{career.age})</div>
           </div>
+          <div className="rounded-2xl bg-black/40 px-4 py-3">
+            <div className="text-3xl font-black">#{career.jersey}</div>
+            <div className="text-[10px] uppercase text-white/40 tracking-wider">Maglia</div>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2 mt-3 text-sm">
@@ -45,6 +50,21 @@ export default function Career({ career, summary, onRestart }) {
           <div className="bg-black/40 rounded-xl py-2"><span className="font-black">{summary.averages.rpg}</span><span className="text-white/40 text-xs"> RPG</span></div>
           <div className="bg-black/40 rounded-xl py-2"><span className="font-black">{summary.averages.apg}</span><span className="text-white/40 text-xs"> APG</span></div>
         </div>
+
+        <div className="grid grid-cols-3 gap-2 mt-2 text-sm">
+          <div className="bg-black/40 rounded-xl py-2"><span className="font-black">{fmtK(summary.totals.pts)}</span><span className="text-white/40 text-xs"> PTS</span></div>
+          <div className="bg-black/40 rounded-xl py-2"><span className="font-black">{fmtK(summary.totals.reb)}</span><span className="text-white/40 text-xs"> REB</span></div>
+          <div className="bg-black/40 rounded-xl py-2"><span className="font-black">{fmtK(summary.totals.ast)}</span><span className="text-white/40 text-xs"> AST</span></div>
+        </div>
+        <div className="text-[10px] text-white/30 mt-1">totals stimati su 82 gare a stagione</div>
+
+        {summary.milestones.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-1.5 mt-4">
+            {summary.milestones.map((m) => (
+              <Chip key={m} tone="yellow">{m}</Chip>
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-wrap justify-center gap-1.5 mt-4">
           <Chip tone="slate">{role?.icon} {roleLabel(career.roleId)}</Chip>

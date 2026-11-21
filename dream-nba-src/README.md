@@ -51,3 +51,17 @@ src/
 Il motore (`simulationEngine.js`) legge solo dai moduli in `src/data/`: per creare Dream NFL/MLB/NHL basta duplicare
 `teams.js` e `events.js` con i valori giusti (conferenze, ruoli, premi, `SEASON_GAMES`, `PLAYOFF_ROUNDS`) e riutilizzare
 React/store/scratcher identici.
+
+## Novità
+
+- **Loghi ufficiali delle 30 franchigie** (caricati da CDN ESPN, con fallback automatico al crest colorato se offline).
+- **Larry O'Brien Championship Trophy** reale nella schermata dei Campioni NBA e nella bacheca finale (SVG da Wikimedia Commons).
+- **Eventi di stagione** narrativi (partita magistrale, clip virale, slump, infortunio minore, tensioni in squadra) con effetto sulle medie.
+- **Nuovi premi**: Campione dei Punti, All-Defensive Team, All-Rookie Team.
+- **Profilo giocatore**: tocca il chip OVR nell'HUD per il pannello con maglia, archetipo, attributi animati (Tiro/Visione/Difesa/Rimbalzi) e squadre vestite.
+- **Bacheca arricchita**: totali carriera (PTS/REB/AST), milestone (30.000 punti, dinastia da 5 anelli, ...) e numero di maglia.
+
+## Crediti
+
+- Loghi delle squadre NBA: hotlink da [ESPN CDN](https://www.espn.com) (property di ESPN/theMonks — usati lato client come reference).
+- Larry O'Brien Championship Trophy (icona SVG): [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Larry_O%27Brien_Championship_Trophy_icon.svg), licenza CC BY-SA 3.0.

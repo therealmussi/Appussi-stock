@@ -1,12 +1,15 @@
-import { AWARDS_META } from '../data/events.js';
-import { teamById, teamTier } from '../data/teams.js';
+import { useState } from 'react';
+import { AWARDS_META, TROPHY_URL } from '../data/events.js';
+import { logoUrl, teamById } from '../data/teams.js';
 
 export function Crest({ teamId, size = 44 }) {
   const team = teamById(teamId);
+  const [broken, setBroken] = useState(false);
   if (!team) return null;
+  const imgSize = Math.round(size * 0.84);
   return (
     <div
-      className="rounded-full flex items-center justify-center font-black shrink-0 border"
+      className="rounded-full flex items-center justify-center font-black shrink-0 border overflow-hidden"
       style={{
         width: size, height: size,
         background: team.primary,
@@ -16,8 +19,42 @@ export function Crest({ teamId, size = 44 }) {
         textShadow: '0 1px 2px rgba(0,0,0,.6)',
       }}
     >
-      {team.id}
+      {broken ? (
+        <span>{team.id}</span>
+      ) : (
+        <img
+          src={logoUrl(team.id)}
+          alt={team.name}
+          width={imgSize}
+          height={imgSize}
+          draggable={false}
+          onError={() => setBroken(true)}
+          style={{ width: imgSize, height: imgSize, objectFit: 'contain' }}
+        />
+      )}
     </div>
+  );
+}
+
+export function Trophy({ size = 96, className = '' }) {
+  const [broken, setBroken] = useState(false);
+  if (broken) {
+    return <div className={`anim-pop ${className}`} style={{ fontSize: size * 0.75, lineHeight: 1 }}>🏆</div>;
+  }
+  return (
+    <img
+      src={TROPHY_URL}
+      alt="Larry O'Brien Championship Trophy"
+      width={size}
+      height={size}
+      draggable={false}
+      onError={() => setBroken(true)}
+      className={`anim-pop ${className}`}
+      style={{
+        width: size, height: size, objectFit: 'contain',
+        filter: 'drop-shadow(0 0 22px rgba(251,191,36,.45))',
+      }}
+    />
   );
 }
 
