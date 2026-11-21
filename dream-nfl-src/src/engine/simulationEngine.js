@@ -1,0 +1,511 @@
+// ============================================================
+// MOTORE DI SIMULAZIONE (puro, nessun DOM, nessun React).
+// Dipende solo dai contratti dati in src/data/*: duplicando
+// teams.js/events.js per NFL/MLB/NHL, questo file resta intatto.
+// ============================================================
+
+import {
+  TEAMS, teamById, SEASON_GAMES, PLAYOFF_ROUNDS,
+} from '../data/teams.js';
+import {
+  GAME, ARCHETYPES, ROLE_SCORING, ROLE_PASS, ROLE_REB,
+  DEV_OUTCOMES, DEV_TABLE, DEV_OUTCOME_OLD, DEV_TABLE_OLD,
+  draftPickWeight, DRAFT_FLAVOR_TOP5, DRAFT_FLAVOR_TOP10, DRAFT_FLAVOR_REST,
+  retireChance, SCORE_WEIGHTS, verdictFor, randomName,
+  SEASON_EVENTS, SEASON_EVENT_TABLE,
+} from '../data/events.js';
+
+// ---------------- RNG helpers ----------------
+
+export const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const rnd = (min, max) => min + Math.random() * (max - min);
+const rndInt = (min, max) => Math.floor(rnd(min, max + 1));
+export const chance = (p) => Math.random() < p;
+const jitter = (amount) => rnd(-amount, amount);
+const round1 = (v) => Math.round(v * 10) / 10;
+const pickFrom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+export function weightedPick(items) {
+  const total = items.reduce((s, i) => s + i.weight, 0);
+  let r = Math.random() * total;
+  for (const it of items) {
+    r -= it.weight;
+    if (r <= 0) return it;
+  }
+  return items[items.length - 1];
+}
+
+// ---------------- Carriera: creazione ----------------
+
+export function createCareer({ name, roleId, archetypeId }) {
+  return {
+    name: name?.trim() || randomName(),
+    roleId,
+    archetypeId,
+    age: GAME.START_AGE,
+    ovr: rndInt(GAME.ROOKIE_OVR_MIN, GAME.ROOKIE_OVR_MAX),
+    peakOvr: 0,
+    teamId: null,
+    contractYears: 0,
+    draftPick: null,
+    minutesBoost: 0,
+    jersey: rndInt(0, 99),
+    retired: false,
+    autoRetired: false,
+    events: [],
+    seasons: [],
+    trophies: { ring: 0, finalsMvp: 0, mvp: 0, dpoy: 0, roy: 0, mip: 0, allStar: 0, allNBA: 0, scoringChamp: 0, allDefense: 0, allRookie: 0 },
+  };
+}
+
+export function archetypeOf(career) {
+  return ARCHETYPES[career.archetypeId];
+}
+
+export function careerAverages(career) {
+  const seasons = career.seasons;
+  if (!seasons.length) return { ppg: 0, rpg: 0, apg: 0 };
+  const n = seasons.length;
+  const sum = seasons.reduce(
+    (acc, s) => ({ ppg: acc.ppg + s.ppg, rpg: acc.rpg + s.rpg, apg: acc.apg + s.apg }),
+    { ppg: 0, rpg: 0, apg: 0 },
+  );
+  return { ppg: round1(sum.ppg / n), rpg: round1(sum.rpg / n), apg: round1(sum.apg / n) };
+}
+
+export function teamsWorn(career) {
+  const ids = [...new Set(career.seasons.map((s) => s.teamId).filter(Boolean))];
+  return ids.map(teamById);
+}
+
+// ---------------- Draft ----------------
+
+export function draftWheel() {
+  return Array.from({ length: TEAMS.length }, (_, i) => ({
+    pick: i + 1,
+    weight: draftPickWeight(i + 1),
+  }));
+}
+
+export function resolveDraft(career, forcedPick = null) {
+  const segments = draftWheel();
+  const pick = forcedPick ?? weightedPick(segments).pick;
+
+  const order = shuffle(TEAMS)
+    .map((t) => ({ t, k: t.rating + jitter(4) }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.t);
+
+  const team = order[pick - 1];
+  const flavor = pick <= 5
+    ? pickFrom(DRAFT_FLAVOR_TOP5)
+    : pick <= 10
+      ? pickFrom(DRAFT_FLAVOR_TOP10)
+      : pickFrom(DRAFT_FLAVOR_REST);
+
+  career.draftPick = pick;
+  career.teamId = team.id;
+  career.contractYears = GAME.ROOKIE_CONTRACT_YEARS;
+  career.minutesBoost = pick <= 5 ? 7 : pick <= 10 ? 4 : pick <= 20 ? 1 : -2;
+
+  return {
+    pick,
+    team,
+    flavor,
+    minutesBoost: career.minutesBoost,
+    contractYears: career.contractYears,
+  };
+}
+
+// ---------------- Step A: sviluppo ----------------
+
+function resolveDevOutcome(row) {
+  return { ...row, outcome: DEV_OUTCOMES[row.id] || DEV_OUTCOME_OLD[row.id] };
+}
+
+export function devWheel(career) {
+  let table;
+  if (career.age <= 23) table = DEV_TABLE.young;
+  else if (career.age <= 30) table = DEV_TABLE.prime;
+  else if (career.age <= 33) table = DEV_TABLE_OLD;
+  else table = DEV_TABLE_OLD.map((o) => ({ ...o, weight: o.id === 'injury' ? o.weight + 8 : o.weight }));
+  return table.map(resolveDevOutcome);
+}
+
+export function applyDevelopment(career, outcomeId) {
+  const outcome = DEV_OUTCOMES[outcomeId] || DEV_OUTCOME_OLD[outcomeId];
+  const [lo, hi] = outcome.delta;
+  const delta = hi > lo ? rndInt(lo, hi) : lo;
+  const ovr = clamp(career.ovr + delta, 55, 99);
+  const applied = {
+    ovr,
+    delta: ovr - career.ovr,
+    outcomeId,
+    label: outcome.label,
+    icon: outcome.icon,
+    tone: outcome.tone,
+    narrative: pickFrom(outcome.narratives),
+  };
+  career.ovr = ovr;
+  career.peakOvr = Math.max(career.peakOvr, ovr);
+  return applied;
+}
+
+// ---------------- Step B: stagione regolare ----------------
+
+export function simSeason(career) {
+  const team = teamById(career.teamId);
+  const arch = archetypeOf(career);
+  const ovr = career.ovr;
+
+  const minutes = clamp(
+    20 + (ovr - 72) * 1.5 + (career.minutesBoost || 0) + career.seasons.length * 0.6,
+    12, 38,
+  );
+
+  const base = ovr - 58;
+  let ppg = clamp(base * 0.25 * arch.scoring * ROLE_SCORING[career.roleId] + jitter(0.18), 0.35, 1.45);
+  const rpg = round1(clamp(ppg * ROLE_REB[career.roleId] * arch.rebounding * rnd(0.85, 1.15) * 0.6, 0.15, 1.3));
+  const apg = Math.round(clamp(ppg * ROLE_PASS[career.roleId] * arch.playmaking * rnd(0.85, 1.15) * 0.25, 0.05, 0.4) * 100) / 100;
+
+  const events = rollSeasonEvents();
+  for (const ev of events) ppg += ev.ppg;
+  ppg = Math.max(0, round1(ppg));
+
+  const teamStrength = team.rating + (ovr > 80 ? (ovr - 80) * 0.25 : 0);
+  const wins = clamp(Math.round(8.5 + (teamStrength - 78.5) * 0.25 + jitter(2.2)), 0, 16);
+  const rank = 1 + Math.floor(16 - wins);
+
+  let mode = 'playoffs';
+  let seed = clamp(rank, 1, 8);
+  if (rank >= 9 && rank <= 10) {
+    mode = 'playin';
+    seed = rank;
+  } else if (rank > 10) {
+    mode = 'out';
+    seed = null;
+  }
+
+  return {
+    teamId: team.id,
+    age: career.age,
+    ovr,
+    minutes: Math.round(minutes),
+    ppg,
+    rpg,
+    apg,
+    events,
+    wins,
+    losses: SEASON_GAMES - wins,
+    mode,
+    seed,
+    awards: [],
+    playoffs: null,
+    ring: false,
+  };
+}
+
+// ---------------- Play-In ----------------
+
+export function simPlayIn(season, career) {
+  const p = clamp((season.seed <= 8 ? 0.62 : 0.32) + (career.ovr - 84) * 0.02, 0.12, 0.88);
+  const qualified = chance(p);
+  if (qualified) season.seed = season.seed <= 8 ? 7 : 8;
+  season.mode = qualified ? 'playoffs' : 'playin';
+  return qualified;
+}
+
+// ---------------- Premi ----------------
+
+export function simAwards(season, career, devDelta = 0) {
+  const arch = archetypeOf(career);
+  const awards = [];
+  const isRookie = career.seasons.length === 0;
+
+  if (isRookie && season.ppg >= 0.7) {
+    const pickBoost = career.draftPick <= 3 ? 0.14 : career.draftPick <= 5 ? 0.09 : career.draftPick <= 10 ? 0.03 : career.draftPick >= 20 ? -0.08 : 0;
+    const p = clamp((season.ppg - 0.58) * 0.25 + pickBoost + (season.seed <= 3 ? 0.05 : 0), 0.06, 0.88);
+    if (chance(p)) awards.push('roy');
+  }
+
+  if (!isRookie && devDelta >= 4 && season.ppg >= 0.7 && chance(0.4)) {
+    awards.push('mip');
+  }
+
+  if (season.ppg >= 0.75) {
+    const p = clamp((season.ppg - 0.7) * 0.25 + (career.ovr - 82) * 0.02, 0, 0.95);
+    if (chance(p)) awards.push('allStar');
+  }
+
+  if (season.ppg >= 1.0 && career.ovr >= 85) {
+    if (chance(season.ppg >= 1.2 ? 0.85 : 0.6)) awards.push('allNBA');
+  } else if (season.ppg >= 0.9 && career.ovr >= 89 && chance(0.35)) {
+    awards.push('allNBA');
+  }
+
+  const defensiveProfile = arch.defense >= 1.2 || career.roleId === 'TE';
+  if (defensiveProfile && career.ovr >= 86 && season.ppg >= 0.35 && chance(0.33)) {
+    awards.push('dpoy');
+  }
+
+  if (isRookie && season.ppg >= 0.55) {
+    const p = clamp((season.ppg - 0.47) * 0.3, 0.15, 0.8);
+    if (chance(p)) awards.push('allRookie');
+  }
+
+  if (season.ppg >= 1.15) {
+    if (chance(clamp((season.ppg - 1.1) * 1.2, 0.15, 0.8))) awards.push('scoringChamp');
+  }
+
+  if (defensiveProfile && career.ovr >= 84 && chance(0.3)) {
+    awards.push('allDefense');
+  }
+
+  if (season.ppg >= 1.1 && season.wins >= 12 && career.ovr >= 89) {
+    const p = clamp((season.ppg - 1.05) * 0.25 + (season.wins - 12) * 0.04 + (career.ovr - 89) * 0.03, 0.08, 0.62);
+    if (chance(p)) awards.push('mvp');
+  }
+
+  season.awards = awards;
+  return awards;
+}
+
+// ---------------- Playoff ----------------
+
+function playerBoost(career) {
+  return career.ovr > 82 ? (career.ovr - 82) * 0.3 : 0;
+}
+
+function seriesWinChance(myStr, oppStr) {
+  return clamp(0.5 + (myStr - oppStr) * 0.032, 0.16, 0.84);
+}
+
+function simSeries(p, stopAtSeven = false) {
+  return chance(p)
+    ? { mine: 1, theirs: 0, wentSeven: false }
+    : { mine: 0, theirs: 1, wentSeven: false };
+}
+
+function playoffOpponent(str, excludeIds) {
+  const candidates = TEAMS.filter((t) => !excludeIds.has(t.id));
+  const ranked = candidates
+    .map((t) => ({ t, dist: Math.abs(t.rating - str + jitter(2)) }))
+    .sort((a, b) => a.dist - b.dist);
+  return pickFrom(ranked.slice(0, 4)).t;
+}
+
+export function simPlayoffs(season, career) {
+  if (season.mode === 'out') {
+    season.playoffs = { result: 'out', rounds: [] };
+    return { season, pending: false };
+  }
+
+  const team = teamById(season.teamId);
+  const myStr = team.rating - (season.seed - 1) * 1.4 + playerBoost(career);
+  const rounds = [];
+  const seen = new Set([season.teamId]);
+
+  for (let idx = 0; idx < PLAYOFF_ROUNDS.length; idx += 1) {
+    const name = PLAYOFF_ROUNDS[idx];
+    const isFinals = idx === PLAYOFF_ROUNDS.length - 1;
+    const oppSeed = isFinals ? rndInt(1, 4) : rndInt(1, idx === 0 ? 8 : 6);
+    const oppStr = isFinals
+      ? 91 - (oppSeed - 1) * 1.5 + jitter(2.5)
+      : clamp(team.rating - (oppSeed - 1) * 1.4 + jitter(3), 62, 97);
+    const opp = playoffOpponent(oppStr, seen);
+    seen.add(opp.id);
+    const winChance = seriesWinChance(myStr, oppStr);
+    if (isFinals) {
+      rounds.push({ name, oppSeed, oppTeamId: opp.id, mine: 0, theirs: 0, chance: winChance });
+      return {
+        season,
+        pending: true,
+        pendingState: { rounds, chance: winChance, oppSeed },
+      };
+    }
+
+    const res = simSeries(winChance, isFinals);
+
+    rounds.push({ name, oppSeed, oppTeamId: opp.id, mine: res.mine, theirs: res.theirs, chance: winChance });
+    if (res.theirs === 4) {
+      season.playoffs = { result: name, rounds };
+      return { season, pending: false };
+    }
+  }
+
+  season.ring = true;
+  season.playoffs = { result: 'champion', rounds };
+  if (chance(finalsMvpChance(season, career))) season.awards.push('finalsMvp');
+  return { season, pending: false };
+}
+
+function finalsMvpChance(season, career) {
+  return clamp(0.3 + (season.ppg - 0.85) * 0.3 + (career.ovr - 88) * 0.04, 0.2, 0.8);
+}
+
+// Risolve la Gara 7 delle Finals decisa dal giocatore con la ruota.
+export function resolveGame7(season, career, pendingState, win) {
+  const rounds = pendingState.rounds.map((r, i) => (
+    i === pendingState.rounds.length - 1
+      ? { ...r, mine: win ? 1 : 0, theirs: win ? 0 : 1 }
+      : r
+  ));
+
+  if (win) {
+    season.ring = true;
+    season.playoffs = { result: 'champion', rounds };
+    if (chance(clamp(finalsMvpChance(season, career) + 0.15, 0.2, 0.8))) {
+      season.awards.push('finalsMvp');
+    }
+  } else {
+    season.playoffs = { result: PLAYOFF_ROUNDS[PLAYOFF_ROUNDS.length - 1], rounds };
+  }
+  return season;
+}
+
+// ---------------- Free Agency ----------------
+
+export function faWheel(career) {
+  const pool = shuffle(TEAMS.filter((t) => t.id !== career.teamId));
+
+  const offers = pool.slice(0, 4).map((t) => ({
+    stay: false,
+    team: t,
+    years: rndInt(2, 4),
+    role: t.rating >= 87 ? 'Featured weapon on a contender' : t.rating >= 82 ? 'Key piece of the offense' : t.rating >= 77 ? 'Rotation role with snaps' : 'Cornerstone of the rebuild',
+  }));
+
+  return [...offers, {
+    stay: true,
+    team: teamById(career.teamId),
+    years: rndInt(3, 5),
+    role: 'The locker room you already own',
+  }];
+}
+
+export function acceptOffer(career, offer) {
+  const changedTeam = !offer.stay && offer.team.id !== career.teamId;
+  career.teamId = offer.team.id;
+  career.contractYears = offer.years;
+  career.minutesBoost = offer.stay
+    ? clamp(career.minutesBoost, -2, 7)
+    : offer.team.rating >= 85 ? 0 : 5;
+  return { changedTeam, years: offer.years, team: offer.team };
+}
+
+// ---------------- Ritiro e riepilogo ----------------
+
+export function checkAutoRetirement(career) {
+  if (career.retired) return true;
+  if (career.age >= GAME.RETIRE_AGE_MAX) return true;
+  return chance(retireChance(career.age, career.ovr));
+}
+
+export function careerSummary(career) {
+  const t = career.trophies;
+  const totalWins = career.seasons.reduce((s, x) => s + x.wins, 0);
+
+  let score = 0;
+  score += t.ring * SCORE_WEIGHTS.ring;
+  score += t.finalsMvp * SCORE_WEIGHTS.finalsMvp;
+  score += t.mvp * SCORE_WEIGHTS.mvp;
+  score += t.dpoy * SCORE_WEIGHTS.dpoy;
+  score += t.roy * SCORE_WEIGHTS.roy;
+  score += t.mip * SCORE_WEIGHTS.mip;
+  score += t.allNBA * SCORE_WEIGHTS.allNBA;
+  score += t.allStar * SCORE_WEIGHTS.allStar;
+  score += totalWins * SCORE_WEIGHTS.wins;
+  score += Math.max(0, career.peakOvr - 70) * SCORE_WEIGHTS.peakOvr;
+  score += career.seasons.length * SCORE_WEIGHTS.longevity;
+  score = Math.round(score);
+
+  let pts = 0, reb = 0, ast = 0;
+  for (const s of career.seasons) {
+    pts += (90 + s.ppg * 250) * SEASON_GAMES;
+    reb += (s.rpg + s.apg) * SEASON_GAMES;
+    ast += SEASON_GAMES;
+  }
+
+  const milestones = [];
+  const add = (cond, label) => { if (cond) milestones.push(label); };
+  add(pts >= 30000, '30,000 scrimmage yards 🏋\U0000FE0F');
+  add(pts >= 50000, '50,000-yard club 🏆');
+  add(reb >= 100, '100 career touchdowns 🎯');
+  add(reb >= 150, '150 total touchdowns \u2014 all-time tier 🧠');
+  add(t.ring >= 3, 'Dynasty: 3 Super Bowls 🏆');
+  add(t.mvp >= 2, 'Multi-MVP winner 🐐');
+  add(career.seasons.length >= 20, '20 seasons of service 🦴');
+
+  return {
+    years: career.seasons.length,
+    teams: teamsWorn(career),
+    peakOvr: career.peakOvr || career.ovr,
+    averages: careerAverages(career),
+    totals: { pts: Math.round(pts), reb: Math.round(reb), ast: Math.round(ast) },
+    milestones,
+    totalWins,
+    trophies: t,
+    careerScore: score,
+    verdict: verdictFor(score),
+  };
+}
+
+// ---------------- Bookkeeping ----------------
+
+export function commitTrophies(career, awards) {
+  for (const a of awards) {
+    if (a in career.trophies) career.trophies[a] += 1;
+  }
+}
+
+export function commitSeason(career, season) {
+  career.seasons.push(season);
+  career.peakOvr = Math.max(career.peakOvr, season.ovr);
+}
+
+// ---------------- Eventi salienti della stagione regolare ----------------
+
+function rollSeasonEvents() {
+  const events = [];
+  const roll = () => {
+    const chosen = weightedPick(SEASON_EVENT_TABLE);
+    const meta = SEASON_EVENTS[chosen.id];
+    return { type: chosen.id, ...meta, text: pickFrom(meta.texts) };
+  };
+
+  const first = roll();
+  events.push(first);
+  if (first.ppg !== 0 && chance(0.35)) events.push(roll());
+
+  return events.map((ev, i) => ({
+    id: `${ev.type}_${i}`,
+    type: ev.type,
+    icon: ev.icon,
+    label: ev.label,
+    tone: ev.tone,
+    ppg: ev.ppg,
+    text: ev.text,
+  }));
+}
+
+// ---------------- Profilo attributi (solo presentazione) ----------------
+
+export function playerAttributes(career) {
+  const arch = archetypeOf(career);
+  const role = career.roleId;
+  const top = (x) => Math.round(clamp(x, 40, 99));
+  return {
+    scoring: top(career.ovr - 5 + (arch.scoring - 0.95) * 35 ),
+    playmaking: top(career.ovr - 5 + (arch.playmaking - 1) * 40 + (role === 'QB' ? 8 : 0)),
+    defense: top(career.ovr - 5 + (arch.defense - 1) * 40 + (role === 'TE' ? 5 : 0)),
+    rebounding: top(career.ovr - 5 + (arch.rebounding - 1) * 40 + (role === 'RB' || role === 'TE' ? 5 : 0)),
+  };
+}
