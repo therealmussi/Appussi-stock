@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #0a0d14;
+  color: #f4f6fb;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* ---------- Animazioni chiave ---------- */
+
+@keyframes pop-in {
+  0% { transform: scale(0.85) translateY(10px); opacity: 0; }
+  60% { transform: scale(1.03) translateY(0); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(18px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes burst {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0.2) rotate(var(--rot)); opacity: 0; }
+}
+
+@keyframes flash-bg {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.5); }
+  50% { box-shadow: 0 0 0 14px rgba(249, 115, 22, 0); }
+}
+
+@keyframes float-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(-6px); opacity: 1; }
+}
+
+.anim-pop { animation: pop-in 0.45s cubic-bezier(0.22, 1.4, 0.36, 1) both; }
+.anim-slide { animation: slide-up 0.4s ease both; }
+.anim-float { animation: float-up 0.6s ease both; }
+.anim-pulse-ring { animation: pulse-ring 1.6s ease-in-out infinite; }
+
+.shimmer-text {
+  background: linear-gradient(100deg, #fbbf24 20%, #fff 40%, #fbbf24 60%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 2.4s linear infinite;
+}
+
+.bar-fill {
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card-glass {
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(8px);
+}
+
+.tap {
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+.tap:active {
+  transform: scale(0.96);
+  filter: brightness(1.15);
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 99px; }
