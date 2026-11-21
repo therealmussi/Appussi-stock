@@ -213,7 +213,7 @@ export const AWARDS_META = {
   roy: { label: 'Rookie of the Year', icon: '\u2b50', tone: 'sky' },
   mip: { label: 'Most Improved Player', icon: '\ud83d\udcd0', tone: 'teal' },
   allStar: { label: 'MLB All-Star', icon: '\ud83c\udf1f', tone: 'amber' },
-  allNBA: { label: 'Silver Slugger', icon: '\ud83c\udfd2', tone: 'orange' },
+  allNBA: { label: 'Silver Slugger', icon: '\ud83c\udfcf', tone: 'orange' },
   dpoy: { label: 'Gold Glove', icon: '\ud83e\udec2', tone: 'indigo' },
   scoringChamp: { label: 'Hank Aaron Award', icon: '\ud83c\udfaf', tone: 'orange' },
   allDefense: { label: 'Platinum Glove', icon: '\ud83e\udd4a', tone: 'indigo' },

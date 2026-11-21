@@ -37,7 +37,7 @@ export const TEAMS = [
   { id: 'DET', city: 'Detroit', name: 'Red Wings', primary: '#CE1126', secondary: '#FFFFFF', rating: 75 },
   { id: 'OTT', city: 'Ottawa', name: 'Senators', primary: '#DA1A32', secondary: '#C2912C', rating: 74 },
   { id: 'BUF', city: 'Buffalo', name: 'Sabres', primary: '#003087', secondary: '#FFB81C', rating: 73 },
-  { id: 'MTL', city: 'Montréal', name: 'Canadiens', primary: '#AF1E2D', secondary: '#192168', rating: 73 },
+  { id: 'MTL', city: 'Montréal', name: 'Canadiens', primary: '#AF1E2D', secondary: '#192168', rating: 88 },
   { id: 'CGY', city: 'Calgary', name: 'Flames', primary: '#D2001C', secondary: '#FAAF19', rating: 72 },
   { id: 'UTAH', city: 'Utah', name: 'Mammoth', primary: '#71AFE5', secondary: '#090909', rating: 71 },
   { id: 'ANA', city: 'Anaheim', name: 'Ducks', primary: '#F47A38', secondary: '#B9975B', rating: 70 },

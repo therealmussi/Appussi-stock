@@ -62,7 +62,7 @@ export default function PlayoffsResult({ career, season, playinWon, onContinue }
         </div>
       )}
 
-      <PrimaryButton onClick={onContinue}>{champion ? '🏒 Popped the champagne' : '➡️ Move on'}</PrimaryButton>
+      <PrimaryButton onClick={onContinue}>{champion ? '🏆 Popped the champagne' : '➡️ Move on'}</PrimaryButton>
     </div>
   );
 }
