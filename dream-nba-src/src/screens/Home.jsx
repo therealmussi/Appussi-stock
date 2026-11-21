@@ -17,6 +17,7 @@ export default function Home({ onNew, hasExisting, onContinue }) {
         <PrimaryButton tone="amber" onClick={onNew}>✨ Nuova Carriera</PrimaryButton>
       </div>
       <p className="text-[11px] text-white/30 mt-8">Salvataggio automatico · 100% offline</p>
+      <p className="text-[11px] text-white/25 mt-1.5">Developed by Matteo Mussillon</p>
     </div>
   );
 }
