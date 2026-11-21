@@ -3,7 +3,7 @@ import { PrimaryButton } from '../components/ui.jsx';
 export default function Home({ onNew, hasExisting, onContinue }) {
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center px-6 text-center">
-      <div className="text-7xl mb-4 anim-pop">🏒</div>
+      <div className="text-7xl mb-4 anim-pop">⚾</div>
       <h1 className="text-5xl font-black tracking-tight anim-slide">
         DREAM <span className="shimmer-text">MLB</span>
       </h1>

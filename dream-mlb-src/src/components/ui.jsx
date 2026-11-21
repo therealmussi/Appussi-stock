@@ -143,5 +143,5 @@ export function PrimaryButton({ children, onClick, tone = 'amber', className = '
 export function SeedChip({ season }) {
   if (season.mode === 'out') return <Chip tone="rose">❌ Eliminated — out of the race</Chip>;
   if (season.mode === 'playin') return <Chip tone="amber">🎯 Play-In — Seed {season.seed}</Chip>;
-  return <Chip tone="emerald">🏒 Playoffs — Seed {season.seed}</Chip>;
+  return <Chip tone="emerald">🏆 Playoffs — Seed {season.seed}</Chip>;
 }

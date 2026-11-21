@@ -69,7 +69,7 @@ export default function Career({ career, summary, onRestart }) {
         <div className="flex flex-wrap justify-center gap-1.5 mt-4">
           <Chip tone="slate">{role?.icon} {roleLabel(career.roleId)}</Chip>
           {summary.teams.map((t) => (
-            <Chip key={t.id} tone="slate">🏒 {t.id}</Chip>
+            <Chip key={t.id} tone="slate">🏟 {t.id}</Chip>
           ))}
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function Career({ career, summary, onRestart }) {
             <span className="ml-auto flex gap-1">
               {s.awards.map((a) => <span key={a}>{AWARDS_META[a]?.icon}</span>)}
             </span>
-            <span className="w-6 text-right">{s.ring ? '🏒' : ''}</span>
+            <span className="w-6 text-right">{s.ring ? '💍' : ''}</span>
           </div>
         ))}
       </div>
