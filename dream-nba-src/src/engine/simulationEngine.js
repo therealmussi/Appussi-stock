@@ -178,7 +178,7 @@ export function simSeason(career) {
 
   const events = rollSeasonEvents();
   for (const ev of events) ppg += ev.ppg;
-  ppg = round1(ppg);
+  ppg = Math.max(2, round1(ppg));
 
   const teamStrength = team.rating + (ovr > 80 ? (ovr - 80) * 0.25 : 0);
   const wins = clamp(Math.round(41 + (teamStrength - 74) * 2.1 + jitter(6)), 17, 66);
