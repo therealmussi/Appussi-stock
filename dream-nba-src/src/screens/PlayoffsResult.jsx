@@ -1,4 +1,5 @@
 import { Crest, Chip, PrimaryButton, SeedChip, Trophy } from '../components/ui.jsx';
+import { teamById } from '../data/teams.js';
 
 const RESULT_LABEL = {
   out: 'Stagione finita dopo gli 82',
@@ -47,12 +48,13 @@ export default function PlayoffsResult({ career, season, playinWon, onContinue }
             const won = r.mine > r.theirs;
             const decider = r.mine === 3 && r.theirs === 3;
             return (
-              <div key={i} className="flex items-center justify-between px-4 py-3 anim-slide" style={{ animationDelay: `${i * 0.25}s` }}>
-                <div>
+              <div key={i} className="flex items-center gap-2.5 px-4 py-3 anim-slide" style={{ animationDelay: `${i * 0.25}s` }}>
+                <Crest teamId={r.oppTeamId} size={28} />
+                <div className="min-w-0">
                   <div className="font-bold text-sm">{r.name}</div>
-                  <div className="text-[11px] text-white/40">Avversario seed {r.oppSeed}</div>
+                  <div className="text-[11px] text-white/40">vs {teamById(r.oppTeamId)?.city} {teamById(r.oppTeamId)?.name} · seed {r.oppSeed}</div>
                 </div>
-                <div className={`font-black text-lg ${decider ? 'text-amber-300' : won ? 'text-emerald-300' : 'text-rose-300'}`}>
+                <div className={`ml-auto font-black text-lg ${decider ? 'text-amber-300' : won ? 'text-emerald-300' : 'text-rose-300'}`}>
                   {r.mine}–{r.theirs} {decider ? '· G7' : ''}
                 </div>
               </div>
