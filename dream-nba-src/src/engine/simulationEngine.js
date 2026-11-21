@@ -230,8 +230,9 @@ export function simAwards(season, career, devDelta = 0) {
   const awards = [];
   const isRookie = career.seasons.length === 0;
 
-  if (isRookie && season.ppg >= 15) {
-    const p = clamp((season.ppg - 13) * 0.07 + (season.seed <= 3 ? 0.05 : 0), 0.25, 0.9);
+  if (isRookie && season.ppg >= 11) {
+    const pickBoost = career.draftPick <= 3 ? 0.14 : career.draftPick <= 5 ? 0.09 : career.draftPick <= 10 ? 0.03 : career.draftPick >= 20 ? -0.08 : 0;
+    const p = clamp((season.ppg - 9) * 0.06 + pickBoost + (season.seed <= 3 ? 0.05 : 0), 0.06, 0.88);
     if (chance(p)) awards.push('roy');
   }
 
@@ -255,8 +256,8 @@ export function simAwards(season, career, devDelta = 0) {
     awards.push('dpoy');
   }
 
-  if (isRookie && season.ppg >= 12) {
-    const p = clamp((season.ppg - 10) * 0.06, 0.2, 0.85);
+  if (isRookie && season.ppg >= 10) {
+    const p = clamp((season.ppg - 8) * 0.07, 0.15, 0.8);
     if (chance(p)) awards.push('allRookie');
   }
 
