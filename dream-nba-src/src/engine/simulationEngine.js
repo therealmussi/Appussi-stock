@@ -378,37 +378,14 @@ export function resolveGame7(season, career, pendingState, win) {
 // ---------------- Free Agency ----------------
 
 export function faWheel(career) {
-  const ovr = career.ovr;
-  const tiers = [
-    { id: 'contender', min: 87, max: 99, weight: clamp(0.4 + (ovr - 78) * 0.05, 0.2, 0.8) },
-    { id: 'playoff', min: 81, max: 86, weight: clamp(0.34 + (ovr - 78) * 0.02, 0.15, 0.5) },
-    { id: 'playin', min: 76, max: 80, weight: clamp(0.2 - (ovr - 78) * 0.01, 0.08, 0.26) },
-    { id: 'rebuild', min: 60, max: 75, weight: clamp(0.14 - (ovr - 78) * 0.012, 0.04, 0.2) },
-  ];
+  const pool = shuffle(TEAMS.filter((t) => t.id !== career.teamId));
 
-  const used = new Set([career.teamId]);
-  const offers = [];
-  const push = (tier, tierId) => {
-    let candidates = TEAMS.filter((t) => !used.has(t.id) && t.rating >= tier.min && t.rating <= tier.max);
-    if (!candidates.length) candidates = TEAMS.filter((t) => !used.has(t.id));
-    const team = pickFrom(candidates);
-    used.add(team.id);
-    offers.push({
-      stay: false,
-      team,
-      tierId,
-      years: rndInt(2, 4),
-      role: team.rating >= 87 ? 'Titolo subito' : team.rating >= 81 ? 'Ruolo chiave' : team.rating >= 76 ? 'Protagonista' : 'Progetto personale',
-    });
-  };
-
-  for (let i = 0; i < 3; i += 1) {
-    const tier = weightedPick(tiers.filter((t) => !offers.some((o) => o.tierId === t.id)));
-    push(tier, tier.id);
-  }
-
-  const surprise = pickFrom(TEAMS.filter((t) => !used.has(t.id) && t.rating < 81));
-  push({ min: surprise.rating, max: surprise.rating }, 'surprise');
+  const offers = pool.slice(0, 4).map((t) => ({
+    stay: false,
+    team: t,
+    years: rndInt(2, 4),
+    role: t.rating >= 87 ? 'Titolo subito' : t.rating >= 81 ? 'Ruolo chiave' : t.rating >= 76 ? 'Protagonista' : 'Progetto personale',
+  }));
 
   return [...offers, {
     stay: true,
