@@ -17,9 +17,9 @@ export const PLAYOFF_ROUNDS = [
 export const TEAMS = [
   { id: 'BOS', city: 'Boston', name: 'Celtics', primary: '#007A33', secondary: '#BA9653', rating: 91 },
   { id: 'OKC', city: 'Oklahoma City', name: 'Thunder', primary: '#007AC1', secondary: '#EF3B24', rating: 90 },
+  { id: 'SAS', city: 'San Antonio', name: 'Spurs', primary: '#000000', secondary: '#C4CED4', rating: 90 },
   { id: 'DEN', city: 'Denver', name: 'Nuggets', primary: '#0E2240', secondary: '#FEC524', rating: 88 },
   { id: 'PHI', city: 'Philadelphia', name: '76ers', primary: '#006BB6', secondary: '#ED174C', rating: 87 },
-  { id: 'SAS', city: 'San Antonio', name: 'Spurs', primary: '#000000', secondary: '#C4CED4', rating: 87 },
   { id: 'DAL', city: 'Dallas', name: 'Mavericks', primary: '#00538C', secondary: '#B8C4CA', rating: 86 },
   { id: 'HOU', city: 'Houston', name: 'Rockets', primary: '#CE1141', secondary: '#26282A', rating: 86 },
   { id: 'DET', city: 'Detroit', name: 'Pistons', primary: '#1D42BA', secondary: '#C8102E', rating: 86 },
