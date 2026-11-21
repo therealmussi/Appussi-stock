@@ -1,4 +1,4 @@
-import { Crest, Chip, PrimaryButton, SeedChip } from '../components/ui.jsx';
+import { Crest, Chip, PrimaryButton, SeedChip, Trophy } from '../components/ui.jsx';
 
 const RESULT_LABEL = {
   out: 'Stagione finita dopo gli 82',
@@ -23,7 +23,7 @@ export default function PlayoffsResult({ career, season, playinWon, onContinue }
       <div className={`w-full rounded-3xl p-6 text-center anim-pop border ${champion ? 'bg-gradient-to-b from-amber-500/25 to-transparent border-amber-400/50' : 'card-glass'}`}>
         {champion ? (
           <>
-            <div className="text-7xl anim-pop">🏆</div>
+            <Trophy size={96} />
             <h1 className="text-3xl font-black mt-2 shimmer-text">CAMPIONI NBA</h1>
             <p className="text-white/60 text-sm mt-2">Anello numero {career.trophies.ring} per {career.name}.</p>
           </>

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useGame } from './store/useGame.js';
 import Burst from './components/Burst.jsx';
+import ProfilePanel from './components/ProfilePanel.jsx';
 import { Crest, Chip } from './components/ui.jsx';
 import { roleLabel } from './data/events.js';
 import Home from './screens/Home.jsx';
@@ -34,15 +36,19 @@ export default function App() {
 }
 
 function Hud({ career }) {
+  const [profileOpen, setProfileOpen] = useState(false);
   return (
     <div className="sticky top-0 z-40 bg-[#0a0d14]/85 backdrop-blur border-b border-white/5 px-4 py-2.5 flex items-center gap-3">
       <Crest teamId={career.teamId} size={32} />
       <div className="min-w-0 flex-1">
-        <div className="font-bold text-sm truncate">{career.name}</div>
+        <div className="font-bold text-sm truncate">#{career.jersey} {career.name}</div>
         <div className="text-[10px] text-white/40">{career.age} anni · {roleLabel(career.roleId)}</div>
       </div>
-      <Chip tone="amber">OVR {career.ovr}</Chip>
+      <button onClick={() => setProfileOpen(true)} className="tap anim-pop" title="Profilo giocatore">
+        <Chip tone="amber">OVR {career.ovr} ▾</Chip>
+      </button>
       <Chip tone={career.trophies.ring > 0 ? 'emerald' : 'slate'}>💍 {career.trophies.ring}</Chip>
+      {profileOpen && <ProfilePanel career={career} onClose={() => setProfileOpen(false)} />}
     </div>
   );
 }

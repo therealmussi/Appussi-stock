@@ -4,6 +4,9 @@
 // label/icone/narrazioni. Editare qui cambia il gameplay.
 // ============================================================
 
+// Larry O'Brien Championship Trophy (icon.svg, Wikimedia Commons, CC BY-SA 3.0)
+export const TROPHY_URL = 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Larry_O%27Brien_Championship_Trophy_icon.svg';
+
 export const GAME = {
   START_AGE: 19,
   RETIRE_AGE_MIN: 35,
@@ -160,12 +163,62 @@ export const DRAFT_FLAVOR_REST = [
 
 // ---------- Step C: premi ----------
 
+// ---------- Eventi salienti della stagione regular (Step B) ----------
+
+export const SEASON_EVENTS = {
+  masterclass: {
+    id: 'masterclass', icon: '🌩️', label: 'Partita magistrale', tone: 'amber', ppg: 1,
+    texts: [
+      'Notte da 52 punti: il palazzetto esplode sul game-winner al buzzer e l\'arena impazza.',
+      'Tripla doppia da 40: i replay vanno in loop su tutte le reti.',
+    ],
+  },
+  viral: {
+    id: 'viral', icon: '📲', label: 'Clip virale', tone: 'fuchsia', ppg: 0,
+    texts: [
+      'La stoppata a mezz\'aria contro il suo diretto concorrente fa il giro del mondo: 9 milioni di visual in 24 ore.',
+      'La schiacciata che spacca il tabellone diventa esercizio quotidiano per tutta la lega.',
+    ],
+  },
+  slump: {
+    id: 'slump', icon: '🧊', label: 'Slump', tone: 'sky', ppg: -1,
+    texts: [
+      'Un mese freddissimo: il tiro non entra nemmeno in allenamento, gli analytics lo supplicano.',
+      'Diciannove partite sotto il suo standard: i talk show chiedono a gran voce la panchina.',
+    ],
+  },
+  minorInjury: {
+    id: 'minorInjury', icon: '🩹', label: 'Infortunio minore', tone: 'rose', ppg: -1,
+    texts: [
+      'Dodici partite fuori dalla rotation per una caviglia slogata, rientro graduale.',
+      'Gioca con l\'alluce protetto da una suola rigida: le medie pagano il pedaggio.',
+    ],
+  },
+  tension: {
+    id: 'tension', icon: '😠', label: 'Tensioni in squadra', tone: 'indigo', ppg: -1,
+    texts: [
+      'Litigata in sala video con il coach: la società minimizza, lo spogliatoio no.',
+    ],
+  },
+};
+
+export const SEASON_EVENT_TABLE = [
+  { id: 'masterclass', weight: 10 },
+  { id: 'viral', weight: 12 },
+  { id: 'slump', weight: 16 },
+  { id: 'minorInjury', weight: 12 },
+  { id: 'tension', weight: 6 },
+];
+
 export const AWARDS_META = {
   roy: { label: 'Rookie of the Year', icon: '🌟', tone: 'sky' },
   mip: { label: 'Most Improved Player', icon: '📐', tone: 'teal' },
   allStar: { label: 'All-Star', icon: '⭐', tone: 'amber' },
   allNBA: { label: 'All-NBA Team', icon: '🏆', tone: 'orange' },
   dpoy: { label: 'Defensive Player of the Year', icon: '🛡️', tone: 'indigo' },
+  scoringChamp: { label: 'Campione dei Punti', icon: '🎯', tone: 'orange' },
+  allDefense: { label: 'All-Defensive Team', icon: '🥊', tone: 'indigo' },
+  allRookie: { label: 'All-Rookie Team', icon: '🌱', tone: 'teal' },
   mvp: { label: 'MVP Stagione', icon: '👑', tone: 'yellow' },
   ring: { label: 'Anello NBA', icon: '💍', tone: 'emerald' },
   finalsMvp: { label: 'Finals MVP', icon: '🥇', tone: 'fuchsia' },
@@ -191,6 +244,9 @@ export const SCORE_WEIGHTS = {
   mip: 3,
   allNBA: 5,
   allStar: 2.5,
+  scoringChamp: 4,
+  allDefense: 4,
+  allRookie: 2,
   wins: 0.045,
   peakOvr: 1.5,
   longevity: 1.0,

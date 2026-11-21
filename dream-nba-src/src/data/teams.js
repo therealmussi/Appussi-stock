@@ -49,6 +49,9 @@ export const TEAMS = [
 
 export const teamById = (id) => TEAMS.find((t) => t.id === id);
 
+// Loghi ufficiali (hotlink CDN ESPN; il component mostrerà un crest colorato come fallback)
+export const logoUrl = (id) => `https://a.espncdn.com/i/teamlogos/nba/500/${id}.png`;
+
 export const CONFERENCE = {
   East: ['BOS', 'NYK', 'CLE', 'PHI', 'MIA', 'MIL', 'IND', 'ORL', 'ATL', 'DET', 'CHI', 'BKN', 'TOR', 'CHA', 'WAS'],
   West: ['OKC', 'DEN', 'DAL', 'MIN', 'LAL', 'PHX', 'LAC', 'MEM', 'SAC', 'HOU', 'GSW', 'NOP', 'UTA', 'SAS', 'POR'],

@@ -1,7 +1,7 @@
 import { AwardCard, PrimaryButton } from '../components/ui.jsx';
 import { AWARDS_META } from '../data/events.js';
 
-const ORDER = ['mvp', 'finalsMvp', 'dpoy', 'allNBA', 'allStar', 'mip', 'roy'];
+const ORDER = ['mvp', 'finalsMvp', 'dpoy', 'scoringChamp', 'allNBA', 'allDefense', 'allStar', 'mip', 'allRookie', 'roy'];
 
 export default function AwardsResult({ season, onContinue }) {
   const ordered = ORDER.filter((id) => season.awards.includes(id));
