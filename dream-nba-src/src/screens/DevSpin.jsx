@@ -6,6 +6,7 @@ export default function DevSpin({ career, onDone }) {
   const [target, setTarget] = useState(null);
   const [spinning, setSpinning] = useState(false);
   const segments = devWheel(career).map((s) => ({
+    id: s.id,
     label: s.outcome.label,
     icon: s.outcome.icon,
     sub: fmtDelta(s.outcome.delta),

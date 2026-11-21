@@ -1,6 +1,6 @@
-# Copero NBA 🏀
+# Dream NBA 🏀
 
-Single-page web app mobile-first: simulatore rapido di carriera da giocatore NBA a turni/ruote, ispirato al gioco "Copero".
+Single-page web app mobile-first: simulatore rapido di carriera da giocatore NBA a turni/ruote, edizione cestistica del classico simulatore a turni: dal prospetto al Draft fino alla Hall of Fame.
 
 **Stack:** React 18 + Vite + Tailwind CSS 4, zero backend, salvataggio automatico in `localStorage`.
 
@@ -9,13 +9,13 @@ Single-page web app mobile-first: simulatore rapido di carriera da giocatore NBA
 ```bash
 npm install
 npm run dev      # sviluppo
-npm run build    # build di produzione in ../copero-nba/ (committata, servita da GitHub Pages)
+npm run build    # build di produzione in ../dream-nba/ (committata, servita da GitHub Pages)
 npm run preview  # anteprima della build
 ```
 
-La build usa `base: './'` con output in `../copero-nba/`: la versione online è disponibile su
-[therealmussi.github.io/Appussi-stock/copero-nba/](https://therealmussi.github.io/Appussi-stock/copero-nba/).
-Dopo ogni modifica ai sorgenti ri-esegui `npm run build` e committa anche la cartella `copero-nba/`.
+La build usa `base: './'` con output in `../dream-nba/`: la versione online è disponibile su
+[therealmussi.github.io/Appussi-stock/dream-nba/](https://therealmussi.github.io/Appussi-stock/dream-nba/).
+Dopo ogni modifica ai sorgenti ri-esegui `npm run build` e committa anche la cartella `dream-nba/`.
 
 ## Gameplay
 
@@ -48,6 +48,6 @@ src/
   App.jsx                 # HUD + router delle schermate
 ```
 
-Il motore (`simulationEngine.js`) legge solo dai moduli in `src/data/`: per creare Copero NFL/MLB/NHL basta duplicare
+Il motore (`simulationEngine.js`) legge solo dai moduli in `src/data/`: per creare Dream NFL/MLB/NHL basta duplicare
 `teams.js` e `events.js` con i valori giusti (conferenze, ruoli, premi, `SEASON_GAMES`, `PLAYOFF_ROUNDS`) e riutilizzare
 React/store/scratcher identici.

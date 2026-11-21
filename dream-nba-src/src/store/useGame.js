@@ -6,7 +6,7 @@ import {
 } from '../engine/simulationEngine.js';
 import { GAME } from '../data/events.js';
 
-const SAVE_KEY = 'copero-nba-save-v1';
+const SAVE_KEY = 'dream-nba-save-v1';
 const SAVE_VERSION = 1;
 
 export const initialState = {

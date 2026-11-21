@@ -1,6 +1,6 @@
 // ============================================================
 // DATI: franchigie NBA
-// Per creare Copero NFL/MLB/NHL basta duplicare questo file
+// Per creare Dream NFL/MLB/NHL basta duplicare questo file
 // (id, nome, colori, rating base 60-99). Il motore non conosce
 // nulla di specifico del basket: consuma solo questi campi.
 // ============================================================

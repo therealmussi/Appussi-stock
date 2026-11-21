@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Wheel from '../components/Wheel.jsx';
-import { Crest } from '../components/ui.jsx';
+import { Crest, Chip } from '../components/ui.jsx';
 import { teamTier } from '../data/teams.js';
 
 export default function FaSpin({ offers, onDone }) {
