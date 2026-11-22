@@ -132,6 +132,7 @@ export class UI {
       g().save.chapter = 0;
       g().save.completed = [false, false, false, false, false, false, false, false];
       g().save.persist();
+      this.hideScreens();
       this.runIntro(() => g().startLevel(0));
     });
     $('btn-continue').addEventListener('click', () => {
