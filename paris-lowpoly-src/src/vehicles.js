@@ -666,7 +666,8 @@ function updateWanted(G, dt) {
     if (!w.lock) {
       let minD = Infinity;
       for (const v of police) minD = Math.min(minD, dist2d(v.pos.x, v.pos.z, px, pz));
-      if (minD > 75 || police.length === 0) {
+      const spawnedAgo = G.elapsed - (w.lastSpawn || 0);
+      if ((minD > 75 || police.length === 0) && spawnedAgo > 6) {
         w.evadeT += dt;
         if (w.evadeT > 6) {
           w.heat = 0; w.stars = 0; w.evadeT = 0;

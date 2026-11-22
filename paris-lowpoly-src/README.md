@@ -27,7 +27,7 @@ npm run preview     # serve la cartella dist/ su http://localhost:4173
 | `W A S D` | Muoviti a piedi / guida |
 | `SHIFT` | Scatto (a piedi) |
 | `E` oppure `F` | Entra / esci dal veicolo (anche auto in traffico) |
-| `SPAZIO` | Freno a mano (derapata) |
+| `SPAZIO` | Salto (a piedi) / Freno a mano - derapata (in auto) |
 | `H` | Clacson |
 | `R` | Radio di bordo: spenta → French Touch Electro → Classica Parigina |
 | `MOUSE` | Rotazione telecamera in terza persona |
