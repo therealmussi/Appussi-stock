@@ -1,7 +1,8 @@
 /* ui.js — DOM overlays: menus, HUD, prompts, subtitles, fades, title cards,
    chapter select, settings, credits, ending sequence. */
 
-const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id) ||
+  Object.assign(document.createElement('span'), { id, style: 'display:none' });
 
 export class UI {
   constructor(game) {
@@ -132,6 +133,7 @@ export class UI {
       g().save.chapter = 0;
       g().save.completed = [false, false, false, false, false, false, false, false];
       g().save.persist();
+      this.hideScreens();
       this.runIntro(() => g().startLevel(0));
     });
     $('btn-continue').addEventListener('click', () => {
