@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE IMPOSSIBLE ROOM</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<canvas id="game-canvas"></canvas>
+
+<!-- persistent overlays -->
+<div id="vignette"></div>
+<div id="fade"></div>
+<div id="ending-white"></div>
+<div id="ending-card"></div>
+<div id="intro"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="crosshair"><span></span><span></span></div>
+  <div id="prompt"></div>
+</div>
+<div id="subtitle"></div>
+<div id="tape-indicator"><span>●</span> TAPE</div>
+<div id="titlecard"><div id="titlecard-name"></div><div id="titlecard-sub"></div></div>
+<div id="click-to-play">CLICK TO SURVEY&nbsp;&nbsp;—&nbsp;&nbsp;W A S D move · mouse look · E interact · SPACE jump · SHIFT run · ESC pause</div>
+
+<!-- MENUS -->
+<div id="screen-main" class="screen">
+  <div class="menu-box">
+    <div id="main-eyebrow">A SURVEY IN EIGHT ROOMS</div>
+    <h1 class="title">THE<br>IMPOSSIBLE<br>ROOM</h1>
+    <div id="main-subtitle">it measures you while you measure it</div>
+    <div class="menu-list">
+      <button id="btn-new" class="mbtn">NEW GAME</button>
+      <button id="btn-continue" class="mbtn">CONTINUE</button>
+      <button id="btn-chapters" class="mbtn">CHAPTERS</button>
+      <button id="btn-settings" class="mbtn">SETTINGS</button>
+      <button id="btn-credits" class="mbtn">CREDITS</button>
+    </div>
+    <div class="menu-foot">headphones recommended — sound is procedural, nothing is loaded</div>
+  </div>
+</div>
+
+<div id="screen-chapters" class="screen">
+  <div class="panel">
+    <h2>CHAPTERS</h2>
+    <div id="chapters-tapes" class="muted-line">Recordings 0 / 11</div>
+    <div id="chapter-grid"></div>
+    <button id="btn-chapters-back" class="mbtn small">BACK</button>
+  </div>
+</div>
+
+<div id="screen-settings" class="screen">
+  <div class="panel">
+    <h2>SETTINGS</h2>
+    <div class="set-row"><label>Mouse sensitivity</label>
+      <input type="range" id="set-sens" min="0.2" max="2.5" step="0.05" value="1"><span id="set-sens-val"></span></div>
+    <div class="set-row"><label>Master volume</label>
+      <input type="range" id="set-master" min="0" max="1" step="0.05" value="0.8"><span id="set-master-val"></span></div>
+    <div class="set-row"><label>Music volume</label>
+      <input type="range" id="set-music" min="0" max="1" step="0.05" value="0.7"><span id="set-music-val"></span></div>
+    <div class="set-row"><label>Sound effects</label>
+      <input type="range" id="set-sfx" min="0" max="1" step="0.05" value="0.9"><span id="set-sfx-val"></span></div>
+    <div class="set-row"><label>Graphics quality</label>
+      <select id="set-quality">
+        <option value="low">LOW</option>
+        <option value="medium" selected>MEDIUM</option>
+        <option value="high">HIGH</option>
+      </select></div>
+    <div class="set-row"><label>Fullscreen</label>
+      <button id="set-fullscreen" class="mbtn small">TOGGLE FULLSCREEN</button></div>
+    <button id="btn-settings-back" class="mbtn small">BACK</button>
+  </div>
+</div>
+
+<div id="screen-credits" class="screen">
+  <div class="panel">
+    <h2>CREDITS</h2>
+    <div class="credits-body">
+      <p><span>Design · Engineering · Procedural art &amp; sound</span><br>THE IMPOSSIBLE ROOM working group</p>
+      <p><span>Engine</span><br>Hand-written WebGL — one file of math, one of light.<br>Geometry is generated, not downloaded.</p>
+      <p><span>Audio</span><br>Every sound is synthesized. There are no files here either.</p>
+      <p><span>With thanks to</span><br>surveyors, cartographers of impossible hallways,<br>and everyone who knocked on the wrong wall first.</p>
+      <p class="muted-line">No rooms were harmed. Some rooms were relocated.</p>
+    </div>
+    <button id="btn-credits-back" class="mbtn small">BACK</button>
+  </div>
+</div>
+
+<div id="screen-pause" class="screen">
+  <div class="panel">
+    <h2>PAUSED</h2>
+    <div class="menu-list">
+      <button id="btn-resume" class="mbtn">RESUME</button>
+      <button id="btn-restart" class="mbtn">RESTART LEVEL</button>
+      <button id="btn-pause-settings" class="mbtn">SETTINGS</button>
+      <button id="btn-quit" class="mbtn">MAIN MENU</button>
+    </div>
+    <div id="pause-tapes" class="muted-line"></div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
