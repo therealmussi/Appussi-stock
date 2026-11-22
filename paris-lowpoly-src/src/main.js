@@ -25,6 +25,51 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x8fc3e8);
 scene.fog = new THREE.Fog(0x8fc3e8, 130, 420);
 
+// Cupola del cielo con gradiente + stelle notturne (segue la camera)
+const skyMat = new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false,
+  uniforms: {
+    top: { value: new THREE.Color(0x2b6bd8) },
+    bottom: { value: new THREE.Color(0xbfd8ff) },
+    offset: { value: 40 },
+    exponent: { value: 0.65 }
+  },
+  vertexShader: `
+    varying vec3 vWorldPosition;
+    void main() {
+      vec4 wp = modelMatrix * vec4(position, 1.0);
+      vWorldPosition = wp.xyz;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }`,
+  fragmentShader: `
+    uniform vec3 top;
+    uniform vec3 bottom;
+    uniform float offset;
+    uniform float exponent;
+    varying vec3 vWorldPosition;
+    void main() {
+      float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;
+      gl_FragColor = vec4(mix(bottom, top, pow(max(h, 0.0), exponent)), 1.0);
+    }`
+});
+const sky = new THREE.Mesh(new THREE.SphereGeometry(600, 24, 12), skyMat);
+scene.add(sky);
+
+const starGeo = new THREE.BufferGeometry();
+{
+  const sp = [];
+  for (let i = 0; i < 500; i++) {
+    const th = Math.random() * Math.PI * 2;
+    const ph = Math.acos(Math.random() * 0.75);
+    const r = 560;
+    sp.push(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph), r * Math.sin(ph) * Math.sin(th));
+  }
+  starGeo.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
+}
+const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 1.6, transparent: true, opacity: 0 });
+const stars = new THREE.Points(starGeo, starMat);
+sky.add(stars);
+
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.5, 900);
 camera.position.set(20, 8, 90);
 
@@ -44,7 +89,7 @@ scene.add(sun.target);
 // stato condiviso del gioco
 const G = {
   renderer, scene, camera,
-  keys: {}, keysPressed: {},
+  keys: {}, keysPressed: {}, sky, skyMat, starMat,
   elapsed: 0, clockTime: 0.36, night: false,
   money: 500,
   wanted: { stars: 0, heat: 0, evadeT: 0, lock: false, lockStars: 0, lastSpawn: 0 },
@@ -124,7 +169,11 @@ addEventListener('resize', () => {
 const skyNight = new THREE.Color(0x0b1026);
 const skyDay = new THREE.Color(0x8fc3e8);
 const skySunset = new THREE.Color(0xe08a5a);
+const skyNightTop = new THREE.Color(0x060a1c);
+const skyDayTop = new THREE.Color(0x2b6bd8);
+const skySunsetTop = new THREE.Color(0x5a4d8a);
 const tmpColor = new THREE.Color();
+const tmpSkyTop = new THREE.Color();
 
 function updateDayNight(dt) {
   G.clockTime = (G.clockTime + dt / C.DAY_LENGTH) % 1;
@@ -147,12 +196,17 @@ function updateDayNight(dt) {
   }
   hemi.intensity = 0.22 + dayF * 0.6;
 
+  tmpSkyTop.copy(skyNightTop).lerp(skyDayTop, dayF);
+  tmpSkyTop.lerp(skySunsetTop, sunsetF * 0.5);
   tmpColor.copy(skyNight).lerp(skyDay, dayF);
   tmpColor.lerp(skySunset, sunsetF * 0.55);
+  G.skyMat.uniforms.top.value.copy(tmpSkyTop);
+  G.skyMat.uniforms.bottom.value.copy(tmpColor);
   scene.background.copy(tmpColor);
   scene.fog.color.copy(tmpColor);
   scene.fog.near = 90 + dayF * 60;
   scene.fog.far = 260 + dayF * 220;
+  G.starMat.opacity = (1 - dayF) * 0.9;
 
   G.night = dayF < 0.55;
   if (G.matLampHead) G.matLampHead.emissiveIntensity = G.night ? 1.6 : 0;
@@ -184,8 +238,11 @@ function animate() {
 
     G.audio.update(G, dt);
     G.ui.update();
+
+    for (const k in G.keysPressed) delete G.keysPressed[k];
   }
 
+  G.sky.position.copy(camera.position);
   renderer.render(scene, camera);
 }
 animate();

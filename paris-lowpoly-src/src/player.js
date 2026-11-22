@@ -35,6 +35,7 @@ export function initPlayer(G) {
     heading: Math.PI, moveSpeed: 0,
     vehicle: null, enterCd: 0, knock: 0, camYaw: Math.PI, camPitch: 0.32,
     camIdle: 0, baseY: 0.12, legs: [legL, legR], arms: [armL, armR],
+    vy: 0, jumpY: 0,
     pos3: new THREE.Vector3()
   };
 
@@ -81,6 +82,14 @@ function footStep(G, dt) {
   if (G.keys['a'] || G.keys['arrowleft']) mx -= 1;
   if (G.keys['d'] || G.keys['arrowright']) mx += 1;
   const moving = mx !== 0 || mz !== 0;
+
+  // salto (Spazio quando sei a piedi)
+  if (G.keysPressed[' '] && p.jumpY <= 0.01 && p.knock <= 0) p.vy = 5.2;
+  if (p.jumpY > 0 || p.vy !== 0) {
+    p.vy -= 11 * dt;
+    p.jumpY = Math.max(0, p.jumpY + p.vy * dt);
+    if (p.jumpY === 0) p.vy = 0;
+  }
 
   if (moving && p.knock <= 0) {
     const camYaw = p.camYaw;
@@ -135,7 +144,7 @@ function footStep(G, dt) {
   p.arms[0].rotation.x = -sw * 0.7;
   p.arms[1].rotation.x = sw * 0.7;
 
-  p.mesh.position.set(p.pos.x, 0.12, p.pos.z);
+  p.mesh.position.set(p.pos.x, 0.12 + p.jumpY, p.pos.z);
   p.mesh.rotation.y = p.heading;
 }
 
@@ -167,6 +176,7 @@ export function enterVehicle(G, v) {
     G.missions.onCarjack(G);
   }
   v.role = 'player';
+  v.push.x = 0; v.push.z = 0;
   v.vL *= 0.5;
   p.vehicle = v;
   p.mesh.visible = false;
