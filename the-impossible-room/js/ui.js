@@ -1,7 +1,8 @@
 /* ui.js — DOM overlays: menus, HUD, prompts, subtitles, fades, title cards,
    chapter select, settings, credits, ending sequence. */
 
-const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id) ||
+  Object.assign(document.createElement('span'), { id, style: 'display:none' });
 
 export class UI {
   constructor(game) {
