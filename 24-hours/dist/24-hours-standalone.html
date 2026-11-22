@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>24 HOURS — Vespera</title>
+<style>
+/* ================= 24 HOURS — visual identity ================= */
+:root{
+  --ink:#e8e4da; --dim:#9a948a; --line:#2a2e3a; --panel:#12151d; --panel2:#0c0f16;
+  --gold:#ffb454; --accent:#ffb454; --bg0:#0a0c12; --bg1:#10131c; --good:#7ec8a0; --bad:#e0705e;
+  font-size:16px;
+}
+body[data-phase="morning"]  { --accent:#ffcf7d; --bg0:#171310; --bg1:#1e1a16; }
+body[data-phase="afternoon"]{ --accent:#d8d3c4; --bg0:#121317; --bg1:#171a21; }
+body[data-phase="evening"]  { --accent:#ff9448; --bg0:#191018; --bg1:#221420; }
+body[data-phase="night"]    { --accent:#6f9bd6; --bg0:#06070c; --bg1:#0b0e18; }
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background:linear-gradient(160deg,var(--bg0),var(--bg1) 70%);
+  color:var(--ink);
+  font-family:"Segoe UI", system-ui, -apple-system, sans-serif;
+  transition: background 2s ease, color 2s ease;
+  overflow:hidden;
+  user-select:none;
+}
+.hidden{display:none !important;}
+.dim{color:var(--dim);}
+.btn{
+  background:transparent; color:var(--ink); border:1px solid var(--line);
+  padding:.55rem 1rem; font:inherit; letter-spacing:.08em; cursor:pointer;
+  text-transform:uppercase; font-size:.78rem; border-radius:3px;
+  transition:all .15s ease; position:relative;
+}
+.btn:hover:not(:disabled){ border-color:var(--accent); color:var(--accent); }
+.btn:disabled{ opacity:.35; cursor:default; }
+.btn-gold{ border-color:var(--gold); color:var(--gold); }
+.btn-gold:hover{ background:var(--gold); color:#0a0c12; }
+.btn-lg{ display:block; width:280px; margin:.45rem auto; padding:.7rem 1rem; font-size:.85rem; }
+.btn-icon{ width:38px; height:34px; padding:.2rem; font-size:.95rem; }
+.men-note{display:block; font-size:.6rem; letter-spacing:.15em; color:var(--dim); text-transform:uppercase; margin-top:2px;}
+
+/* ---------- screens ---------- */
+.screen{position:absolute; inset:0; display:flex; flex-direction:column;}
+
+/* ---------- main menu ---------- */
+#screen-menu{ align-items:center; justify-content:center; }
+.menu-bg{
+  position:absolute; inset:0; opacity:.9;
+  background:
+    radial-gradient(1200px 500px at 70% 110%, rgba(255,148,72,.14), transparent 60%),
+    radial-gradient(900px 400px at 20% -10%, rgba(111,155,214,.10), transparent 60%),
+    linear-gradient(180deg,#06070c,#101321 55%,#1a141c);
+}
+.menu-bg::after{
+  content:""; position:absolute; inset:0;
+  background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 1px, transparent 1px 3px);
+  pointer-events:none;
+}
+.menu-inner{ position:relative; text-align:center; z-index:1; }
+.menu-clock{
+  font-family:"Consolas","Menlo",monospace; font-size:3.4rem; letter-spacing:.18em;
+  color:var(--gold); text-shadow:0 0 24px rgba(255,180,84,.35); margin-bottom:.2rem;
+  animation:clockPulse 4s ease-in-out infinite;
+}
+@keyframes clockPulse{ 0%,100%{opacity:.85;} 50%{opacity:1;} }
+.menu-title{ font-weight:200; font-size:2.6rem; letter-spacing:.55em; text-indent:.55em; color:var(--ink); }
+.menu-sub{ color:var(--dim); letter-spacing:.22em; text-transform:uppercase; font-size:.68rem; margin:.5rem 0 2rem; }
+.menu-hint{ color:var(--dim); font-size:.72rem; font-style:italic; margin-top:2.2rem; letter-spacing:.06em;}
+
+/* ---------- HUD ---------- */
+#hud{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:.55rem 1rem; border-bottom:1px solid var(--line);
+  background:rgba(8,10,15,.72); backdrop-filter:blur(6px); z-index:5;
+}
+.hud-left{ display:flex; gap:.9rem; align-items:center; }
+#hud-clock{
+  font-family:"Consolas",monospace; font-size:1.9rem; letter-spacing:.1em; color:var(--accent);
+  text-shadow:0 0 14px color-mix(in srgb, var(--accent) 40%, transparent); min-width:110px;
+}
+#hud-date{ font-size:.6rem; letter-spacing:.22em; color:var(--dim); }
+#hud-phase{ font-size:.66rem; letter-spacing:.34em; text-transform:uppercase; color:var(--accent); }
+.hud-center{ flex:1; max-width:560px; }
+.hud-bar{ height:8px; background:#05060a; border:1px solid var(--line); border-radius:4px; position:relative; overflow:hidden;}
+#hud-bar-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 55%, #fff0)); transition:width .6s ease; }
+#hud-hazards{ position:absolute; top:0; bottom:0; left:0; right:0; pointer-events:none; }
+#hud-hazards .hz{ position:absolute; top:-1px; bottom:-1px; width:2px; background:var(--bad); box-shadow:0 0 6px var(--bad); opacity:.9; }
+.hud-bar-label{ display:flex; justify-content:space-between; font-size:.58rem; letter-spacing:.16em; color:var(--dim); margin-top:3px; font-family:"Consolas",monospace; }
+.hud-right{ text-align:right; display:flex; gap:.8rem; align-items:center; }
+#hud-location{ font-size:.72rem; letter-spacing:.28em; text-transform:uppercase; color:var(--ink); }
+.hud-btns{ display:flex; gap:.35rem; }
+
+/* ---------- game body ---------- */
+#game-body{ flex:1; display:grid; grid-template-columns: 360px 1fr 300px; min-height:0; }
+#panel-map{ display:flex; flex-direction:column; border-right:1px solid var(--line); min-height:0;}
+#map-wrap{ flex:1; min-height:0; padding:8px; }
+#map{ width:100%; height:100%; }
+#map-side{ border-top:1px solid var(--line); padding:.7rem .9rem; min-height:110px; }
+#map-side-info{ font-size:.8rem; line-height:1.5; min-height:64px; color:var(--ink);}
+#map-side-info b{ color:var(--accent); }
+#btn-go{ margin-top:.5rem; width:100%; }
+
+#panel-scene{ display:flex; flex-direction:column; min-height:0; overflow:hidden;}
+#scene-head{ padding:1rem 1.4rem .2rem; }
+#scene-loc-name{ font-size:1.25rem; font-weight:600; letter-spacing:.34em; text-transform:uppercase; }
+#scene-loc-hours{ font-size:.66rem; letter-spacing:.2em; margin-top:2px; font-family:"Consolas",monospace;}
+#scene-desc{ padding:.8rem 1.4rem; color:var(--dim); font-size:.86rem; line-height:1.65; max-width:70ch; font-style:italic;}
+#scene-people{ padding:0 1.4rem; display:flex; flex-wrap:wrap; gap:.5rem; }
+.person-chip{ border:1px solid var(--line); border-left:3px solid var(--accent); padding:.3rem .6rem; font-size:.7rem; letter-spacing:.1em; border-radius:3px; background:rgba(255,255,255,.02); }
+#scene-actions{ padding:.9rem 1.2rem 1.4rem; overflow-y:auto; display:flex; flex-direction:column; gap:.5rem;}
+.action{
+  border:1px solid var(--line); background:rgba(255,255,255,.02); border-radius:4px;
+  padding:.6rem .9rem; cursor:pointer; transition:all .13s ease; display:flex; justify-content:space-between; gap:1rem; align-items:baseline;
+}
+.action:hover:not(.locked){ border-color:var(--accent); background:rgba(255,180,84,.05); }
+.action.locked{ opacity:.4; cursor:default; }
+.action .a-label{ font-size:.85rem; letter-spacing:.05em; }
+.action .a-sub{ display:block; font-size:.68rem; color:var(--dim); margin-top:2px; font-style:italic;}
+.action .a-cost{ font-family:"Consolas",monospace; color:var(--accent); font-size:.72rem; white-space:nowrap; letter-spacing:.05em;}
+.action.special{ border-left:3px solid var(--gold); }
+.action.person{ border-left:3px solid #7ec8a0; }
+.action .rel{ color:#7ec8a0; font-size:.6rem; letter-spacing:.15em;}
+
+#panel-side{ display:flex; flex-direction:column; border-left:1px solid var(--line); min-height:0;}
+.side-box{ padding:.8rem 1rem; border-bottom:1px solid var(--line);}
+.side-box.grow{ flex:1; min-height:0; display:flex; flex-direction:column;}
+.side-box h3{ font-size:.6rem; letter-spacing:.34em; color:var(--dim); text-transform:uppercase; margin-bottom:.6rem; font-weight:600;}
+#objectives{ font-size .78rem; font-size:.78rem; line-height:1.7;}
+.obj{ display:flex; gap:.5rem; align-items:baseline; margin-bottom:.35rem;}
+.obj .dot{ color:var(--accent); }
+.obj.done{ color:var(--dim); text-decoration:line-through; }
+#feed{ flex:1; overflow-y:auto; font-size:.74rem; line-height:1.55; }
+.feed-item{ padding:.35rem 0; border-bottom:1px dashed #1c202b; animation:feedIn .4s ease; }
+.feed-item .ft{ color:var(--accent); font-family:"Consolas",monospace; font-size:.64rem; letter-spacing:.1em; margin-right:.45rem;}
+.feed-item.important{ border-left:2px solid var(--gold); padding-left:.5rem; }
+.feed-item.sys{ color:var(--dim); }
+@keyframes feedIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1;} }
+
+/* ---------- overlays ---------- */
+.overlay{
+  position:absolute; inset:0; background:rgba(4,5,9,.82); z-index:40;
+  display:flex; align-items:center; justify-content:center; padding:2rem;
+  animation:fade .3s ease;
+}
+@keyframes fade{ from{opacity:0} to{opacity:1} }
+#overlay-box{
+  background:var(--panel2); border:1px solid var(--line); border-radius:6px;
+  width:min(680px, 94vw); max-height:92vh; overflow-y:auto; padding:1.6rem 1.9rem;
+  box-shadow:0 20px 80px rgba(0,0,0,.6); animation:pop .25s ease;
+}
+@keyframes pop{ from{transform:translateY(10px); opacity:0} to{transform:none; opacity:1} }
+.ov-kicker{ font-size:.6rem; letter-spacing:.34em; color:var(--accent); text-transform:uppercase; margin-bottom:.7rem;}
+.ov-title{ font-size:1.25rem; letter-spacing:.2em; text-transform:uppercase; margin-bottom:.9rem; font-weight:600;}
+.ov-text{ font-size:.9rem; line-height:1.75; color:var(--ink); margin-bottom:1.1rem; white-space:pre-wrap; }
+.ov-text .dim{ font-style:italic;}
+.ov-time{ font-family:"Consolas",monospace; color:var(--accent); font-size:.72rem; letter-spacing:.15em; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:.45rem 0; margin-bottom:1rem;}
+.ov-opts{ display:flex; flex-direction:column; gap:.55rem; }
+.ov-opt{
+  border:1px solid var(--line); padding:.7rem .9rem; border-radius:4px; cursor:pointer;
+  display:flex; justify-content:space-between; gap:1rem; align-items:center; transition:all .13s ease; background:rgba(255,255,255,.02);
+}
+.ov-opt:hover{ border-color:var(--accent); }
+.ov-opt main{ font-size:.85rem; }
+.ov-opt small{ display:block; color:var(--dim); margin-top:2px; font-size:.68rem;}
+.ov-opt .a-cost{ font-family:"Consolas",monospace; color:var(--accent); font-size:.72rem; white-space:nowrap;}
+.ov-result{ border-left:3px solid var(--gold); background:rgba(255,180,84,.04); padding:1rem; font-size:.9rem; line-height:1.7; white-space:pre-wrap;}
+.ov-continue{ margin-top:1.1rem; width:100%; }
+.deadline-note{ color:var(--bad); font-size:.7rem; letter-spacing:.1em; margin-top:.8rem; font-family:"Consolas",monospace; }
+
+/* ---------- ending screen ---------- */
+.ending .ov-title{ font-size:1.7rem; letter-spacing:.4em; }
+.ending-id{ font-family:"Consolas",monospace; color:var(--accent); font-size:.72rem; letter-spacing:.3em; margin-bottom:.4rem;}
+.ending-stats{ border:1px solid var(--line); border-radius:4px; padding: .8rem 1rem; font-size:.78rem; line-height:1.8; margin-bottom:1rem;}
+.missed-list{ font-size:.76rem; color:var(--dim); line-height:1.7; max-height:180px; overflow-y:auto; border-top:1px dashed var(--line); padding-top:.6rem; margin-top:.6rem;}
+.missed-list li{ margin-left:1.1rem; margin-bottom:.2rem;}
+.epi-chars{ font-size:.8rem; line-height:1.8; margin-bottom:1rem; color:var(--dim);}
+.epi-chars b{ color:var(--ink); font-weight:600;}
+
+/* ---------- phone ---------- */
+.phone{ width:min(400px,92vw); margin:0 auto; }
+.phone-screen{ background:#0a0d13; border:1px solid var(--line); border-radius:18px; padding:1rem; min-height:480px; display:flex; flex-direction:column; }
+.phone-topbar{ display:flex; justify-content:space-between; align-items:center; font-family:"Consolas",monospace; font-size:.7rem; color:var(--accent); letter-spacing:.15em; padding-bottom:.6rem; border-bottom:1px solid var(--line); }
+.phone-tabs{ display:flex; gap:.3rem; margin:.7rem 0; }
+.phone-tab{ flex:1; text-align:center; font-size:.62rem; letter-spacing:.15em; text-transform:uppercase; padding:.4rem 0; border:1px solid var(--line); border-radius:3px; cursor:pointer; color:var(--dim);}
+.phone-tab.on{ color:var(--accent); border-color:var(--accent); }
+.phone-body{ flex:1; overflow-y:auto; min-height:0;}
+.contact-row{ display:flex; justify-content:space-between; align-items:center; padding:.6rem .4rem; border-bottom:1px solid #14171f; cursor:pointer; }
+.contact-row:hover{ background:rgba(255,255,255,.03); }
+.contact-row .c-avatar{ width:30px; height:30px; border-radius:50%; border:1px solid var(--line); display:inline-flex; align-items:center; justify-content:center; font-size:.7rem; margin-right:.6rem; background:#11141c; color:var(--accent); font-family:monospace;}
+.contact-row .c-name{ font-size:.8rem; }
+.contact-row .c-sub{ font-size:.62rem; color:var(--dim); }
+.thread-msgs{ padding:.5rem .2rem; display:flex; flex-direction:column; gap:.45rem; }
+.msg-b{ max-width:80%; padding:.5rem .7rem; border-radius:10px; font-size:.78rem; line-height:1.5; }
+.msg-b.them{ background:#161a24; align-self:flex-start; border-bottom-left-radius:2px;}
+.msg-b.me{ background:#23303f; align-self:flex-end; border-bottom-right-radius:2px;}
+.msg-b .mt{ display:block; font-family:"Consolas",monospace; font-size:.58rem; color:var(--dim); margin-bottom:2px;}
+.callrow{ font-size:.74rem; padding:.45rem .3rem; border-bottom:1px solid #14171f; display:flex; justify-content:space-between;}
+.callrow .mt{ font-family:"Consolas",monospace; color:var(--dim); font-size:.62rem;}
+.c-actions{ margin-top:.7rem; display:flex; gap:.5rem;}
+
+/* ---------- journal ---------- */
+.journal-note{ border-left:3px solid var(--line); padding:.5rem .8rem; margin-bottom:.7rem; font-size:.8rem; line-height:1.6;}
+.journal-note b{ color:var(--accent); display:block; font-size:.68rem; letter-spacing:.18em; text-transform:uppercase; margin-bottom:.2rem;}
+.journal-note.memory{ border-left-color:#7ec8a0; }
+.char-card{ border:1px solid var(--line); border-radius:4px; padding:.7rem .9rem; margin-bottom:.7rem; font-size:.78rem; line-height:1.6;}
+.char-card h4{ letter-spacing:.2em; font-size:.8rem; }
+.char-card .cc-loc{ color:var(--accent); font-size:.66rem; letter-spacing:.15em; font-family:"Consolas",monospace; margin:.25rem 0;}
+.char-card .cc-bio{ color:var(--dim); }
+.hypo{ border-left:3px solid var(--gold); background:rgba(255,180,84,.04); padding:.55rem .8rem; margin-bottom:.5rem; font-size:.78rem; line-height:1.6; }
+
+/* ---------- toast ---------- */
+#toast-zone{ position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:80; display:flex; flex-direction:column; gap:.4rem; align-items:center;}
+.toast{ background:#0c0f16; border:1px solid var(--accent); color:var(--ink); font-size:.76rem; padding:.55rem 1.1rem; border-radius:4px; letter-spacing:.05em; box-shadow:0 6px 30px rgba(0,0,0,.6); animation:pop .3s ease;}
+.toast.bad{ border-color:var(--bad);}
+
+/* intro cinematic */
+#intro-lines{ max-height:52vh; overflow-y:auto; }
+.intro-line{ font-size:.92rem; line-height:1.9; margin-bottom:.7rem; animation:feedIn .5s ease; }
+.intro-line.speaker{ font-family:"Consolas",monospace; color:var(--accent); font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; }
+.intro-line.sys{ color:var(--dim); font-style:italic; font-size:.8rem;}
+
+/* settings rows */
+.set-row{ display:flex; justify-content:space-between; align-items:center; padding:.6rem 0; border-bottom:1px solid var(--line); font-size:.82rem;}
+.set-row .note{ color:var(--dim); font-size:.68rem;}
+::-webkit-scrollbar{ width:8px; } ::-webkit-scrollbar-thumb{ background:#22262f; border-radius:4px;}
+@media (max-width:1100px){ #game-body{ grid-template-columns: 280px 1fr 240px;} }
+
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230c0f16'/><text x='16' y='22' font-size='14' font-family='monospace' fill='%23ffb454' text-anchor='middle'>24</text></svg>">
+</head>
+<body data-phase="morning">
+
+<!-- ======= MAIN MENU ======= -->
+<div id="screen-menu" class="screen">
+  <div class="menu-bg"></div>
+  <div class="menu-inner">
+    <div class="menu-clock" id="menu-clock">08:00</div>
+    <h1 class="menu-title">24 HOURS</h1>
+    <p class="menu-sub">A day in Vespera. The world does not wait for you.</p>
+    <div class="menu-buttons">
+      <button id="btn-new" class="btn btn-lg">NEW GAME</button>
+      <button id="btn-continue" class="btn btn-lg hidden">CONTINUE</button>
+      <button id="btn-newdayplus" class="btn btn-lg btn-gold hidden">NEW DAY+ <span class="men-note">keep your journal</span></button>
+      <button id="btn-archive" class="btn btn-lg">DAY ARCHIVE</button>
+      <button id="btn-settings" class="btn btn-lg">SETTINGS</button>
+      <button id="btn-credits" class="btn btn-lg">CREDITS</button>
+    </div>
+    <p class="menu-hint">Every action takes time. Every decision means giving up another possibility.</p>
+  </div>
+</div>
+
+<!-- ======= GAME SCREEN ======= -->
+<div id="screen-game" class="screen hidden">
+  <header id="hud">
+    <div class="hud-left">
+      <div id="hud-clock">08:00</div>
+      <div>
+        <div id="hud-date">THURSDAY · 12 OCTOBER</div>
+        <div id="hud-phase">MORNING</div>
+      </div>
+    </div>
+    <div class="hud-center">
+      <div class="hud-bar">
+        <div id="hud-bar-fill"></div>
+        <div id="hud-hazards"></div>
+      </div>
+      <div class="hud-bar-label"><span id="hud-elapsed">08:00</span><span id="hud-remaining">16H 00M LEFT</span><span>00:00</span></div>
+    </div>
+    <div class="hud-right">
+      <div id="hud-location">APARTMENT</div>
+      <div class="hud-btns">
+        <button id="btn-phone" class="btn btn-icon" title="Phone">▤</button>
+        <button id="btn-journal" class="btn btn-icon" title="Journal">✎</button>
+        <button id="btn-pause" class="btn btn-icon" title="Pause">‖</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="game-body">
+    <section id="panel-map">
+      <div id="map-wrap">
+        <svg id="map" viewBox="0 0 420 460" preserveAspectRatio="xMidYMid meet">
+          <!-- background layers are injected by ui.js -->
+          <g id="map-river"></g>
+          <g id="map-roads"></g>
+          <g id="map-districts"></g>
+          <g id="map-markers"></g>
+          <g id="map-labels"></g>
+        </svg>
+      </div>
+      <div id="map-side">
+        <div id="map-side-info">Select a district to see travel time.</div>
+        <button id="btn-go" class="btn hidden">TRAVEL</button>
+      </div>
+    </section>
+
+    <section id="panel-scene">
+      <div id="scene-head">
+        <div id="scene-loc-name"></div>
+        <div id="scene-loc-hours" class="dim"></div>
+      </div>
+      <div id="scene-desc"></div>
+      <div id="scene-people"></div>
+      <div id="scene-actions"></div>
+    </section>
+
+    <section id="panel-side">
+      <div class="side-box">
+        <h3>ACTIVE THREAD</h3>
+        <div id="objectives"></div>
+      </div>
+      <div class="side-box grow">
+        <h3>CITY FEED</h3>
+        <div id="feed"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ======= OVERLAYS ======= -->
+<div id="overlay" class="overlay hidden"><div id="overlay-box"></div></div>
+<div id="toast-zone"></div>
+
+<script>
+/* ============================================================
+   24 HOURS — game data: city, characters, clues
+   ============================================================ */
+"use strict";
+
+const DATA = {};
+
+/* ---- time helpers (minutes since 00:00) ---- */
+function h(hh, mm) { return hh * 60 + (mm || 0); }
+function fmt(min) {
+  if (min >= 1440) return "24:00";
+  const hh = Math.floor(min / 60), mm = Math.floor(min % 60);
+  return String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+}
+
+/* ---- travel time matrix (minutes, symmetric) ---- */
+DATA.MATRIX = {
+  apartment: { station: 12, oldtown: 18, business: 25, riverside: 15, industrial: 35 },
+  station:   { oldtown: 10, business: 15, riverside: 20, industrial: 30 },
+  oldtown:   { business: 12, riverside: 15, industrial: 25 },
+  business:  { riverside: 15, industrial: 20 },
+  riverside: { industrial: 25 },
+  industrial:{}
+};
+
+DATA.LOCATIONS = {
+  apartment: {
+    name: "The Apartment",
+    area: "Venskaya Hill",
+    hoursLabel: "HOME · ALWAYS OPEN",
+    desc: {
+      morning: "Grey light through the blinds. The kettle you never replaced hums. Alex's hoodie is still on the chair where he threw it last month, before the argument you never really finished.",
+      afternoon: "Dust drifts in the afternoon light. The apartment is quiet, full of the day you are not spending anywhere else.",
+      evening: "The window holds Vespera's lights at arm's length. From up here the city looks like a circuit board of obligations.",
+      night: "The street lamp flicks shadows across the ceiling. Midnight is a finish line, and you can feel the hours thinning."
+    }
+  },
+  station: {
+    name: "Central Station",
+    area: "Transit Hub",
+    hoursLabel: "HALLS 05:00–24:00 · LOCKER HALL 06:00–22:00",
+    lockers: [h(6,0), h(22,0)],
+    desc: {
+      morning: "Announcements stack over announcements. Commuters pour down the escalators in slow grey rivers. The 10:30 from the Capital sits on the departures board.",
+      afternoon: "The hall breathes out. Tourists photograph the Art Nouveau clock, pigeons audit the floor. The locker hall hums like a beehive of small metal secrets.",
+      evening: "Shift workers, one evening departure, a janitor's wide slow mop. The board lists one train to Kyrdal at 19:20, mostly empty.",
+      night: "The vapour lamps make the marble glisten as if wet. A last train sighs somewhere far off. Almost nobody is left to arrive."
+    }
+  },
+  oldtown: {
+    name: "The Old Town",
+    area: "Historic Quarter",
+    hoursLabel: "CAFÉ HALCYON 07:00–20:00 · PAWNSHOP 10:00–20:00",
+    hours: [h(0), h(23,59)],
+    desc: {
+      morning: "Delivery vans quarrel with tram bells. Café Halcyon vents coffee and warm pastry smell across the square. Shutters are still opening down the narrow streets.",
+      afternoon: "Tourists kneel before menus. The pawnshop's little brass bell keeps its laconic appointments. Someone always leaves the fountain square just as you arrive.",
+      evening: "Lanterns come on in stages, as if the streets were being paid one by one. The trattoria glows orange. Halcyon's sign flickers — Mara closes alone at eight.",
+      night: "Empty chair legs, distant laughter, your own footsteps with nowhere to be. Old Town at night is honest about how late it is."
+    }
+  },
+  business: {
+    name: "Business District",
+    area: "Meridian Quays",
+    hoursLabel: "OFFICES 08:30–18:30 · HERALD OFFICE 11:30–21:00",
+    hours: [h(7,30), h(21,0)],
+    desc: {
+      morning: "Glass towers hold the morning sun like accountants. Badges, espresso, the tidal motion of the employed. The Vespera Herald occupies a stubborn old bank building on the corner.",
+      afternoon: "Lunch-hour exodus; ties loosened like a mutual treaty. Inside the lobbies, telephones ring for people who are never there.",
+      evening: "Cleaning crews inherit the corridors. A few offices burn long past the healthy hour. The Herald's window is still lit.",
+      night: "The towers go dark floor by floor, correct to the minute. The district admits it was never really about people."
+    }
+  },
+  riverside: {
+    name: "The Riverside",
+    area: "Vodna Quay",
+    hoursLabel: "HOSPITAL 24H · QUIET QUAYS",
+    hours: [h(0), h(23,59)],
+    desc: {
+      morning: "The river carries the city's morning noise away. Rowers, nurses on early shift, bread crumbs for the swans at the old stone bench.",
+      afternoon: "Warm stone, children racing paper boats. The hospital announces itself only by the ambulance lane and its terrible climate control.",
+      evening: "The water turns to poured copper, then to ink. Lamps on the quay take their posts one by one. The bench faces west; everything here ends facing west.",
+      night: "River mist. Every sound arrives delayed, as if the water were translating it. The swans have moored for the night near the pilings."
+    }
+  },
+  industrial: {
+    name: "Industrial District",
+    area: "Kessler Zone",
+    hoursLabel: "KESSLER LOGISTICS 08:30–18:00 · SCRAPYARD (evening)",
+    hours: [h(6,0), h(23,59)],
+    desc: {
+      morning: "Freight trams and forklifts. Ketl salt dust coats the railings. Kessler Logistics dominates the low skyline with its loading cranes and its confident fence.",
+      afternoon: "Heat off the corrugated steel. Trucks queue at the gate; a guard stamps manifests he does not read.",
+      evening: "The great cranes stand still like folded birds. Sodium lamps over the scrapyard, dogs auditing fences. Time here is measured in shifts, not hours.",
+      night: "No one, on paper, is here at night. The fence hums. The yard lights draw watchful circles on wet gravel. This is where the day hides what it did."
+    }
+  }
+};
+
+/* ---- clues ---- */
+DATA.CLUES = {
+  begin_day:      { cat:"Places", title:"Mysterious call at 08:00", text:"Alex: 'We need to talk. Something happened last night. I can't explain over the phone. Meet me before midnight.' The line died before you said a word." },
+  alex_chat:      { cat:"People", title:"Alex's last messages", text:"23:58 last night, from the apartment computer: '…it wasn't supposed to happen. Not like this. Tomorrow. Before midnight. If I don't call you it's because I can't.'" },
+  bday:           { cat:"People", title:"Alex's birthday", text:"November 23rd. You sang the wrong year two years in a row. As a code order: 23, then 11 → 2311." },
+  jonas_borrowed: { cat:"People", title:"Jonas borrowed money", text:"Two years ago Jonas asked you for 2,000 marks and never mentioned it again. There's a note in your drawer: 'I'll fix it, I promise. Do NOT tell Alex.'" },
+  customs_check:  { cat:"Events", title:"Customs spot-checks", text:"This morning's paper: unannounced customs spot-checks at the freight terminal. Several firms 'in administrative review'. Kessler Logistics is listed only by section number." },
+  devin_mara:     { cat:"People", title:"The man who asked about Alex", text:"Grey coat, broken nose. He pressed Mara about where Alex was last night. Someone called him 'Devin'. A collector who works for Viktor Sera." },
+  jonas_debt_hint:{ cat:"People", title:"Jonas on the phone", text:"Overheard at Meridian's lobby, 11:00: '…I said I'd pay by the 20th… no, not at home… don't call this number again.' He wasn't arguing about a subscription." },
+  lobby_gossip:   { cat:"People", title:"Meridian lobby gossip", text:"A colleague mentioned Jonas has been 'withdrawn' since spring — lost money somewhere, and covers it with overtime." },
+  debt_note:      { cat:"People", title:"Alex and the 2,000 marks", text:"Mara: in spring Alex lent Jonas 2,000 marks — Jonas's 'bank thing'. Alex called it 'the last thing I can do for him.' It was also what they fought about a month ago." },
+  fraud_link:     { cat:"Events", title:"Brandt and Sera", text:"From behind Kessler's fence: Director Brandt handed Viktor Sera a grey envelope. No receipt; manifests stamped and re-stamped in the same minute; customs names crossed out and re-entered. This is what Alex saw." },
+  manifest_seen:  { cat:"Documents", title:"Falsified manifests", text:"Duplicate customs manifests in Alex's handwriting-label folder. Numbers re-stamped in red, consignees crossed out and re-entered, two years of it. Signed strip: 'T. Brandt'. Sera's emblem marks payment dates." },
+  alex_witness:   { cat:"People", title:"Alex saw them", text:"Alex was closing Kessler's yard office at 23:40 last night when Brandt and Sera arrived for an unscheduled drop. He photographed one page from the shadows. His phone died at the worst moment, and he believes Devin caught the screen's glow. He is afraid of exactly the wrong person." },
+  quiet_place:    { cat:"Places", title:"The quiet place", text:"'Where we used to feed them' — the swans' bench on the Vodna quay, Riverside. Alex wants you there at 23:00." },
+  locker_code:    { cat:"Places", title:"Locker 14 · code 2311", text:"Central Station locker hall, box 14. Alex's code, always: his birthday — 23/11 → 2311." },
+  locker_full:    { cat:"Documents", title:"Locker 14 opened", text:"Inside: a folder labelled 'IN CASE I'M WRONG' — the duplicate customs manifests, two photographs of Brandt and Sera in the yard at night, and a clinic receipt: Sofia Lark, 03:12 last night." },
+  brandt_alerted: { cat:"Events", title:"Brandt knows", text:"You showed Brandt the manifests. He smiled, called it 'revised logistics', and made a long calm phone call. You should not have done that." },
+  doc_gone:       { cat:"Documents", title:"Evidence sold", text:"The duplicate manifests now sit in Viktor Sera's drawer, filed as 'acquisitions of the afternoon'. Whatever you tell Alex tonight, the proof is dead." },
+  sofia_night:    { cat:"People", title:"Sofia: 03:12 at the ER", text:"Alex came in last night with a split lip, refused stitches, refused the police. He said: 'If I don't show up, tell them about the quiet place.' He asked what it costs to become untraceable for a week." },
+  elio_favor:     { cat:"Places", title:"Elio owes you one", text:"Elio now opens the locker hall after hours 'for brief technical visits'. A small kindness, remembered." },
+  devin_key:      { cat:"Places", title:"Devin has a brass key", text:"17:30, station locker hall: Devin collected something small and brass from the floor office — a locker key was on the floor. Whose key opens what?" },
+  scrap_won:      { cat:"Places", title:"The brass key", text:"Devin sold you his brass key for a day of your respect and a favor unnamed. Locker 14 no longer needs a code." },
+  mara_favor:     { cat:"People", title:"Delivered Mara's package", text:"You ran Mara's ceremonial tin across to the station before 11:00. Gratitude, in this city, is a currency few can counterfeit." },
+  nadia_interest: { cat:"People", title:"Nadia is interested", text:"Nadia Petrov of the Herald has a two-year file on Kessler 'customs adjustments'. She lacked one thing: a witness with a face, and now a document." },
+  trucks_note:    { cat:"Events", title:"The 14:15 departure", text:"You watched Viktor Sera's old green car pull out of Old Town toward the industrial zone, as regular as a heartbeat." },
+  station_plan_b: { cat:"Places", title:"Mara: 'If things go wrong'", text:"Mara remembered Alex's plan B: 'If anyone's there, he waits inside — station hall, under the departures board, same time. He told me months ago, when he was being followed before.'" }
+};
+
+/* ---- characters ---- */
+/* schedule entry: [fromMin, toMin, loc, talkable, note] */
+DATA.SCHED = {
+  mara: [
+    [h(8,0),  h(8,30),  "apartment", false, "at home, getting ready"],
+    [h(8,30), h(15,0),  "oldtown",  true,  "Café Halcyon — morning shift"],
+    [h(15,0), h(15,40), "oldtown",  true,  "errands around the fountain square"],
+    [h(15,40),h(17,0),  "riverside",true,  "jogging on the quay"],
+    [h(17,0), h(20,0),  "oldtown",  true,  "Café Halcyon — evening shift"],
+    [h(20,0), h(20,45), "oldtown",  true,  "closing the café alone"],
+    [h(20,45),h(24,0),  "riverside",false, "on her way home"]
+  ],
+  sofia: [
+    [h(8,0),  h(8,30),  "station",   true,  "commuting"],
+    [h(8,30), h(14,0),  "riverside", true,  "Vespera Clinic — morning shift"],
+    [h(14,0), h(14,20), "riverside", false, "walking home"],
+    [h(14,20),h(19,0),  "apartment", false, "studying; phone sometimes on"],
+    [h(19,0), h(23,30), "riverside", true,  "Vespera Clinic — evening shift"]
+  ],
+  jonas: [
+    [h(8,0),  h(8,30),  "station",  false, "commuting"],
+    [h(8,30), h(9,0),   "business", true,  "Meridian Partners — arriving"],
+    [h(9,0),  h(12,30), "business", true,  "Meridian Partners — 4th floor"],
+    [h(12,30),h(13,30), "oldtown",  true,  "trattoria Cervo — lunch, alone, phone face-down"],
+    [h(13,30),h(18,0),  "business", true,  "Meridian Partners — 4th floor"],
+    [h(18,0), h(19,0),  "business", true,  "lobby — endless phone calls"]
+  ],
+  elio: [
+    [h(8,0),  h(13,0),  "station", true,  "Station information & lost property"],
+    [h(13,0), h(13,45), "oldtown", true,  "lunch at the kiosk by the fountain"],
+    [h(13,45),h(22,0),  "station", true,  "Station information & lost property"]
+  ],
+  viktor: [
+    [h(10,0), h(14,15), "oldtown",    true,  "his pawnshop of curiosities"],
+    [h(14,15),h(15,45), "industrial", false, "at Kessler's loading yard (private)"],
+    [h(15,45),h(16,30), "oldtown",    true,  "his pawnshop of curiosities"],
+    [h(16,30),h(18,0),  "riverside",  true,  "walking the quay, coat too heavy for the weather"],
+    [h(18,0), h(20,0),  "oldtown",    true,  "his pawnshop of curiosities"]
+  ],
+  brandt: [
+    [h(8,30), h(12,30), "industrial", true,  "Kessler Logistics — office"],
+    [h(12,30),h(13,15), "business",   true,  "business lunch at the Tower Bar"],
+    [h(13,15),h(18,0),  "industrial", true,  "Kessler Logistics — office"],
+    [h(18,0), h(18,40), "industrial", false, "on the warehouse floor"]
+  ],
+  devin: [
+    [h(9,15), h(10,0),  "oldtown",    true,  "at Café Halcyon, asking after Alex"],
+    [h(10,0), h(12,0),  "oldtown",    false, "at Sera's shop, back room"],
+    [h(12,0), h(17,30), "riverside",  true,  "loitering by the quay like he owns the shade"],
+    [h(17,30),h(18,0),  "station",    true,  "at the locker hall"],
+    [h(18,0), h(21,0),  "industrial", true,  "his scrapyard, between the stacked cars"],
+    [h(21,0), h(24,0),  "oldtown",    false, "moving through the old streets"]
+  ],
+  nadia: [
+    [h(10,30),h(11,15), "station",  true,  "just off the 10:30 from the Capital"],
+    [h(11,30),h(15,0),  "business", true,  "Vespera Herald office"],
+    [h(15,0), h(15,30), "oldtown",  true,  "buying flowers on the square"],
+    [h(15,30),h(21,0),  "business", true,  "Vespera Herald office"],
+    [h(21,0), h(22,0),  "oldtown",  true,  "late dinner at trattoria Cervo"]
+  ],
+  alex: [
+    [h(8,0), h(24,0), "station", false, "location unknown"]
+  ]
+};
+
+DATA.CHARS = {
+  mara: {
+    id:"mara", name:"Mara Voss", role:"Barista, Café Halcyon", age:21,
+    bio:"Your oldest friend. Talks in refills and half-finished sentences. Knows everyone's schedule and owes nobody an explanation.",
+    personality:"Dry, warm, allergic to being managed.",
+    relation:"Close friend. She covered for you the time you disguised a day off as flu.",
+    color:"#e7a03c"
+  },
+  sofia: {
+    id:"sofia", name:"Sofia Lark", role:"Nursing student, Vespera Clinic", age:23,
+    bio:"Steady hands, terrible taste in movies. Knows Alex from the clinic; keeps other people's secrets professionally.",
+    personality:"Calm, precise, quietly brave.",
+    relation:"Close friend. She fixed your shoulder last winter and billed you in coffee, not money.",
+    color:"#7ec8a0"
+  },
+  jonas: {
+    id:"jonas", name:"Jonas Renaud", role:"Financial analyst, Meridian Partners", age:28,
+    bio:"Alex's older brother. Correct, exhausted, ironed shirt even on Fridays. Something heavy has been resting on him since spring.",
+    personality:"Controlled, proud, denial as a lifestyle.",
+    relation:"Alex's brother. You and he have a history of frost.",
+    color:"#9aa7c7"
+  },
+  elio: {
+    id:"elio", name:"Elio Marchetti", role:"Station information & lost property", age:57,
+    bio:"Thirty years of announcements in his voice. Sees everything and only half of it interests him.",
+    personality:"Dry humor, procedural kindness.",
+    relation:"Friendly regular. He notices who misses the 08:12 twice.",
+    color:"#c9b27c"
+  },
+  viktor: {
+    id:"viktor", name:"Viktor Sera", role:"Pawnshop of curiosities", age:49,
+    bio:"Buys other people's urgent decisions. Invoices the city between debt and mercy.",
+    personality:"Soft-spoken, complete, cold.",
+    relation:"None — but you have heard his name now.",
+    color:"#b06a5a"
+  },
+  brandt: {
+    id:"brandt", name:"Tomas Brandt", role:"Director, Kessler Logistics", age:52,
+    bio:"Award-winning logistics; ironed smile. The kind of man who thanks you before cutting the brake line.",
+    personality:"Corporate warmth over a locked room.",
+    relation:"None — yet. The yard is his kingdom.",
+    color:"#8f9aa3"
+  },
+  devin: {
+    id:"devin", name:"Devin Kray", role:"Waiting, professionally", age:33,
+    bio:"Grey coat, broken nose, waits like weather. Viktor Sera's message, delivered in person.",
+    personality:"Monosyllabic menace.",
+    relation:"None. You have now met.",
+    color:"#7a7f88"
+  },
+  nadia: {
+    id:"nadia", name:"Nadia Petrov", role:"Investigative writer, Vespera Herald", age:35,
+    bio:"Half a file on Kessler 'customs adjustments' and nobody willing to be a face. Sleeps with the window open in any weather.",
+    personality:"Piercing, ethical, allergic to compromise.",
+    relation:"Good acquaintance — she got you a stringer job once; you owe her a story.",
+    color:"#c9a3d0"
+  },
+  alex: {
+    id:"alex", name:"Alex Renaud", role:"Warehouse clerk, Kessler Logistics", age:23,
+    bio:"Alex works the Kessler yard office evenings and studies logistics at home. Sings to no one. Your closest friend since school.",
+    personality:"Careful the way children of chaotic households are careful: plans B through F, all pre-written.",
+    relation:"The call at 08:00 was about him. His phone is 'switched off' the way phones are when they aren't.",
+    color:"#ffb454"
+  }
+};
+
+DATA.CONTACTS = ["alex","mara","sofia","jonas","elio","nadia","viktor","brandt","devin","UNKNOWN"];
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — story layer part 1: helpers + dialogues
+   ============================================================ */
+"use strict";
+
+const STORY = {};
+
+/* ---------- state helpers (S provided by engine) ---------- */
+function has(f){ return !!S.flags[f] || !!S.clues[f]; }
+function setF(f){ S.flags[f] = true; }
+function giveClue(id){ if(!S.clues[id]){ S.clues[id]=true; feedAdd("important","Journal updated: "+DATA.CLUES[id].title); } }
+function relAdj(id,d){ S.rel[id]=(S.rel[id]||0)+d; }
+function feedAdd(kind,text){ if(S.feed) S.feed.push({t:S.time,kind:kind,text:text}); }
+function msgIn(from,text){ (S.msgs[from]=S.msgs[from]||[]).push({t:S.time,who:"them",text:text}); }
+function miss(what){ if(S.missed.indexOf(what)<0) S.missed.push(what); }
+
+function phaseName(t){
+  if(t < h(12)) return "morning";
+  if(t < h(17)) return "afternoon";
+  if(t < h(21)) return "evening";
+  return "night";
+}
+
+function charWhere(id){
+  if(id==="alex") return {loc:"?",talkable:false,note:"location unknown"};
+  const blocks = DATA.SCHED[id];
+  for(let i=0;i<blocks.length;i++){
+    const b=blocks[i];
+    if(S.time>=b[0] && S.time<b[1]) return {loc:b[2],talkable:b[3],note:b[4]};
+  }
+  return {loc:"?",talkable:false,note:"out of reach"};
+}
+function charAt(id,loc){ const w=charWhere(id); return !!(w && w.loc===loc); }
+
+/* ============================================================
+   DIALOGUES — each returns {kicker,title,text,opts:[...],farewell}
+   opt: {label, sub, cost, if(S)->bool, pick()->({text...}|{node...}|null)}
+   ============================================================ */
+STORY.DIALOG = {
+
+  mara: function(){
+    let greet;
+    if(S.time < h(12)) greet="Mara sets down a cup you didn't order. \"You look terrible. Sit. That's not a suggestion, that's hospitality.\"";
+    else if(S.time < h(17)) greet="Mara's shift is over but she pours two glasses of water anyway. \"So. The call?\"";
+    else greet="The cafe drops to its last warm light. Mara drops into the chair opposite. \"Tell me you know what's going on. Because nobody else will tell me.\"";
+    const opts=[];
+    if(has("begin_day")){
+      opts.push({label:"\"Alex called at eight. Said to meet him before midnight.\"", cost:0,
+        pick:function(){
+          let txt="Mara exhales. \"He came in last night around nine. Sat in that corner and watched the door. Wouldn't say what was wrong — only 'if it goes wrong, the plan is the plan.' And he kept his bag with him the whole time. He never keeps his bag on.\"";
+          if(!has("debt_note")){
+            txt+="\n\n\"…You know about him and Jonas, right? The two thousand marks? Alex called it 'the last thing I can do for him' — then a month ago they screamed at each other about it, at this exact table. Spring thing. Jonas's 'bank matters.'\"";
+            giveClue("debt_note");
+          }
+          txt+="\n\n\"Whatever it is, he trusts you with the sad part, not the scary part. Find the scary part yourself. That's his rule.\"";
+          return {text:txt};
+        }});
+    }
+    if(has("devin_mara")||has("morning_intervened")||has("morning_watched")){
+      opts.push({label:"\"Grey coat, broken nose — the man from this morning. Who is he?\"", cost:5,
+        pick:function(){
+          return {text:"Mara's jaw sets. \"Devin. He collects for Viktor Sera — the pawnshop man. He asked where Alex was last night. Twice. In that pleasant, unhurried way. I said I didn't know, which is true. The scary part is he didn't believe me — and he'll be checking elsewhere.\""};
+        }});
+    }
+    if(!has("tin_task") && !has("tin_done") && S.time<h(11) && !has("mara_favor")){
+      opts.push({label:"\"Anything I can carry? Errand? Water?\"", cost:5,
+        pick:function(){
+          setF("tin_task"); relAdj("mara",1);
+          return {text:"Mara brightens for half a second. \"Actually — yes. This tin. Wedding-cake sample for Elio at the station; he saved my deposit once by knowing the lost-property rules better than the form did. If it reaches him before noon, I owe you more than coffee.\""};
+        }});
+    }
+    if(has("mail_note") && !has("knows_locker") && (S.rel.mara>=4 || has("mara_favor"))){
+      opts.push({label:"\"Alex left a note: 'N–23.' Mean anything?\"", cost:5,
+        pick:function(){
+          setF("knows_locker"); giveClue("locker_code");
+          return {text:"Mara stares at you. \"N–23. November 23 — his birthday. He hides things behind his own birthday, always has. His station locker — number fourteen — is the only place he'd trust with anything real. Code 2311. I've watched him type it twice, and both times I pretended not to.\""};
+        }});
+    }
+    if(S.time>=h(19) && S.rel.mara>=3 && !has("knows_station_meet")){
+      opts.push({label:"\"If tonight goes wrong for Alex — where would he go?\"", cost:5,
+        pick:function(){
+          setF("knows_station_meet"); giveClue("station_plan_b");
+          return {text:"Mara is quiet, then: \"Months ago, when that grey-coat type followed him home the first time, he told me his plan B. 'If the bench is watched, I wait inside — station hall, under the departures board, same time.' If tonight looks wrong to him, that's where he'll be. He'll look for you at 23:00 either way.\""};
+        }});
+    }
+    opts.push({label:"\"That's all for now.\"", cost:0, close:true});
+    return {kicker: charWhere("mara").loc==="riverside" ? "Vodna quay" : "Café Halcyon", title:"Mara Voss", text:greet, opts:opts, farewell:"She refills your cup without asking. The evening absorbs her again."};
+  },
+
+  sofia: function(){
+    const night = S.time>=h(19);
+    const greet = night
+      ? "Sofia flags you through the evening corridor. \"If you're here to worry out loud, the chair's free. I have four minutes.\""
+      : "Sofia checks a chart, then your face. \"You have the 08:12 face of someone dragged somewhere unusual. What's wrong?\"";
+    const opts=[];
+    if(has("begin_day") && !has("alex_er")){
+      opts.push({label:"\"Alex is in trouble. Have you seen him since yesterday?\"", cost:5,
+        pick:function(){
+          setF("alex_er"); giveClue("sofia_night");
+          return {text:"Sofia's voice drops into her professional register. \"03:12 last night. Split lip, bruised ribs. Refused stitches, refused the police. He only asked me one thing: 'If I don't show up tomorrow, tell them about the quiet place.' Then he asked what it costs to become untraceable for a week.\n\nI hate that question. I hate it most when the patient asks it quietly.\""};
+        }});
+    }
+    if(has("alex_er") && !has("knows_quiet_place")){
+      opts.push({label:"\"The quiet place — where did he mean?\"", cost:5,
+        pick:function(){
+          setF("knows_quiet_place"); giveClue("quiet_place");
+          return {text:"Sofia almost smiles. \"The bench with the swans, on the Vodna quay. You two feed them like clockwork. He knows I know — that's why he said it in a hospital full of strangers. He'll be there, saying whatever this is, at whatever hour he meant.\""};
+        }});
+    }
+    if(!has("knows_locker")){
+      opts.push({label:"\"Has Alex been acting like a man with somewhere to hide something?\"", cost:5,
+        pick:function(){
+          setF("knows_locker"); giveClue("locker_code");
+          return {text:"\"Alex and lost property are old friends. Everything unfortunate in his life lives in locker fourteen at Central Station — his birthday opens it, 23/11. Code 2311. He raced me once with his whole week packed in that box and his entire self in his jacket pocket.\""};
+        }});
+    }
+    if(has("brandt_alerted") && night){
+      opts.push({label:"\"Has anyone come asking for Alex tonight?\"", cost:5,
+        pick:function(){
+          S.flags.susp=(S.flags.susp||0)+1;
+          return {text:"Sofia nods once. \"Grey coat. Broken nose. Asked reception whether a 'young man with a swollen mouth' had been back in. I said our records are confidential. He wrote my opening hours down anyway. Whatever Alex is doing tonight — do it faster.\""};
+        }});
+    }
+    opts.push({label:"\"Take care of yourself.\"", cost:0, close:true});
+    return {kicker:"Vespera Clinic / Vodna quay", title:"Sofia Lark", text:greet, opts:opts, farewell:"She pages herself back to the floor."};
+  },
+
+  jonas: function(){
+    let greet;
+    if(S.time<h(12,30)) greet="Jonas's monitor is full of numbers that don't applaud. He waves at the chair and keeps typing. \"You have office minutes. Speak.\"";
+    else if(S.time<h(13,30)) greet="Trattoria Cervo. Jonas eats alone, phone face-down like it's in witness protection. \"You found me. Congratulations. What?\"";
+    else if(S.time<h(18)) greet="Jonas shuts the office door behind you. \"If this is about Alex again—\" The sentence has no ending. It never does.";
+    else greet="Meridian's lobby. Jonas is on hold, phone wedged at his shoulder. He raises one finger: wait. He looks older than he did at lunch.";
+    const opts=[];
+    if(has("customs_check")||has("fraud_link")){
+      opts.push({label:"\"How well do you know Kessler Logistics?\"", cost:5,
+        pick:function(){
+          setF("jonas_partial"); relAdj("jonas",1);
+          return {text:"The typing stops. \"The terminal is a sieve. Officially.\n\nUnofficially—\" he closes the laptop \"—some of the sieve is man-made. Why are you asking me that?\" His face does the thing it does when a name he fears is about to leave your mouth. \"Be careful with that question in this city. There are answers that follow you home.\""};
+        }});
+    }
+    opts.push({label:"\"The two thousand marks. Say it out loud, Jonas.\"", cost:10,
+      if:function(){ return !has("jonas_debt") && (has("jonas_debt_hint")||has("jonas_borrowed")||has("debt_note")||has("scrap_won")||has("fraud_link")); },
+      pick:function(){
+        setF("jonas_debt"); relAdj("jonas",1);
+        return {text:"A long silence. \"Spring. I covered a leveraged position with my own savings, then couldn't cover it again. So a colleague introduced me to debt that doesn't live in banks. Interest, two thousand a month, or my knees book an appointment.\"\n\n\"Alex found out in April. He gave me his savings — all of it — and called it 'the last thing I can do for you.' I yelled at him for it. At the only person who—\"\n\nHe recomposes himself like a spreadsheet. \"And last month he discovered that Sera makes loans, and loans need collectors, and collectors need supervision. He called it 'discovering'. He has been WATCHING them, and now I can't reach him, and you are here instead of him, which means something has already gone wrong.\""};
+      }});
+    if(has("fraud_link") && !has("brandt_told") && !has("mentioned_brandt")){
+      opts.push({label:"\"Brandt and Sera met at the yard today. Envelope, no receipt.\"", cost:5,
+        pick:function(){
+          setF("mentioned_brandt"); relAdj("jonas",2);
+          return {text:"Jonas goes pale in a controlled, financial way. \"Then it isn't spot-check bad luck. It's structure.\"\n\nHe grips the table edge. \"Alex photographed them, didn't he. God. Listen to me: do not walk that evidence to Brandt. Men like him don't get exposed. They get expensed.\""};
+        }});
+    }
+    opts.push({label:"\"Alex needs his people tonight. That's you and me.\"", cost:5,
+      pick:function(){ relAdj("jonas",1);
+        return {text:"\"He's not missing. He's hiding. There's a difference, and it doesn't help you.\" Jonas rubs his eyes. \"Whatever he has, trade it carefully. And if my name gets him hurt—\"\n\nHe stops, and reorganizes his face into a suit. \"Go. My meeting is in eleven minutes.\""};
+      }});
+    opts.push({label:"\"Good luck with the numbers.\"", cost:0, close:true});
+    return {kicker:"Jonas Renaud", title:"Conversation with Jonas", text:greet, opts:opts, farewell:"He's already back inside the glass and the numbers."};
+  },
+
+  elio: function(){
+    const greet="Elio slides a timetable across the counter before you speak. \"Whatever you lost today, somebody lost it bigger. Ask.\"";
+    const opts=[];
+    if(has("tin_task") && !has("tin_done") && !has("mara_favor")){
+      opts.push({label:"\"Delivery from Café Halcyon — Mara's wedding-cake sample.\"", cost:5,
+        pick:function(){
+          setF("tin_done"); setF("mara_favor"); relAdj("mara",2); relAdj("elio",2); giveClue("mara_favor");
+          return {text:"Elio weighs the tin in one hand and finds it correct. \"From Voss. She's one of the good ones. And you carried it before noon, which makes you a rarer species.\n\nSo: if you ever need a 'technical visit' to the locker hall after hours — a small clock problem, no witnesses, no paperwork — today, that word exists between us.\""};
+        }});
+    }
+    opts.push({label:"\"How do the station lockers work?\"", cost:5,
+      pick:function(){
+        return {text:"Elio recites it like weather. \"Locker hall: six to twenty-two. Key boxes or code boxes. Code boxes: three wrong entries and the box locks down for the day, and I have to open it with my master key in front of witnesses — embarrassing for everyone, particularly you.\n\nSpare keys for code boxes live in the floor office, and the logbook sees everything. The logbook is the only colleague I've never had to forgive.\""};
+      }});
+    if(has("devin_key") && !has("key_confirmed")){
+      opts.push({label:"\"Anything small and brass pass through here around 17:30?\"", cost:5,
+        pick:function(){
+          setF("key_confirmed");
+          return {text:"Elio flips his ledger with a librarian's contempt. \"Spare key, box fourteen. Signed out 17:29 by a gentleman matching the description of a broken nose. He didn't sign it in. The logbook frowns upon this. As do I.\""};
+        }});
+    }
+    opts.push({label:"\"Another time, Elio.\"", cost:0, close:true});
+    return {kicker:"Station information", title:"Elio Marchetti", text:greet, opts:opts, farewell:"He returns to his announcements, each one perfectly deadpan."};
+  },
+
+  viktor: function(){
+    const greet="The bell over the door announces you to a room of gilded debts. Viktor Sera looks up from a ledger the size of a brick. \"Mm. Look who the city blew in.\"";
+    const opts=[];
+    if(has("customs_check")||has("fraud_link")||has("manifest_seen")){
+      opts.push({label:"\"What do you know about Kessler Logistics?\"", cost:5,
+        pick:function(){
+          S.flags.susp=(S.flags.susp||0)+1;
+          if(has("fraud_link")||has("manifest_seen")){
+            setF("susp_viktor");
+            return {text:"Viktor smiles with the whole cabinet closed. \"I know a number of things that are worth money, and a number of things that are worth more. That question sits in the second category, which is not the one you can afford.\" He turns a page. \"Careful. Merchants notice when someone shops without a wallet.\""};
+          }
+          return {text:"\"Logistics. Freight. Nummars,\" Viktor says, bored, cataloguing you instead of the question. \"You're young. Young people ask expensive questions in cheap shoes.\""};
+        }});
+    }
+    if(has("jonas_debt_hint")||has("jonas_borrowed")||has("debt_note")){
+      opts.push({label:"\"Does the name Jonas Renaud have an account with you?\"", cost:5,
+        pick:function(){
+          setF("jonas_debt");
+          return {text:"Viktor taps one fingernail on the ledger, delighted by nothing. \"Meridian Quays makes good collateral. Handsome brother, slower to pay than the sea. Loans are not gossip — but let's say the account has family management attached. Their little brother arranged the introduction.\""};
+        }});
+    }
+    if(has("has_document") && !has("doc_sold") && !has("nadia_shown")){
+      opts.push({label:"\"I have merchandise. Two years of it.\"", cost:10,
+        pick:function(){
+          S.flags.viktor_offer=true;
+          return {node:{kicker:"Pawnshop of curiosities", title:"Viktor leans back", text:"Viktor reads the folder the way other men read love letters. \"Duplicate customs manifests. Filed twice. Stamped once in the stamp of the honest man and once in the stamp of the men who exist. This is worth a great deal of quiet.\"\n\nHe looks up. \"My offer, which you are free to hate: the folder stays here. Your involvement stays clean. A certain young clerk's problems become… municipal. You sleep. He sleeps. The city sleeps. Beautiful system.\"", opts:[
+            {label:"\"Sold. Take it.\"", cost:10,
+              pick:function(){ setF("doc_sold"); giveClue("doc_gone");
+                return {text:"Viktor files your afternoon in a drawer. \"Pleasure doing ethics with you.\" The bell rings you out into a city that feels one kilo lighter and much worse."};}},
+            {label:"\"Not for sale. Forget I came in.\"", cost:5,
+              pick:function(){ S.flags.susp=(S.flags.susp||0)+1;
+                return {text:"\"Of course.\" Viktor's smile files you under a tab. \"People who show me things and don't sell them tend to come back. They almost always come back.\""};}}
+          ], farewell:"The drawer closes on two years of somebody's honesty."}};
+        }});
+    }
+    opts.push({label:"\"Just browsing.\"", cost:5,
+      pick:function(){
+        return {text:"Clocks with no noon. Locks without doors. A taxidermied fox wearing reading glasses. Everything in this room was somebody's emergency first."};
+      }});
+    opts.push({label:"\"Goodbye.\"", cost:0, close:true});
+    return {kicker:"Old Town", title:"Viktor Sera", text:greet, opts:opts, farewell:"The bell rings. The ledger swallows its boredom again."};
+  },
+
+  brandt: function(){
+    const greet="Kessler Logistics. Tomas Brandt stands to greet you with a handshake calibrated for photographs. \"A friend of Alex? He's told me nothing but good things. Elastic hours, that boy. Ask.\"";
+    const opts=[];
+    if(has("customs_check")||has("fraud_link")){
+      opts.push({label:"\"What exactly does Kessler ship after 22:00?\"", cost:5,
+        pick:function(){
+          return {text:"Brandt laughs like a press release. \"After 22:00 our trucks sleep better than our accountants. Consolidated freight, bonded warehousing, customs cooperation. We are, in fact, currently cooperating with a spot-check. You may have read about our transparency.\"\n\nHis eyes file your question under a tab the color of guards at gates."};
+        }});
+    }
+    if(has("fraud_link") && !has("brandt_told") && !has("brandt_decided")){
+      opts.push({label:"\"Mention the manifests. Show him it exists.\"", sub:"Dangerous. He will not like knowing it's out there.", cost:10,
+        pick:function(){
+          setF("brandt_decided");
+          return {node:{kicker:"Kessler Logistics", title:"The temperature of the room changes", text:"Brandt examines the material for exactly as long as it takes to memorize it, then slides it back like a menu he won't order from.\n\n\"Revised logistics,\" he says warmly. \"Internal reclassification. Happens at this scale every decade.\"\n\nHe picks up the phone. \"Excuse me one moment — a long, calm phone call.\"", opts:[
+            {label:"Leave while he's talking.", cost:5,
+              pick:function(){ setF("brandt_told"); giveClue("brandt_alerted"); S.flags.susp=(S.flags.susp||0)+2;
+                return {text:"You leave. Behind you the call continues: low, patient, full of the future. Alex's plan just became a wartime one."};}}
+          ]}};
+        }});
+    }
+    opts.push({label:"\"Thanks. That's all.\"", cost:0, close:true});
+    return {kicker:"Kessler Logistics", title:"Tomas Brandt", text:greet, opts:opts, farewell:"He shakes your hand again. The hand now remembers yours. That is the entire point of the handshake."};
+  },
+
+  devin: function(){
+    const atScrap = charWhere("devin").loc==="industrial";
+    const greet = atScrap
+      ? "Devin sits on a dead car between two stacks of dead cars, eating an apple. He finishes the apple before acknowledging you."
+      : "Devin checks your reflection in a window before checking you. \"You walk a lot. Today of all days.\"";
+    const opts=[];
+    opts.push({label:"\"Why are you looking for Alex?\"", cost:5,
+      pick:function(){
+        return {text:"Devin looks at the middle distance where people borrow money. \"People who borrow get found. I find. I don't ask why. You want philosophy, the library opens at nine tomorrow.\""};
+      }});
+    if(atScrap && has("devin_key") && !has("scrap_won") && !has("scrap_tried")){
+      opts.push({label:"\"The key, 17:30, box 14. I'll trade you my silence.\"", cost:20,
+        pick:function(){
+          setF("scrap_tried");
+          if(has("devin_key_seen") || has("mara_favor") || (S.rel.mara||0)>=3){
+            setF("scrap_won"); giveClue("scrap_won"); relAdj("devin",-1); setF("knows_locker");
+            return {text:"The apple core lands in a drum. Devin weighs you, the trade, and his employer's interest in paperwork.\n\n\"Friday,\" he says, pressing a small warm key into your palm. \"I don't remember you, you don't remember me. Box 14 was a malfunction.\"\n\nThe key opens a locker. It also closes a debt, though whose is unclear."};
+          }
+          S.flags.susp=(S.flags.susp||0)+1;
+          return {text:"Devin laughs once, without sound. \"You, I don't buy.\"\n\nThe shove into the scrap metal costs you ten minutes and some shoulder skin, and he keeps the key. But now you know what he has — and he suspects that you know."};
+        }});
+    }
+    opts.push({label:"\"Nothing. Just walking.\"", cost:0, close:true});
+    return {kicker: atScrap?"The scrapyard":"The quay", title:"Devin Kray", text:greet, opts:opts, farewell:"He doesn't watch you leave. He already knows where you're going."};
+  },
+
+  nadia: function(){
+    const greet="Nadia's desk looks like a detective's wall compressed into a hastily cleaned surface. \"You owe me a story. Pay up — or at least gossip.\"";
+    const opts=[];
+    if(has("customs_check")||has("fraud_link")||has("manifest_seen")){
+      opts.push({label:"\"Kessler. Customs adjustments. What's in your half-file?\"", cost:10,
+        pick:function(){
+          setF("nadia_met");
+          return {text:"Nadia pulls a folder two years deep. \"Re-stamped manifests. Phantom consignees. A 'spot-check' from customs that ends in a shrug. The pattern is beautiful and unfalsifiable — fraud this size isn't a man, it's a schedule.\"\n\n\"I have structures. I don't have faces. Bring me one page with a real signature and a real man attached, and this stops being a story and becomes a scandal.\""};
+        }});
+    }
+    if(has("has_document") && !has("doc_sold") && !has("nadia_shown") && ((has("nadia_met"))||has("fraud_link"))){
+      opts.push({label:"\"Would this page attach a face to it?\"", sub:"Show her the duplicate manifests.", cost:20,
+        pick:function(){
+          setF("nadia_shown");
+          return {node:{kicker:"Vespera Herald", title:"Nadia reads it twice", text:"She reads the manifest like scripture, then like a bill. \"'T. Brandt.' Timestamps. Payment emblems from Sera's side. This is the spine of the whole skeleton — and it's a duplicate, which means the original walked somewhere on a young man's back.\"\n\nShe looks up. \"I can send this to print tonight. Or you walk out and do whatever the human part of you is planning. Choose now: the print deadline is not a suggestion.\"", opts:[
+            {label:"\"Send it. Tonight.\"", sub:"The Herald prints at dawn.", cost:10,
+              pick:function(){ setF("publish");
+                return {text:"'Tonight,' Nadia repeats, and her entire office rearranges itself around the word. Phones. Photographs. A legal email drafted at unusual speed.\n\nSomewhere in this city, a story stops being a danger and becomes a fact about to happen."};}},
+            {label:"\"Wait. I have to talk to Alex first.\"", cost:5,
+              pick:function(){
+                return {text:"Nadia holds out her hand. \"Then the document stays with me as collateral and prints the moment either of you confirms. Fair — because it's the only way that paper leaves my sight.\"\n\nShe locks it in her desk. It will still be there at dawn."};}}
+          ]}};
+        }});
+    }
+    opts.push({label:"\"Later, Nadia.\"", cost:0, close:true});
+    return {kicker:"Vespera Herald office", title:"Nadia Petrov", text:greet, opts:opts, farewell:"She's already typing about something else. That's how stories survive her."};
+  }
+};
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — story layer part 2: location actions + city events
+   ============================================================ */
+"use strict";
+
+/* action fields: id,label,sub,cost, cond(S)?, once(flag)?, hours:[a,b]? (uses DATA.LOCATIONS[loc].lockers if hoursData)
+   run(): returns string | node-object | null (handled elsewhere) */
+STORY.ACTIONS = {
+
+  apartment: [
+    { id:"mail", label:"Check the mailbox", sub:"Something came with the morning post.", cost:5,
+      hours:[h(8,30),h(12,30)], once:"mail_note",
+      run:function(){
+        setF("mail_note");
+        return "Among the utilities and a pharmacy flyer: a strip torn from a timetable. Your name. Alex's handwriting, pressed hard:\n\n\"N–23.\nTrust the quiet place.\n— A.\"\n\nNo greeting. No explanation. The paper is creased like it rode in a pocket for a while before you existed to receive it.";
+      }},
+    { id:"computer", label:"Use the computer", sub:"Alex was here last night. Someone left the chat open.", cost:10,
+      run:function(){
+        if(has("alex_chat")) return "The chat log is the same silence as before. 23:58. No new messages. The cursor blinks like a pulse.";
+        setF("alex_chat"); giveClue("alex_chat");
+        return "Your chat app still has last night open on Alex's account — he borrows your desk when he's here too late to walk home:\n\nA (23:58): it wasn't supposed to happen. not like this.\nA (23:58): tomorrow. before midnight. if i don't call you it's because i can't.\nA (23:59): don't come to the yard.\n\nYou didn't see it until now. The timestamp repaints the entire morning.";
+      }},
+    { id:"calendar", label:"Check the calendar on the wall", sub:"Birthdays, chores, everyone's small obligations.", cost:5,
+      once:"calendar_seen",
+      run:function(){
+        giveClue("bday");
+        return "October is mostly empty, the way months are before they aren't:\n\n· 12 OCT (today): rent day; 'THROW OUT THE MATTRESS — M.'\n· Sofia's clinic shifts, pinned in green.\n· Jonas: 'client dinner — wear the grey'.\n· 23 NOV: ALEX — BIRTHDAY. 'sing the RIGHT year this time.'\n\n23 November. N–23. The note downstairs had exactly those two numbers.";
+      }},
+    { id:"docs", label:"Go through personal documents", sub:"The drawer where keys and debts go to retire.", cost:10,
+      once:"jonas_drawer",
+      run:function(){
+        giveClue("jonas_borrowed");
+        return "Rent contracts. A charging cable knotted past salvation. And in the key drawer, a folded note in Jonas's tidy capitals:\n\n'2,000. I'll fix it, I promise. Do NOT tell Alex.'\n\nTwo years old. You had both agreed, without ever saying so, to let it become furniture.";
+      }},
+    { id:"news", label:"Coffee and the morning paper", sub:"Vespera Herald, today's edition.", cost:15,
+      once:"customs_check",
+      run:function(){
+        giveClue("customs_check");
+        return "You drink coffee you forgot to want and read the Herald so you don't have to think.\n\nPage 7, bottom: 'Unannounced customs spot-checks at the freight terminal. Several firms in administrative review; spokespeople cite procedural modernization.'\n\nAmong them, listed only by section number so its lawyers stay asleep: Kessler Logistics.\n\nThe coffee goes cold. The day feels official now.";
+      }}
+  ],
+
+  station: [
+    { id:"board", label:"Read the departures board", sub:"Arrivals, departures, the daily poetry of delays.", cost:5,
+      run:function(){
+        let txt="THE BOARD:\n· 10:30 — from the CAPITAL — on time (a woman, one heavy coat, a heavier notebook)\n· 13:55 — to Lučenec — platform 2\n· 17:30 — from Vodna Sever — regional, delayed 10 min\n· 19:20 — to KYRDAL — long-distance, tickets sold: 31\n";
+        if(!has("board_note")){ setF("board_note"); txt+="\nYou copy the arrivals onto the back of your hand like a man planning to be somebody's schedule instead of his own."; }
+        return txt;
+      }},
+    { id:"watch", label:"Watch the hall", sub:"People miss trains. You might see someone arrive.", cost:15,
+      run:function(){
+        return "You get a coffee you don't drink and watch the hall run its permanently-travelling show.\n\nA man in a grey coat reads a newspaper upside-down near the payphones, and has been here longer than his coffee. A student's backpack holds more oranges than books. A bride, a soldier, a man with a vacuum cleaner. The 19:20 to Kyrdal will leave with 31 tickets' worth of escape.";
+      }},
+    { id:"locker", label:"Locker hall — box 14", sub:"06:00–22:00. Code, brass key, or Elio's mercy.", cost:10,
+      lockersOnly:true,
+      cond:function(){ return (has("knows_locker")||has("scrap_won")||has("devin_key")) && !has("opened_locker") && !has("doc_sold"); },
+      run:function(){ return Engine.lockerScene(); }},
+    { id:"listen", label:"Eavesdrop near the information desk", sub:"Elio's counter: the city's lost and found of conversation.", cost:10,
+      run:function(){
+        return "Near the desk: two students divide a chocolate bar by era of purchase. A porter explains to a tourist that the 19:20 is 'the last train that believes in itself.' An old woman has lost a hat and found, in exchange, three helpers.\n\nLives, arriving and departing, largely unexamined. You get the strange civic peace of watching people whose worst problem today is currently a hat.";
+      }},
+    { id:"delivertin", label:"Deliver Mara's package to Elio", sub:"A ceremonial tin, a promise, and a deadline of noon.", cost:5,
+      cond:function(){ return has("tin_task") && !has("tin_done") && !has("mara_favor") && charAt("elio","station"); },
+      run:function(){
+        setF("tin_done"); setF("mara_favor"); relAdj("mara",2); relAdj("elio",2); giveClue("mara_favor");
+        return "Elio weighs the tin and finds it correct. \"From Voss. She's one of the good ones. And you carried it before noon, which makes you a rarer species.\n\nSo — if you ever need a 'technical visit' to the locker hall after hours, between us there is now a word for that. Small kindness, long memory. That's the job.\"";
+      }}
+  ],
+
+  oldtown: [
+    { id:"notice", label:"Read the community board", sub:"Everything lost, found, or for sale in one square meter.", cost:15,
+      once:"notice_board",
+      run:function(){
+        setF("notice_board");
+        return "The notice board is the real government of Vespera:\n\n· LOST: grey wallet, sentimental value, reward.\n· FOR SALE: 1980s exercise bike, motivational cloth included.\n· BUS LINE 7 → Industrial zone: every half hour, at :10 and :40.\n· 'Nurse needed, Vespera Clinic — ask for Sofia L.'\n· A card in clean block letters: 'SERA — CURIOSITIES. LOANS ADVANCED AGAINST QUIET.'\n\nViktor Sera advertises in plain sight. That kind of advertisement is its own kind of warning.";
+      }},
+    { id:"square", label:"Sit at the fountain", sub:"Old Town conducts its business in the open.", cost:10,
+      run:function(){
+        return "You sit where the pigeons hold their parliament. A courier and a lawyer argue happily about a three-legged dog. Old Town trust falls into your lap unsolicited; here even privacy is a communal activity.";
+      }}
+  ],
+
+  business: [
+    { id:"lobby", label:"Hover in the Meridian lobby", sub:"Badges, rumors, Jonas's building.", cost:10,
+      once:"lobby_gossip",
+      run:function(){
+        giveClue("lobby_gossip");
+        return "You water a ficus with your presence until a colleague of Jonas's waits for the same elevator.\n\n\"Renaud? Solid analyst. Since spring he's—\" the elevator arrives— \"—different. Eats at his desk. Covering something with overtime. The classic. Anyway.\"\n\nThe doors close on the rest of your answer.";
+      }},
+    { id:"towerbar", label:"Tower Bar — bad coffee, good gossip", sub:"Where the Business District goes to be seen not eating.", cost:15,
+      run:function(){
+        return "The Tower Bar serves coffee at the temperature of diplomacy. Two stools down, a bond trader does a loud post-mortem on this morning's dip.\n\nYou learn two tickers and one affair. Vespera's economy, in one cup.";
+      }}
+  ],
+
+  riverside: [
+    { id:"bench", label:"The swans' bench", sub:"Where you two feed them. 'The quiet place.'", cost:15,
+      run:function(){ return Engine.benchVisit(); }},
+    { id:"bridge", label:"Walk the old bridge", sub:"The river does the talking.", cost:15,
+      run:function(){
+        if(S.time>=h(17)&&S.time<h(21)) return "Sunset performs the same miracle it performs every evening, which is making the whole city briefly forgivable. The water is poured copper. Boats come home.\n\nSomewhere behind you, the day is making decisions that cannot be undone, and you are watching the light instead.";
+        return "The bridge moves under the wind in the old, legal way. Rowers upstream, a heron with opinions, the whole city reflected slightly better than it is. As water does.";
+      }},
+    { id:"quaywalk", label:"Walk the quay past the hospital", sub:"Ambulance lane, staunch brick, simple geometry.", cost:10,
+      run:function(){
+        if(S.time<h(18)) return "The hospital presents its least romantic face to the river and its most necessary one to the city. Nurses smoke at the ambulance door with the commitment of people on a scheduled break from gravity.";
+        return "The hospital's night windows come on floor by floor, patient by patient. From here the institution looks almost gentle — a lit ship that has decided, for tonight, to keep everyone aboard.";
+      }}
+  ],
+
+  industrial: [
+    { id:"yard", label:"Kessler Logistics — the office", sub:"Director Brandt receives, apparently, anyone.", cost:10,
+      cond:function(){ return charAt("brandt","industrial"); },
+      run:function(){ return Engine.openDialog("brandt"); }},
+    { id:"fence", label:"Watch the loading yard through the fence", sub:"The gap between fence and generator housing.", cost:15,
+      cond:function(){ return !has("fraud_link"); },
+      run:function(){
+        setF("fence_watched"); S.flags.susp=(S.flags.susp||0)+1;
+        if(S.time>=h(14,45) && S.time<=h(15,30)){
+          giveClue("fraud_link");
+          return "You find the gap between the fence and the generator housing that every city keeps for sixteen-year-olds and journalists.\n\n14:58. Brandt walks out to the yard. Sera's green car idles like a patient predator. An envelope crosses space without changing owners so much as changing species.\n\nThen — a clipboard, a manifest stamped and re-stamped inside the same minute, customs names crossed out and re-entered. Two men under one streetlamp, lit exactly like evidence.\n\nThis is what Alex saw. This is what Alex IS.";
+        }
+        if(S.time>=h(15,30)){
+          return {text:"The yard is scoured and quiet. Chains, steam, one guard checking nothing with exemplary diligence.\n\nWhatever crossed this yard today, it arrived, it was seen by fate and no one else, and it's gone."};
+        }
+        return "Forklifts. Stamped manifests. A guard with the vigilant eyes of a man paid to remain unaware of specifics. Nothing — except trucks that queue at an hour when trucks queueing makes no sense, and a yard ledger that personally signs off an arrival logged 'overviewed, no exceptions.'\n\nSomething here is organized. You'll know more when the wrong people are in it.";
+      }},
+    { id:"scrap", label:"The scrapyard — Devin's office", sub:"Evenings, between stacked cars. Bring nerve.", cost:10,
+      cond:function(){ return charAt("devin","industrial") && S.time>=h(18); },
+      run:function(){ return Engine.openDialog("devin"); }},
+    { id:"busboard", label:"Bus stop, line 7 — timetable", sub:"Trams of the working world.", cost:5,
+      once:"bus_note",
+      run:function(){
+        return "LINE 7 — INDUSTRIAL ZONE: departs :10 and :40, every half hour. Last return, 22:40.\n\nYou note it the way people note things they hope to never need: precisely.";
+      }}
+  ]
+};
+
+/* ============================================================
+   CITY EVENTS
+   {id, t, winEnd?, cond(S)?, run()->node|{feedText}|null}
+   ============================================================ */
+STORY.EVENTS = [
+  { id:"ev_mara_voicemail", t:h(8,20),
+    run:function(){
+      msgIn("mara","alex came by last night. sat in the corner 'watching the door'. wouldn't say what. i'm at halcyon till 15:00 if you want the human version. — M");
+      feedAdd("sys","New message from Mara Voss.");
+      return null;
+    }},
+  { id:"ev_devin_mara", t:h(9,30), winEnd:h(9,55),
+    run:function(active){
+      if(active && S.loc==="oldtown"){
+        return {node:{kicker:"Café Halcyon", title:"9:31 — through the glass",
+          text:"You're still holding your cup when the grey coat comes in. Broken nose, weather-patient stillness. He leans on the counter; Mara's smile switches to its professional setting.\n\nDEVIN: 'The boy. Last night. Where.'\nMARA: 'Alex? I don't keep his calendar. I keep the cakes fresh.'\nDEVIN: 'He was here. At nine.'\nMARA: 'He was here yesterday. Today is today.'\n\nHe places a pawnshop card on the counter like a tip, then studies you for exactly one second too long.", opts:[
+            {label:"Intervene — walk over, be visible, order more of anything.", sub:"Remind him other people exist.", cost:10,
+              pick:function(){ setF("morning_intervened"); relAdj("mara",2); S.flags.susp=(S.flags.susp||0)+1;
+                return {text:"You are suddenly very thirsty and very social. Devin assesses you like weather about to rearrange someone's plans, gives Mara a nod that will require unpacking, and leaves.\n\nMARA (quiet): 'Stupid. Brave. Both. Thank you. He works for Sera. He collects. He doesn't forget. But he also doesn't move unless he's paid — so let's all stay unbought.'"};}},
+            {label:"Stay still. Memorize the face.", cost:5,
+              pick:function(){ setF("morning_watched");
+                return {text:"You study your cup, his face, the card, his shoes: good, worn, working. He never looks at you again, which is worse than looking.\n\nMara slides you a refill without a word. Solidarity, espresso-strength, from one observer to another."};}}
+          ]}};
+      }
+      if(active){
+        msgIn("mara","that grey-coat man came in AGAIN. asking about alex and 'last night'. told him to buy a cake and stop forecasting. but… he LEFT A CARD. SERA — curiosities. loans. — M");
+        feedAdd("sys","Mara messaged you about an unpleasant customer.");
+      }
+      miss("9:30 \u2014 Devin came to Café Halcyon asking about Alex's last night. You were at "+(DATA.LOCATIONS[S.loc]?DATA.LOCATIONS[S.loc].name:"?")+".");
+      return null;
+    }},
+  { id:"ev_jonas_lobby", t:h(11,0), winEnd:h(11,30),
+    run:function(active){
+      if(active && S.loc==="business"){
+        giveClue("jonas_debt_hint");
+        return {node:{kicker:"Meridian Partners", title:"11:04 — a voice around the column", text:"Jonas is at the lobby's glass, phone wedged to his ear, ironed into a corner that security cameras don't love.\n\n'…I said by the 20th… no — not at home. Are you listening? Not at HOME. Do not call this number again. Tell him the account knows what it owes.'\n\nHe hangs up, closes his eyes for one full breath, opens them onto you and toggles the analyst smile like a desk lamp. 'Small world. Problems?'", opts:[
+          {label:"\"That sounded less like a bank and more like a bailiff.\"", cost:10,
+            pick:function(){ relAdj("jonas",-1);
+              return {text:"'It sounded like a colleague with a scheduling concern.' The smile stays. The eyes file you under 'risk'. He walks to the elevator with the posture of a man leaving the scene of his own finances."};}},
+          {label:"Say nothing. Let him have the breath.", cost:5,
+            pick:function(){ relAdj("jonas",1);
+              return {text:"You water the same ficus with your presence. Jonas's shoulders come down a centimeter.\n\n'Coffee sometime,' he says, which in his dialect means: I owe you one breath, spent kindly. The elevator takes him up to the numbers."};}}
+        ]}};
+      }
+      miss("11:00 — Jonas made a strange call in the Meridian lobby. You weren't there.");
+      return null;
+    }},
+  { id:"ev_viktor_walkout", t:h(14,15), winEnd:h(14,45),
+    run:function(active){
+      if(active && S.loc==="oldtown"){
+        setF("viktor_walked"); giveClue("trucks_note");
+        return {feedText:"14:15 — Viktor Sera's old green car pulls out of Old Town toward the industrial zone."};
+      }
+      return null;
+    }},
+  { id:"ev_scaresms", t:h(17,45),
+    run:function(){
+      msgIn("UNKNOWN","WRONG NUMBER. forget the list. it's handled. — T.");
+      feedAdd("important","Message from UNKNOWN: someone's thumb made someone's evening easier.");
+      return null;
+    }},
+  { id:"ev_devin_key", t:h(17,30), winEnd:h(17,45),
+    run:function(active){
+      if(!active) return null;
+      if(S.loc==="station"){
+        setF("devin_key_seen"); giveClue("devin_key");
+        return {node:{kicker:"Locker hall", title:"17:31 — small, brass, fast", text:"You are reading the timetable again when the locker hall office door opens. Devin. He holds up one finger to the clerk, who suddenly has urgent paperwork.\n\nFrom the back counter, without signing anything, Devin collects something small. Brass. The kind of object that opens one specific box and cannot be argued with.\n\nHe pockets it like change — then looks, not at you, at the rows of boxes, letting a number speak.", opts:[
+          {label:"Follow him — see which way the day is leaning. (10)", cost:10,
+            pick:function(){ setF("followed_devin");
+              return {text:"You trail him at the distance of a decision not yet made. He checks the street the way snakes check grass and turns toward the Industrial District.\n\nSo: Devin is now carrying a key to something in this hall. And in roughly half an hour he will be in his own kingdom, where a conversation with him becomes a different genre entirely."};}},
+          {label:"Stay put. Don't exist for five more minutes. (5)", cost:5,
+            pick:function(){ return {text:"You become extremely fascinated by a vending machine. Devin leaves. Your pulse takes its coat and follows him out."};}}
+        ]}};
+      }
+      return null;
+    }},
+  { id:"ev_sofia_crisis", t:h(19,30),
+    run:function(){
+      setF("ev_sofia_done");
+      msgIn("sofia","accident on the bridge — night shift just lost two people to it. if you're near the clinic we need HANDS, not opinions. please. — S");
+      feedAdd("important","19:30 — Sofia: emergency at the clinic.");
+      return {node:{kicker:"Message — Sofia Lark", title:"19:30", text:"Your phone buzzes hard:\n\n'Accident on the bridge — night shift just lost two people to it. If you're near the clinic we need HANDS, not opinions. please. — S'\n\nAcross the city, a hospital is reorganizing itself around a lack of you.", opts:[
+        {label:"Go now. She asked, and she never asks.", sub:"Travel to Riverside, then stay as long as the ward needs you. (~2 h total)", cost:105,
+          pick:function(){ S.flags.helped_sofia=true; S.loc="riverside"; relAdj("sofia",3);
+            feedAdd("important","You spent two hours doing the unglamorous part of a catastrophe.");
+            return {text:"You get there in time for the worst hour of it. You carry what is handed to you. You are lied to, kindly, by nurses who have done this too long. You hold a stranger's phone while he cries into his coat.\n\nAt 21:15 a doctor with Sofia's tired eyes finds you a chair.\n\n'You did the thing nobody ever thanks anyone for,' she says. Then, because she is Sofia, she says it again properly."};}},
+        {label:"Reply honestly — but the night belongs to Alex.", cost:1,
+          pick:function(){ relAdj("sofia",-2); S.flags.sofia_ignored=true; miss("19:30 — the clinic needed hands. You chose yours for other work.");
+            return {text:"You type 'hospital needs me? impossible. city. anyway. sorry.' and feel each word take a small coin out of an account with Sofia Lark's name on it."};}}
+      ]}};
+    }},
+  { id:"ev_alex_callback", t:h(16,0), winEnd:h(16,10),
+    cond:function(){ return has("called_alex"); },
+    run:function(active){
+      if(!active){ miss("16:00 — Alex called you back from a payphone. It was over before you could pick up."); return null; }
+      setF("ev_callback_done");
+      return {node:{kicker:"Incoming call — number withheld", title:"16:00 — a payphone's ghost", text:"The phone rings. The number has no name.\n\nALEX (whisper; paper-mill hiss; a tannoy very far away): 'Don't talk. Listen. I'm okay-ish. My phone is swimming somewhere it can't be traced — long story, involves a bench and a refusal to be patient.\n\nI saw something last night I was never paid enough to see. I have proof. It's somewhere nothing will find it. Not even me, in a hurry.\n\nThe quiet place. Where we feed them. 23:00. If I'm not there by 23:15, don't be there either — go to the papers with whatever YOU have. And don't show anyone anything. Not the yard. Not the shop. Not one man with an office and a smile.'\n\nThe line dies mid-warning.", opts:[
+        {label:"Answer. Stay quiet. Memorize.", cost:10,
+          pick:function(){ giveClue("alex_witness"); setF("knows_quiet_place"); giveClue("quiet_place");
+            return {text:"Ten seconds of a train yard's silence make it through.\n\n'…they're patient. and when they move, they move like a schedule. don't be early and don't be clever.\n\n23:00. swans. bring yourself. nothing else.'\n\nClick."};}},
+        {label:"Let it ring — public square, too many ears.", cost:1,
+          pick:function(){ setF("ignored_callback"); miss("16:00 — Alex called you back from a payphone. You let it ring out.");
+            return {text:"It plays out to the last ring. Then the day does what days do: the moment closes over it like water."};}}
+      ]}};
+    }},
+  { id:"ev_mara_crisis", t:h(20,0), winEnd:h(20,45),
+    run:function(active){
+      if(!active){ miss("20:00 — Devin confronted Mara at closing time."); return null; }
+      if(S.loc==="oldtown"){
+        return {node:{kicker:"Café Halcyon", title:"20:03 — last lamp on", text:"The café is nearly dark. Mara is counting the register into the pool of the one working lamp. The door isn't locked.\n\nA shadow resolves into Devin.\n\nDEVIN: 'The boy wasn't at the yard. Wasn't at his place. Wasn't at the bench — I checked it twice.'\nMARA: 'Maybe he wanted privacy from men who check benches twice.'\nDEVIN (calm, to the register): 'People who hide things pay for the hiding. It can be money. It can be the thing. Choose what it is, Voss.'", opts:[
+          {label:"Step out of the dark: \"Take it up with me instead.\"", sub:"Put yourself between Mara and the night. (~45 min)", cost:45,
+            pick:function(){ setF("helped_mara_night"); setF("ev_mara_resolved"); relAdj("mara",3); S.flags.susp=(S.flags.susp||0)+1;
+              giveClue("station_plan_b"); setF("knows_station_meet");
+              return {text:"You come out of the dark with your voice level and your pulse in your ears, and for a moment, three people in one café all choose different futures.\n\nDevin blinks once — recalculation, filing, a decision you will never fully learn. 'People who watch,' he says, and leaves the card on the table like a calling card he intends to collect on.\n\nMara sits down hard. 'You absolute idiot. Thank you. You absolute idiot.'\n\nFor the next forty minutes she tells you everything she knows. Including the thing she swore she wouldn't: months ago, when Alex was first followed home, he told her his plan B. 'If the bench is watched — station hall, under the departures board, same time.'\n\nWHAT YOU SPENT: the entire evening. WHAT YOU GAINED: proof that decency compounds, an alternate meeting point, and still not one scrap of paper."};}},
+          {label:"Call the police from across the street.", sub:"Paperwork as a weapon. Devin will be gone in minutes.", cost:10,
+            pick:function(){ setF("helped_mara_night"); setF("ev_mara_resolved"); relAdj("mara",1); setF("called_police_mara");
+              return {text:"Two uniforms arrive at 20:19 with the urgency of a form being filed. Devin is gone before the car slows — but so is the pressure, and Mara gets to close her register in peace.\n\n'You called the actual police on Devin Kray,' she says on the phone later. 'Either that was brilliant, or it just put you on a list. Possibly both.'"};}},
+          {label:"Leave through the square. You can't fight everyone's nights.", cost:5,
+            pick:function(){ relAdj("mara",-2); miss("20:00 — Mara faced Devin alone at closing. You were twelve meters and one decision away.");
+              return {text:"You are in the square's shadow when the café's inside light reallocates, and something that might be a raised voice crosses the glass.\n\nYou keep walking. The quay is beautiful at night. It has no opinions about you, which is the kindest thing anyone has said all day."};}}
+        ]}};
+      }
+      setF("ev_mara_resolved");
+      msgIn("mara","closing up had… a visitor. handled. i think. going home before i think about it. don't ask. — M");
+      miss("20:00 — Devin confronted Mara at closing time. You were at "+(DATA.LOCATIONS[S.loc]?DATA.LOCATIONS[S.loc].name:"?")+".");
+      return null;
+    }},
+  { id:"ev_meeting_open", t:h(22,15),
+    run:function(){
+      feedAdd("important","Night. The city now keeps only the appointments you keep.");
+      if(has("knows_quiet_place") && !has("brandt_told")) feedAdd("sys","23:00 — the swans' bench. You know where you are supposed to be.");
+      if(has("knows_quiet_place") && has("brandt_told") && has("knows_station_meet")) feedAdd("sys","23:00 — station hall, under the board. The bench is burned.");
+      return null;
+    }},
+  { id:"ev_final_warning", t:h(23,20),
+    run:function(){
+      if(!S.metAlex && has("knows_quiet_place")) feedAdd("bad","23:20. Whatever you are doing right now, the appointment is either kept almost, or kept by someone else.");
+      return null;
+    }}
+];
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — story layer part 3: meeting scenes + endings
+   ============================================================ */
+"use strict";
+
+/* ---------- objectives ---------- */
+STORY.OBJECTIVES = function(){
+  const o=[];
+  function push(txt,done){ o.push({t:txt,done:!!done}); }
+  if(!has("fraud_link") && !has("alex_witness") && !has("manifest_seen"))
+    push("Find out what happened to Alex", has("alex_chat")||has("sofia_night"));
+  if(has("alex_witness")||has("fraud_link")) push("Understand what Alex witnessed", true);
+  if(has("mail_note") && !has("knows_quiet_place")) push("Find the 'quiet place' the note means", false);
+  if(has("knows_quiet_place")){
+    push(has("brandt_told") && has("knows_station_meet")
+      ? "Meet Alex — 23:00, station hall (the bench is burned)"
+      : "Meet Alex — 23:00, the swans' bench", false);
+  }
+  if(has("knows_locker") && !has("opened_locker") && !has("doc_sold") && S.time<h(22))
+    push("Locker 14, Central Station hall (code 2311 if you know it)", false);
+  if(has("has_document") && !has("nadia_shown") && !has("doc_sold") && S.time<h(21) && (has("nadia_met")||has("fraud_link")||has("customs_check")))
+    push("The manifests are evidence — Nadia would know what this is", false);
+  if(has("brandt_told")) push("Brandt knows the duplicate exists", false);
+  if(!o.length) push("Get through the day in one piece", false);
+  return o;
+};
+
+/* ---------- swans' bench visit (daytime) ---------- */
+STORY.benchVisit = function(){
+  if(has("knows_quiet_place")){
+    setF("bench_revisited");
+    return "The swans' bench. Initials scratched by a fifteen-year-old with a fork: A + YOU. Badly executed. Permanently true.\n\nYou know what this place is now. The only question left is whether, at 23:00, someone arrives to occupy it with you — or whether at 23:00 it is just you and the water again.";
+  }
+  if(has("mail_note")){
+    return {kicker:"Vodna quay", title:"The swans' bench",
+      text:"You know this bench. Two kids, a bag of old bread, swans with the manners of customs officials. 'A + YOU', scratched with a fork, badly, permanently.\n\n'N–23. Trust the quiet place.'\n\nQuiet. Water. Swans. You.",
+      opts:[
+        {label:"\"…This is it. This is the quiet place.\"", cost:5,
+          pick:function(){ setF("knows_quiet_place"); giveClue("quiet_place");
+            return {text:"It's the swans. It was always the swans.\n\nSomewhere in your chest a slot clicks into a machine — 23:00, this bench. Now you only need the rest of what he wanted to tell you, and the nerve to be here at midnight minus one hour."};}},
+        {label:"\"I can't go inventing meetings out of bread crumbs.\"", cost:5,
+          pick:function(){
+            return {text:"You get up. The swans watch you leave with the personal offense of animals who have misplaced their faith in a system that works.\n\nThe note stays a riddle, and the afternoon stays short."};}}
+      ]};
+  }
+  return "The bench is empty. You sit anyway; morning joggers' crumbs say other people have habits here too. It's nice. It's also somewhere you can't afford to sit for long.";
+};
+
+/* ---------- locker hall ---------- */
+STORY.lockerScene = function(){
+  if(has("opened_locker")) return "Box 14 stands open and empty, doing its best impression of an alibi.";
+  if(has("scrap_won") || has("devin_key")){
+    setF("opened_locker"); setF("has_document"); giveClue("manifest_seen"); giveClue("locker_full");
+    return "The brass key turns like it rehearsed.\n\nInside box 14: a folder labelled in Alex's square capitals — 'IN CASE I'M WRONG'. The duplicate customs manifests. Two photographs of Brandt and Sera in the yard at night. And a clinic receipt: Sofia Lark, 03:12, last night.\n\nThe whole night suddenly has a shape. And the shape has your friend's handwriting on it.";
+  }
+  const tries = S.flags.codeTries||0;
+  if(tries>=2 && !has("elio_favor")){
+    return "The pad on box 14 is red-faced with rejection. The clerk's eyes flick over with one raised eyebrow: three strikes and Elio opens this box in front of witnesses with the master key. Today is not the day you become the story he tells at dinner.";
+  }
+  return {codePad:true, kicker:"Locker hall", title:"Box 14 — code pad",
+    text:"Four steel digits between you and whatever Alex hid from the entire world.\n\n"+(tries===1 ? "The pad remembered one wrong code with digital patience." : "You breathe on the steel and it fogs, which feels appropriate."),
+    options_note:"Enter a four-digit code. Wrong entries are remembered by the machine, and eventually by the clerk."};
+};
+
+/* ---------- meeting: the bench ---------- */
+STORY.meetingBench = function(){
+  Engine.advance(8);
+  if(has("brandt_told") && !has("knows_station_meet")){
+    setF("ambushed");
+    return {kicker:"23:0X — Vodna quay, swans' bench", title:"Not him", close:true,
+      text:"You wait with the river. 23:07.\n\nThe footsteps that arrive are wrong: too even, no bag, no jacket rustle. Devin steps out of a shadow as if the shadow had been holding his place in line.\n\nDEVIN: 'He sent word. Last minute. Business re-scheduled.' He holds up Alex's lighter — the one with the dent from when you dropped it off the bridge in school. 'Sent it via me. People trust mail that means something.'\n\nHe is not even slightly out of breath. The meeting was never cancelled. It was re-scheduled into an ambush, and you are holding it.",
+      after:"Whatever plan B Alex had, you failed to be part of it.",
+      ending:"wrong_person"};
+  }
+  return {kicker:"23:0X — Vodna quay, swans' bench", title:"The quiet place",
+    text:"You wait with the river. 23:07. Swans moored below like small white arguments against the dark.\n\nThen: footsteps with a bag's rustle and a run left in them. Alex, out of breath, the whole day's weight on his face. He sees you — and something in his shoulders lets go of a load it has carried since 08:00.",
+    opts:[
+      {label:"\"Alex. Last night. All of it.\"", cost:15,
+        pick:function(){ return STORY.meetingTruthStep(); }},
+      {label:"Show him what you found today.", cost:5,
+        if:function(){ return has("has_document")||has("fraud_link")||has("manifest_seen"); },
+        pick:function(){ return STORY.meetingTruthStep(); }}
+    ]};
+};
+
+STORY.meetingTruthStep = function(){
+  let txt="Alex sits like his legs have been handed notice of dismissal.\n\n\"23:40 last night. I'm closing the yard office. Brandt and Sera come in for a drop that touches nothing official — no camera, no log. One grey envelope. I photographed a page of the manifest from the shadows. Then my phone died. Then Devin's silhouette was in the yard, and I couldn't tell if he'd seen the screen's glow.\"\n\nHe looks at what you're holding. \"I hid my copies at the station, box fourteen. If everything went badly, that was plan C. Plans C are for when B fails, and B was 'nothing goes wrong.'\"";
+  if(has("debt_note")||has("jonas_debt")){
+    txt+="\n\n\"And Jonas. You know about Jonas's debt — don't you. That's how deep this goes. The firm ruins customs. Sera ruins families. And my brother is the town where the two roads meet. He thought he was borrowing money. He was being filed.\"";
+  } else {
+    txt+="\n\n\"And there's the part I can't say here. My brother. Jonas owes Sera in a way that isn't money-shaped anymore. That's why they knew our names. That's why it's me standing in a yard office until midnight every day.\"";
+  }
+  giveClue("alex_witness"); giveClue("manifest_seen");
+  setF("met_alex");
+  return {text:txt, opts:STORY.finalChoices()};
+};
+
+STORY.finalChoices = function(){
+  const opts=[];
+  opts.push({label:"\"Tomorrow: everything goes to Nadia Petrov. Together.\"", sub:"Press, testimony, dawn edition. The long road, the right one.", cost:10,
+    pick:function(){ setF("final_press");
+      return {text:"Alex studies you for a long moment — the same look he had at fifteen, deciding whether to trust you with the other half of a sandwich and, as it turned out, every subsequent decision.\n\n\"Together,\" he says. \"And first thing tomorrow, before they're awake enough to be lucky.\"", endingSignal:true};}});
+  if(has("jonas_debt") && !has("fraud_link") && !has("manifest_seen")){
+    opts.push({label:"\"Give me the folder. I trade it back to Brandt — Jonas's debt dies.\"", sub:"Solve it. Quietly. Protect your family. Trust a smiling man.", cost:10,
+      pick:function(){ setF("final_bill_brandt");
+        return {text:"Alex's face cycles through three kinds of disbelief and lands on grief. \"That's the deal you'd make?\"\n\nBut you both know the sick mathematics of it: one folder, one debt, one brother who sleeps tonight. It is the quiet, wrong answer that fits the lock of your own family.", endingSignal:true};}});
+  }
+  opts.push({label:"\"You should leave Vespera tonight. Take the 19:20— the last thing tonight. Go.\"", sub:"Send Alex away. Stay and hold the bag yourself.", cost:10,
+    pick:function(){ setF("final_alex_flees");
+      return {text:"Alex shakes his head slowly. \"That's not a plan. That's applause.\"\n\nBut you mean it, and he sees that you mean it, and for one second the two of you stand in the dark calculating exactly how much of your lives this folder is worth.", endingSignal:true};}});
+  return opts;
+};
+
+/* ---------- meeting: the station hall (plan B, after Brandt alert) ---------- */
+STORY.meetingHall = function(){
+  Engine.advance(8);
+  return {kicker:"23:0X — Central Station, under the departures board", title:"Plan B",
+    text:"Under the board, the hall's marble carries every footstep like gossip. 23:07.\n\nAlex comes down the steps slowly, scanning the hall the way credit checks scan. He sees you. Relief, then verification, then relief allowed to stay.",
+    opts:[
+      {label:"\"Alex. Last night. All of it.\"", cost:15,
+        pick:function(){ return STORY.meetingTruthStep(); }}
+    ]};
+};
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — story layer part 4: ending evaluation + epilogues
+   ============================================================ */
+"use strict";
+
+STORY.evaluateEnding = function(){
+  const met = !!S.flags.met_alex;
+  const fraud = has("fraud_link")||has("manifest_seen");
+  const debt = has("jonas_debt")||has("debt_note")||has("jonas_debt_hint");
+  if(S.flags.doc_sold || S.flags.final_bill_brandt) return "wrong_person";
+  if(!met){
+    if(has("knows_quiet_place")||has("alex_witness")||fraud) return "too_late";
+    return "unknown";
+  }
+  if(has("publish")) return "alternative";
+  if(S.flags.final_press && fraud) return "truth";
+  if(fraud && debt) return "truth";
+  if(has("helped_mara_night")||has("helped_sofia")||has("final_alex_flees")) return "sacrifice";
+  return "too_late";
+};
+
+STORY.ENDINGS = {
+
+  truth: {
+    num:"ENDING 01", title:"THE TRUTH", tone:"rare",
+    text:function(){
+      let p1="At 23:41 a tram sighs past the lower quay. Alex talks and you listen, and the folder passes from his city to yours. There is no ceremony. Two friends on a cold bench, dividing the last bread of a very long day.";
+      let p2="At 06:14, the Vespera Herald runs the story under a headline Nadia has been sharpening for two years: 'THE SCHEDULE OF A THEFT — two years of altered manifests at Kessler Logistics, and the men who signed them.' Customs opens the file it had politely ignored. Brandt is detained before his second coffee. Sera is harder — Sera is always harder — but with the payments mapped by a witness who has stopped being afraid, his quiet stops being for sale.";
+      let p3="Jonas testifies. It costs him the job, the ironed shirts, and the last denial he owned. It buys him back his brother. On the 23rd of November the café keeps a corner table and someone sings the right year, finally, and nobody hides anything anywhere, including behind a bench on the Vodna quay.";
+      if(has("helped_mara_night")) p3="Jonas testifies. It costs him the job and the last denial he owned. It buys him back his brother. Mara keeps the café; its corner table now comes with a story she tells only people she likes. On the 23rd of November someone sings the right year, finally, and nobody hides anything anywhere.";
+      return p1+"\n\n"+p2+"\n\n"+p3+"\n\nYou did not do everything today. Nobody can. You did enough of the right things, at the cost of everything else, which is the entire price of the truth.";
+    },
+    fates:function(){
+      return "— Alex: safe; witness for the customs case; still slow-walks past the yard, now with a lawyer.\n— Jonas: unemployed, cooperating, lighter. 'I'll fix it' is finally true.\n— Mara & Sofia: keep saying what they saw until it has legal weight.\n— Nadia: byline of the year. Sleeps with the window open anyway.\n— Brandt: detained. His handshake is in evidence.\n— Sera: sells the shop in one afternoon. The fox keeps the glasses.\n— Devin: trades testimony for a Friday he actually takes off.";
+    }
+  },
+
+  too_late: {
+    num:"ENDING 02", title:"TOO LATE", tone:"bad",
+    text:function(){
+      if(S.flags.met_alex){
+        return "You found him. You sat on the bench, you heard the shape of it — and somehow the shape never became a fact. Too many of the day's doors were guessed at, closed politely, left unopened in their turns.\n\nAlex hands you the folder because there is nobody else. \"We're not done,\" he says. But he says it like a man practicing.\n\nThe truth is now a folder in your hands, without names attached, without the men who signed it, without the story that would make anyone care. By morning it is a problem you own, delayed past the hour when problems are cheap.";
+      }
+      if(has("brandt_told") && !has("knows_station_meet")){
+        return "You learned everything. The yard. The envelope. The manifests. You told Alex at 23:0X that Brandt knows — and Alex told you, very calmly, that the bench stopped being safe an hour before you knew it was.\n\nHe does not blame you out loud. He just re-plans his entire life in front of you, and at 23:52 he does the thing you were supposed to prevent: he becomes untraceable for a week.\n\nThe information was never the hard part. The hard part was today's schedule, and the number of hours in it, and you found that out at the exact hour it stopped being fixable.";
+      }
+      return "You knew. That's the cruel version — you knew. The bench, the hour, the boy: all of it was on your schedule from morning, and the day was simply full of everything else, and everything else won.\n\nAt 23:41 Alex waits with the river. At 23:58 he stops waiting. At 06:20 he takes the early train out of Vespera with one bag and no forwarding address, and the city absorbs his absence the way it absorbs everything: completely, by lunch.\n\nThe swans get fed by strangers now.";
+    },
+    fates:function(){
+      return S.flags.met_alex
+        ? "— Alex: alive, exposed, unhired. The folder ferments in your drawer.\n— Jonas: still owes. Still ironed. Still silent.\n— Mara: keeps your coffee order alive, like a small protest.\n— Brandt: promoted. The section number gains a number.\n— Sera: expands. Quiet is a growth market.\n— Nadia: keeps the half-file. Half is her favorite size for unsolved."
+        : "— Alex: untraceable — for a week, he hoped. It ran long.\n— Jonas: finds out from a lawyer what his brother tried to carry alone.\n— Mara: closes the café on time, every night, watching the door.\n— Sofia: keeps 'the quiet place' between her teeth, out of loyalty.\n— Brandt & Sera: untouched. The city called it 'procedural'.";
+    }
+  },
+
+  wrong_person: {
+    num:"ENDING 03", title:"THE WRONG PERSON", tone:"bad",
+    text:function(){
+      if(S.flags.doc_sold){
+        return "At the bench, Alex talks, and somewhere past the second sentence he understands what your emptied hands mean. He doesn't raise his voice. He asks who, exactly, and in what drawer.\n\n\"You sold it,\" he says. 'To the shop. My proof. In a drawer.'\n\nThe folder is already filed, under 'acquisitions of the afternoon'. The word for what you did with your day is 'commerce'. The word for what Alex does now is 'leaves.' Some lessons arrive with their own goodbye.";
+      }
+      if(S.flags.final_bill_brandt){
+        return "At the bench, you make the quiet deal out loud: folder to Brandt, debt to zero, Jonas to sleep. Alex is quiet so long the river fills the gap.\n\n\"He'll sign the debt away,\" Alex agrees, eventually. 'That's the thing about men like Brandt — they honor exactly as much as they fear.'\n\nBy Thursday, Brandt honors a document that never existed, Sera's collector is told the account is 'municipal' now, and the manifests are ash in a yard that produces its own weather of smoke. Your brother-in-law-safe. Your friend: gone by the weekend train. You chose the person you could reach over the person you could have saved.";
+      }
+      return "At the bench there is no Alex. There is Devin, on time, holding Alex's lighter like a receipt for the evening.\n\nThe bench was watched. Of course it was watched — you personally delivered the news that made it worth watching. Somewhere behind the tram lines, a boy who spent all day planning travel schedules for other people's freight is now planning his own, permanently, from a city with a different name.\n\nYou told one man one thing on one afternoon. It's astonishing, later, how far one sentence can travel when its payer is willing to buy the ticket.";
+    },
+    fates:function(){
+      return "— Alex: moved. Twice. Then a third time, quieter.\n— Jonas: debt 'restructured' — Sera's word for a longer leash.\n— Mara: stays. Somebody has to say Alex's name out loud in this town.\n— Brandt: unexamined, unhurried, excellent.\n— Sera: satisfied customer. You.\n— Nadia: keeps the half-file. Two years is a long time to stay unfinishable.";
+    }
+  },
+
+  alternative: {
+    num:"ENDING 04", title:"THE ALTERNATIVE", tone:"good",
+    text:function(){
+      return "You went to the Herald before you went to the bench, and that single re-ordering of hours changed the ending of the day.\n\nAt 00:01 the presses run cold. At 06:14 the story is everywhere: manifests, timestamps, photographs, names. Vespera wakes up to its own reflection and does not blink first.\n\nAt 06:20, Alex takes no train at all — he takes the protection of writers, lawyers, and one customs officer who waited a decade for cover, and he becomes something the grey coat did not plan for: unnecessary to protect. Timetables protect better than friends; they cannot be ambushed on a bench.\n\nBrandt is detained by breakfast. Sera's shop develops a sudden termite problem — of police. And the two of you feed the swans at noon, in full daylight, like the teenagers who wrote on that bench with a borrowed fork.";
+    },
+    fates:function(){
+      return "— Alex: safe, subpoenaed, insufferable about it. Correctly.\n— Jonas: testifies in a suit he already owned. Compounding, at last, in his favor.\n— Nadia: the story, the byline, the promotion she refuses.\n— Mara: names a coffee after you. It is mostly foam.\n— Sofia: night shifts, same as ever, less alone.\n— Brandt: 'assisting authorities with their inquiries', indefinitely.\n— Sera: sells the shop in one afternoon. The fox keeps the glasses.";
+    }
+  },
+
+  sacrifice: {
+    num:"ENDING 05", title:"THE SACRIFICE", tone:"bitter",
+    text:function(){
+      return "The evening went to someone else's catastrophe — and you were there for all of it, hands used, name remembered by people you will now be lucky enough to know for decades.\n\nSo at 23:0X you sit on the swans' bench with nothing but yourself, and it turns out that was the payment Alex actually required.\n\nHe doesn't bring out the folder at first. He checks the quay behind you twice and asks: 'Are they safe? All of them?'. You say yes, and your voice holds, and that testimony has no signatures but stands.\n\nThe manifests come out eventually. When they do, it's clear neither of you has a plan anymore — only the morning, and Nadia's doorbell, and the first stop being Jonas's floor. It is not the clean version of the truth. It is the version you could afford, and you paid for it with the part of the day where nobody was watching.";
+    },
+    fates:function(){
+      return "— Alex: safe, unproven, and stubborn. The folder survived its day.\n— Jonas: hears everything at breakfast. His shoulders drop an inch he never gets back.\n— Mara: covered for you twice now. Keeps a list, keeps a grin.\n— Sofia: owes you a shift and repays it in coffee, not money. Same as ever.\n— Brandt & Sera: unhurried — but now two people with a bench and a plan disagree with that.";
+    }
+  },
+
+  unknown: {
+    num:"ENDING 06", title:"THE UNKNOWN", tone:"bad",
+    text:function(){
+      return "Midnight arrives the way it does in cities that don't require your participation: everywhere at once, for everyone.\n\nYou spent the day where the day took you — coffee, corridors, conversations that were only ever rehearsal for conversations. The note in the hall stayed a riddle. The swans went unfed by anyone specific. Somewhere across the city, a friend with a plan C and no plan for the plan failing sat on a cold bench by himself, and after a while, stood up.\n\nAt 06:20 he leaves. You find out eventually, the way you find out everything in this city: late, secondhand, too well-packed to unfold.\n\nThe worst endings aren't dramatic. They're administrative.";
+    },
+    fates:function(){
+      return "— Alex: moved on. The word his brother uses later is 'protected', and it takes Jonas years to forgive the word.\n— Jonas: never learns what his brother tried to carry, which is its own sentence.\n— Mara: keeps your chair free at the corner table. Habit outlives hope.\n— Sofia: still has 'the quiet place' between her teeth, out of loyalty, out of grief.\n— Brandt & Sera: procedural. Onwards. Unexamined, unexpressed, unhurried.";
+    }
+  }
+};
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — engine: state, discrete time, events, calls, saves
+   ============================================================ */
+"use strict";
+
+var S = null;
+
+const Engine = {
+
+  DEFAULTS: function(){
+    return {
+      version: 1, plus:false,
+      time: h(8,0), loc:"apartment",
+      flags:{}, clues:{}, rel:{ mara:2, sofia:2, jonas:1, elio:1, nadia:1, viktor:0, brandt:0, devin:0 },
+      msgs:{}, callLog:[], feed:[], missed:[],
+      fired:{}, codeTries:0, metAlex:false, ending:null
+    };
+  },
+
+  /* ---------------- lifecycle ---------------- */
+  newGame(plus){
+    S = this.DEFAULTS();
+    S.plus = !!plus;
+    if(plus){
+      const arch = UI.loadArchive();
+      if(arch && arch.length){
+        const last = arch[arch.length-1];
+        S.memories = (last.feed||[]).filter(function(f){ return f.kind!=="note"; }).slice(-14);
+      }
+    }
+    setF("begin_day");
+    giveClue("begin_day");
+    feedAdd("sys","08:00 — Vespera, Venskaya Hill. The day starts with a phone already ringing.");
+    UI.showGame();
+    UI.initMap();
+    UI.render();
+    Engine.intro();
+  },
+
+  hasSave(){ try{ return !!localStorage.getItem("24h_save"); }catch(e){ return false; } },
+
+  save(){ try{ localStorage.setItem("24h_save", JSON.stringify(S)); }catch(e){} },
+  load(){ try{ const r = localStorage.getItem("24h_save"); if(!r) return false; S = JSON.parse(r); UI.showGame(); UI.initMap(); UI.render(); return true; }catch(e){ return false; } },
+  wipe(){ try{ localStorage.removeItem("24h_save"); }catch(e){} S=null; },
+
+  /* ---------------- intro cinematic ---------------- */
+  intro(){
+    const LINES = [
+      ["sys","08:00 — Thursday, 12 October. Vespera."],
+      ["","The phone rings exactly once before morning has finished inventing itself."],
+      ["speaker","ALEX"],
+      ["","\"Hey. Listen — don't talk, I only have a second. We need to talk. Something happened last night.\""],
+      ["","\"I can't explain it over the phone. Meet me before midnight. The quiet place. You know which one.\""],
+      ["","\"And— don't call me. Don't come to the yard. If I don't call you by noon, it's because I can't.\""],
+      ["sys","The line dies. You are 22 years old, it is 08:00, and you have sixteen hours."],
+      ["sys","Everything you do today will cost minutes. The city will not wait. Begin."],
+      ["ACTION","16 HOURS UNTIL MIDNIGHT"]
+    ];
+    UI.introOverlay(LINES);
+  },
+
+  /* ---------------- time & events ---------------- */
+  canAfford(cost){ return S.time + cost <= 1440; },
+
+  advance(cost){
+    S.time = Math.min(1440, S.time + cost);
+    this.fireEvents();
+    if(S.time >= 1440){ this.reachMidnight(); return false; }
+    return true;
+  },
+
+  fireEvents(){
+    const evs = STORY.EVENTS.slice().sort(function(a,b){ return a.t-b.t; });
+    for(let i=0;i<evs.length;i++){
+      const e = evs[i];
+      if(S.fired[e.id]) continue;
+      if(e.t > S.time) continue;
+      if(e.cond && !e.cond(S)) continue;
+      const active = !e.winEnd || S.time <= e.winEnd;
+      S.fired[e.id] = true;
+      const res = e.run(active);
+      if(res) Engine.resolve(res);
+      if(S.ending) return;
+    }
+  },
+
+  /* resolve whatever a story function returned */
+  resolve(res){
+    if(!res) return;
+    if(typeof res === "string"){
+      UI.showScene({ title:"", text:res });
+      return;
+    }
+    if(res.node){ UI.showScene(res.node); return; }
+    UI.showScene(res);
+  },
+
+  /* ---------------- actions ---------------- */
+  runAction(act, locId){
+    if(!this.canAfford(act.cost)){ UI.toast("Not enough time left — that would run past midnight.", true); return; }
+    if(act.cond && !act.cond()) return;
+    if(act.once && has(act.once)) return;
+    if(act.lockersOnly){
+      const L = DATA.LOCATIONS[locId].lockers;
+      if(L && (S.time < L[0] || S.time >= L[1])){ UI.toast("The locker hall is closed (06:00–22:00). Elio reads gossip, not exceptions.", true); return; }
+    }
+    if(act.hours){
+      if(S.time < act.hours[0] || S.time > act.hours[1]){ UI.toast("The mail has already been collected for today.", true); return; }
+    }
+    if(act.cost>0){ if(!Engine.advance(act.cost)) return; }
+    if(S.ending) return;
+    this.save();
+    let res;
+    try { res = act.run(); } catch(err){ console.error(err); UI.toast("Something went wrong with that action.", true); return; }
+    if(res!=null) this.resolve(res);
+    UI.render();
+  },
+
+  /* ---------------- travel ---------------- */
+  travelTime(from,to){ return DATA.MATRIX[from][to]!=null ? DATA.MATRIX[from][to] : DATA.MATRIX[to][from]; },
+
+  travel(to){
+    const cost = this.travelTime(S.loc,to);
+    if(!this.canAfford(cost)){ UI.toast("You'd still be walking at midnight. Too late for that distance.", true); return; }
+    const fromName = DATA.LOCATIONS[S.loc].name;
+    S.loc = to;
+    if(!Engine.advance(cost)) return;
+    feedAdd("sys", fmt(S.time) + " — you reach " + DATA.LOCATIONS[to].name + ". (" + cost + " min from " + (fromName) + ")");
+    this.save();
+    UI.render();
+  },
+
+  setLocSilent(loc){ S.loc = loc; },
+
+  /* ---------------- wrappers used by story actions ---------------- */
+  lockerScene(){ return STORY.lockerScene(); },
+  benchVisit(){ return STORY.benchVisit(); },
+
+  /* ---------------- dialogue ---------------- */
+  openDialog(id){
+    const w = charWhere(id);
+    if(!w || !w.talkable){
+      const loc = DATA.LOCATIONS[w && w.loc ? w.loc : S.loc];
+      return { kicker:"Unavailable", title:DATA.CHARS[id].name, text:"Not here, or not now. ("+(w? w.note:"—")+")", opts:[{label:"OK", cost:0, close:true}] };
+    }
+    const node = STORY.DIALOG[id]();
+    return node;
+  },
+
+  talkTo(id, viaPhone){
+    const d = STORY.DIALOG[id];
+    if(!d){ UI.toast("The number rings into nothing.", true); return; }
+    UI.showScene(d());
+  },
+
+  /* ---------------- phone ---------------- */
+  callChar(id){
+    const cost = 5;
+    if(!this.canAfford(cost)){ UI.toast("No time left even for hello.", true); return; }
+    const name = id==="UNKNOWN" ? "Unknown number" : DATA.CHARS[id].name;
+    this.advance(cost);
+    let result;
+    if(id==="alex"){
+      S.callLog.push({t:S.time, who:"out", id:"alex"});
+      if(S.time < h(15,50)){
+        setF("called_alex");
+        feedAdd("sys","05 min — you call Alex. Switched off. You try twice, because that's what the phrase 'switched off' is for.");
+        result = "engaged tone, then: 'The customer is unavailable.' You leave no message. The silence refuses to be Printable.";
+      } else {
+        result = "engaged, then dead. Alex's phone is somewhere it plans to stay.";
+      }
+    } else {
+      const w = charWhere(id);
+      S.callLog.push({t:S.time, who:"out", id:id});
+      if(w && w.talkable){
+        feedAdd("sys","05 min — call to "+name+". They pick up.");
+        this.talkTo(id, true);
+        UI.render();
+        return;
+      } else {
+        result = name+" doesn't answer. ("+(w? w.note:"beyond reach")+")";
+        feedAdd("sys","05 min — call to "+name+": no answer.");
+      }
+    }
+    UI.showScene({ title:"Call — "+name, text:result });
+    UI.render();
+  },
+
+  sendMessage(id, text){
+    if(!this.canAfford(1)){ UI.toast("Not even one minute left.", true); return; }
+    S.time += 1;
+    (S.msgs[id]=S.msgs[id]||[]).push({t:S.time, who:"me", text:text});
+    feedAdd("sys","Sent a message to "+(id==="UNKNOWN"?"an unknown number":DATA.CHARS[id].name)+".");
+    const reply = this.autoReply(id);
+    if(reply){ msgIn(id, reply); feedAdd("sys","Reply from "+DATA.CHARS[id].name+"."); }
+    this.fireEvents();
+    this.save();
+    UI.render();
+  },
+
+  autoReply(id){
+    if(id==="sofia" && !has("sofia_reply1") && (S.time<h(14)||S.time>=h(19))){
+      setF("sofia_reply1");
+      return "on shift. if this is about alex: clinic. please not over text.";
+    }
+    if(id==="mara" && S.time>=h(20,45)) return "home. tomorrow, ok? whatever today was."
+    if(id==="jonas" && S.time<h(19)) return "in meetings. call the office if it's actually important.";
+    if(id==="nadia") return "typing. send anything solid and it rides tonight's front.";
+    if(id==="elio") return "at the counter, as usual. come by.";
+    if(id==="alex") return null;
+    return null;
+  },
+
+  /* ---------------- waiting ---------------- */
+  wait(mins){
+    feedAdd("sys","You let "+mins+" minutes go where minutes go.");
+    this.advance(mins);
+    this.save();
+    UI.render();
+  },
+
+  /* ---------------- locker code ---------------- */
+  tryCode(code){
+    if(code === "2311"){
+      setF("opened_locker"); setF("has_document"); giveClue("manifest_seen"); giveClue("locker_full");
+      const txt="2311. The pad's light turns the green of permission.\n\nInside box 14: a folder labelled in Alex's square capitals — 'IN CASE I'M WRONG'. Duplicate customs manifests, re-stamped numbers, crossed-out consignees. Two photographs: Brandt and Sera in the yard at night. A clinic receipt — Sofia Lark, 03:12 last night.\n\nThe night acquires shape, and the shape has your friend's handwriting on it.";
+      UI.showScene({ title:"Box 14", text:txt });
+    } else {
+      S.flags.codeTries = (S.flags.codeTries||0)+1;
+      this.advance(5);
+      if(S.ending) return;
+      const tries = S.flags.codeTries;
+      let txt;
+      if(tries>=3 && !has("elio_favor")){
+        txt="Third wrong code. The box locks down for the day with bureaucratic finality, and Elio has to walk over with his master key and a face you will be footing the bill for. \"Try remembering better,\" he suggests, not unkindly, and logs it.\n\nBox 14 is closed to you until tomorrow. Tomorrow, of course, is a long way from tonight.";
+        setF("locker_blocked");
+      } else if(tries>=3 && has("elio_favor")){
+        setF("opened_locker"); setF("has_document"); giveClue("manifest_seen"); giveClue("locker_full");
+        txt="Third wrong code. Elio arrives with the master key and a very dry expression. \"Remember when I said today there's a word between us?\" The key turns. \"Now there's also a favor squared.\"\n\nInside box 14: the folder — 'IN CASE I'M WRONG' — the manifests, two photographs, and a clinic receipt with Sofia's name and 03:12 on it.";
+      } else {
+        txt = "The light shrugs red. " + (tries===1 ? "One wrong code, five minutes, and a machine that will remember both." : "Second mistake. The clerk's eyebrow is now involved.");
+      }
+      UI.showScene({ title:"Box 14", text:txt });
+    }
+    this.save();
+    UI.render();
+  },
+
+  /* ---------------- meeting windows ---------------- */
+  meetingAvailable(){
+    if(S.time < h(22,45) || S.time > h(23,59)) return false;
+    if(S.flags.met_alex) return false;
+    if(has("brandt_told") && has("knows_station_meet")) return S.loc==="station";
+    if(has("brandt_told") && !has("knows_station_meet")) return S.loc==="riverside";
+    if(has("knows_quiet_place")) return S.loc==="riverside";
+    return false;
+  },
+
+  runMeeting(kind){
+    if(!this.canAfford(8)){ UI.toast("Even waiting has a price, and you can't pay it.", true); return; }
+    const node = kind==="hall" ? STORY.meetingHall() : STORY.meetingBench();
+    if(node && node.ending){ Engine.finishEnding(node.ending); return; }
+    UI.showScene(node);
+  },
+
+  /* ---------------- endings ---------------- */
+  finishEnding(forced){
+    const id = forced || STORY.evaluateEnding();
+    S.ending = id;
+    UI.endingScreen(id);
+    this.archive();
+    try{ localStorage.removeItem("24h_save"); }catch(e){}
+  },
+
+  reachMidnight(){
+    S.time = 1440;
+    feedAdd("sys","24:00 — Midnight. The day ends the way it always does: completely.");
+    this.finishEnding(null);
+  },
+
+  archive(){
+    try{
+      const arch = JSON.parse(localStorage.getItem("24h_archive")||"[]");
+      const found = Object.keys(S.clues).length;
+      const total = Object.keys(DATA.CLUES).length;
+      arch.push({
+        when: new Date().toISOString(),
+        ending: S.ending,
+        endingTitle: STORY.ENDINGS[S.ending].title,
+        endingNum: STORY.ENDINGS[S.ending].num,
+        cluesFound: found, clueTotal: total,
+        clues: Object.keys(S.clues),
+        missed: S.missed.slice(),
+        feed: S.feed.filter(f=>f.kind==="important"||f.kind==="sys").slice(-16),
+        metAlex: !!S.flags.met_alex,
+        met: Object.keys(DATA.CHARS).filter(function(c){ return S.rel[c]!==undefined && c!=="alex"; })
+      });
+      while(arch.length>12) arch.shift();
+      localStorage.setItem("24h_archive", JSON.stringify(arch));
+    }catch(e){}
+  }
+};
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — UI layer
+   ============================================================ */
+"use strict";
+
+const UI = {
+  el: function(id){ return document.getElementById(id); },
+  selTo:null, phoneTab:"contacts", phoneThread:null, journalTab:"clues",
+
+  /* ---------------- navigation ---------------- */
+  show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden")); this.el(id).classList.remove("hidden"); },
+  showMenu(){ this.show("screen-menu"); this.refreshMenu(); },
+  showGame(){ this.show("screen-game"); },
+
+  refreshMenu(){
+    this.el("btn-continue").classList.toggle("hidden", !Engine.hasSave());
+    this.el("btn-newdayplus").classList.toggle("hidden", !this.loadArchive().length);
+    const arch=this.loadArchive();
+    this.el("menu-clock").textContent = arch.length ? fmt(h(23,59)) : "08:00";
+  },
+
+  /* ---------------- toast ---------------- */
+  toast(msg, bad){
+    const zone=this.el("toast-zone");
+    const d=document.createElement("div");
+    d.className="toast"+(bad?" bad":"");
+    d.textContent=msg;
+    zone.appendChild(d);
+    setTimeout(function(){ d.remove(); }, 3400);
+  },
+
+  /* ---------------- intro ---------------- */
+  introOverlay(lines){
+    const box=this.el("overlay-box");
+    box.className="";
+    box.innerHTML='<div class="ov-kicker">24 HOURS — VESPERA</div><div id="intro-lines"></div><button id="intro-go" class="btn ov-continue hidden">BEGIN THE DAY</button>';
+    document.getElementById("overlay").classList.remove("hidden");
+    const holder=box.querySelector("#intro-lines");
+    let i=0;
+    const next=function(){
+      if(i>=lines.length){
+        document.getElementById("intro-go").classList.remove("hidden");
+        return;
+      }
+      const L=lines[i++];
+      const div=document.createElement("div");
+      div.className="intro-line "+(L[0]==="sys"||L[0]==="ACTION"?"sys":(L[0]==="speaker"?"speaker":""));
+      div.textContent = L[0]==="speaker" ? "— "+L[1]+" —" : L[1];
+      holder.appendChild(div);
+      holder.scrollTop=holder.scrollHeight;
+      setTimeout(next, L[0]==="ACTION"?1000:1500);
+    };
+    next();
+    document.getElementById("intro-go").onclick=function(){
+      document.getElementById("overlay").classList.add("hidden");
+    };
+  },
+
+  /* ---------------- scene overlay (dialog system) ---------------- */
+  showScene(node){
+    const ov=document.getElementById("overlay");
+    const box=this.el("overlay-box");
+    box.className="";
+    ov.classList.remove("hidden");
+
+    let html="";
+    if(node.kicker) html+='<div class="ov-kicker">'+node.kicker+'</div>';
+    if(node.title) html+='<div class="ov-title">'+node.title+'</div>';
+    if(node.text) html+='<div class="ov-text">'+node.text.replace(/\n/g,"<br>")+'</div>';
+
+    if(node.codePad){
+      html+='<div class="ov-opts"><div class="ov-padwrap" style="cursor:default; display:block;">'
+          +  '<div style="display:flex; gap:.5rem; justify-content:center;">';
+      for(let i=0;i<4;i++) html+='<input class="code-in" data-i="'+i+'" maxlength="1" inputmode="numeric" style="width:52px; font-size:1.6rem; text-align:center; font-family:monospace; background:#0a0d13; color:var(--accent); border:1px solid var(--line); border-radius:4px; padding:.4rem 0;">';
+      html+='</div><div style="text-align:center; margin-top:.8rem;">'
+          + '<button id="code-ok" class="btn">ENTER</button> '
+          + '<button id="code-no" class="btn">STEP BACK</button></div>'
+          + (node.options_note?'<div class="dim" style="font-size:.7rem; margin-top:.7rem; text-align:center;">'+node.options_note+'</div>':'')
+          + '</div></div>';
+    }
+
+    if(node.opts && node.opts.length){
+      html+='<div class="ov-opts">';
+      node.opts.forEach(function(o,idx){
+        if(o.if && !o.if(S)) return;
+        html+='<div class="ov-opt" data-opt="'+idx+'">'
+            + '<main>'+o.label+(o.sub?'<small>'+o.sub+'</small>':'')+'</main>'
+            + (o.cost>0?'<span class="a-cost">− '+o.cost+' MIN</span>':'')
+            + '</div>';
+      });
+      html+='</div>';
+    }
+    if(node.farewell && !node.codePad) html+='<div class="dim" style="font-size:.75rem; font-style:italic; margin-top:1rem;">'+node.farewell+'</div>';
+    if(node.deadlineNote) html+='<div class="deadline-note">'+node.deadlineNote+'</div>';
+    if((!node.opts || !node.opts.filter(function(o){return !o.if||o.if(S);}).length) && !node.codePad){
+      html+='<button id="ov-close" class="btn ov-continue">'+(node.closeLabel||"CONTINUE")+'</button>';
+    }
+    box.innerHTML=html;
+
+    const self=this;
+    box.querySelectorAll(".ov-opt").forEach(function(el){
+      el.addEventListener("click", function(){
+        const idx=parseInt(el.getAttribute("data-opt"),10);
+        const o=node.opts ? node.opts[idx] : undefined;
+        if(!o){ console.warn("opt resolve miss", idx, node.title, !!(node.opts)); return; }
+        if(o.cost>0 ){ if(!Engine.canAfford(o.cost)){ UI.toast("Not enough time left for that.",true); return; } Engine.advance(o.cost); }
+        if(o.close){ self.closeScene(); return; }
+        if(S.ending){ return; }
+        let res=null;
+        try{ res = o.pick ? o.pick() : null; }catch(err){ console.error(err); }
+        if(res==null){ self.closeScene(); return; }
+        if(typeof res==="string"){ self.showResult(res, node); return; }
+        if(res.node){ self.showScene(res.node); return; }
+        if(res.ending){ Engine.finishEnding(res.ending); return; }
+        self.showScene(res);
+      });
+    });
+
+    const okBtn=box.querySelector("#code-ok");
+    if(okBtn){
+      const ins=box.querySelectorAll(".code-in");
+      ins.forEach(function(inp,k){
+        inp.addEventListener("input", function(){ if(inp.value.length>1) inp.value=inp.value.slice(0,1); if(inp.value && k<3) ins[k+1].focus(); });
+        inp.addEventListener("keydown", function(ev){ if(ev.key==="Enter") okBtn.click(); });
+      });
+      ins[0].focus();
+      okBtn.onclick=function(){
+        let code=""; ins.forEach(function(i){ code+=i.value; });
+        if(code.length<4){ UI.toast("Four digits. The machine is strict.",true); return; }
+        Engine.tryCode(code);
+      };
+      box.querySelector("#code-no").onclick=function(){ self.closeScene(); };
+    }
+
+    const closeBtn=box.querySelector("#ov-close");
+    if(closeBtn){
+      closeBtn.onclick=function(){
+        if(node.ending){ Engine.finishEnding(node.ending); return; }
+        if(node.endingSignal){ Engine.finishEnding(null); return; }
+        self.closeScene();
+      };
+    }
+  },
+
+  showResult(text, fromNode){
+    const box=this.el("overlay-box");
+    const self=this;
+    let tail="";
+    const pendingEnd =
+      S.flags.final_press || S.flags.final_bill_brandt || S.flags.final_alex_flees ||
+      S.flags.met_alex;
+    box.innerHTML='<div class="ov-result">'+text.replace(/\n/g,"<br>")+'</div>'
+      + '<button id="ov-cont" class="btn ov-continue">'+(pendingEnd?"MIDNIGHT APPROACHES":"CONTINUE")+'</button>';
+    box.querySelector("#ov-cont").onclick=function(){
+      if(pendingEnd){ Engine.finishEnding(null); return; }
+      self.closeScene();
+    };
+  },
+
+  closeScene(){
+    document.getElementById("overlay").classList.add("hidden");
+    if(Engine.hasSave() && S) Engine.save();
+    UI.render();
+  },
+
+  /* ---------------- main render ---------------- */
+  initMap(){
+    const COMPS={
+      office:"<rect x=\"-46\" y=\"-30\" width=\"92\" height=\"60\" rx=\"4\"/>",
+      home:"<rect x=\"-40\" y=\"-34\" width=\"80\" height=\"68\" rx=\"6\"/>",
+      plaza:"<circle r=\"44\"/>"
+    };
+    const NS="http://www.w3.org/2000/svg";
+    const river=document.getElementById("map-river");
+    river.innerHTML='<path d="M -10 250 C 90 230, 150 280, 230 262 S 380 240, 430 258 L 430 292 C 340 280, 290 300, 210 296 S 60 262, -10 286 Z" fill="#16283d" opacity="0.85"></path>'
+      +'<path d="M 60 262 C 130 250, 200 282, 300 268" stroke="#31536f" stroke-width="2" fill="none" opacity=".6"></path>';
+    let roads="";
+    Object.keys(DATA.MATRIX).forEach(function(a){
+      Object.keys(DATA.MATRIX[a]).forEach(function(b){
+        if(a<b) return;
+        const A=UI.THRONE[a], B=UI.THRONE[b];
+        roads+='<line x1="'+A[0]+'" y1="'+A[1]+'" x2="'+B[0]+'" y2="'+B[1]+'" stroke="#242a36" stroke-width="5"/>';
+        roads+='<line x1="'+A[0]+'" y1="'+A[1]+'" x2="'+B[0]+'" y2="'+B[1]+'" stroke="#39414f" stroke-width="1.4" stroke-dasharray="7 6"/>';
+      });
+    });
+    document.getElementById("map-roads").innerHTML=roads;
+
+    let dist="";
+    Object.keys(DATA.LOCATIONS).forEach(function(id){
+      const P=UI.THRONE[id];
+      dist+='<g class="mnode" data-loc="'+id+'" transform="translate('+P[0]+','+P[1]+')" style="cursor:pointer;">'
+        + '<rect class="mnode-bg" x="-52" y="-40" width="104" height="80" rx="8" fill="#10131c" stroke="#2a2e3a" stroke-width="2"/>'
+        + '<circle class="mnode-dot" cx="0" cy="0" r="7" fill="#2a2e3a"/>'
+        + '<text x="0" y="-22" text-anchor="middle" class="mnode-hours" fill="#9a948a" font-size="8" font-family="monospace"></text>'
+        + '</g>';
+    });
+    document.getElementById("map-districts").innerHTML=dist;
+
+    let labs="";
+    Object.keys(DATA.LOCATIONS).forEach(function(id){
+      const P=UI.THRONE[id];
+      labs+='<text x="'+P[0]+'" y="'+(P[1]+56)+'" text-anchor="middle" fill="#e8e4da" font-size="11.5" letter-spacing="2" data-label="'+id+'">'+UI.shortName(DATA.LOCATIONS[id].name)+'</text>';
+    });
+    document.getElementById("map-labels").innerHTML=labs;
+
+    document.querySelectorAll(".mnode").forEach(function(g){
+      g.addEventListener("click", function(){ UI.selectLoc(g.getAttribute("data-loc")); });
+    });
+  },
+
+  THRONE:{
+    apartment:[72,384], station:[66,210], oldtown:[150,84], business:[318,56], riverside:[344,190], industrial:[300,376]
+  },
+  shortName(n){ return n.replace("The ","").toUpperCase(); },
+
+  selectLoc(id){
+    this.selTo=id;
+    document.querySelectorAll(".mnode").forEach(g=>g.classList.remove("sel"));
+    const g=document.querySelector('.mnode[data-loc="'+id+'"]');
+    if(g) g.classList.add("sel");
+    const L=DATA.LOCATIONS[id];
+    const chars=Object.keys(DATA.CHARS).filter(function(c){ return charAt(c,id) && (S.rel[c]!==undefined); });
+    let info='<b>'+L.name+'</b> — '+L.area+'<br><span class="dim">'+L.hoursLabel+'</span>';
+    info+='<br><span style="font-size:.7rem;">';
+    if(id===S.loc){ info+='You are here.'; }
+    else {
+      const t=Engine.travelTime(S.loc,id);
+      info+='Travel: ~'+t+' min by foot/tram.';
+    }
+    if(chars.length) info+='<br>Present: '+chars.map(function(c){return DATA.CHARS[c].name;}).join(", ");
+    info+='</span>';
+    this.el("map-side-info").innerHTML=info;
+    const go=this.el("btn-go");
+    if(id!==S.loc && Engine.travelTime(S.loc,id)!=null){
+      go.classList.remove("hidden");
+      go.textContent="TRAVEL — "+Engine.travelTime(S.loc,id)+" MIN";
+    } else go.classList.add("hidden");
+  },
+
+  render(){
+    if(!S||S.ending) return;
+    document.body.setAttribute("data-phase", phaseName(S.time));
+    const rem = 1440-S.time;
+    this.el("hud-clock").textContent=fmt(S.time);
+    this.el("hud-date").textContent="THURSDAY · 12 OCTOBER" + (S.plus?" · DAY+":"");
+    this.el("hud-phase").textContent=phaseName(S.time).toUpperCase();
+    this.el("hud-elapsed").textContent="DAY "+Math.floor(S.time/1440*1)+" · "+fmt(S.time);
+    this.el("hud-remaining").textContent=Math.floor(rem/60)+"H "+String(rem%60).padStart(2,"0")+"M LEFT";
+    this.el("hud-bar-fill").style.width=(S.time/1440*100)+"%";
+    this.el("hud-bar-fill").style.background="linear-gradient(90deg,"+this.remColor(rem)+",transparent)";
+    this.el("hud-location").textContent=DATA.LOCATIONS[S.loc].name.toUpperCase();
+    const hz=this.el("hud-hazards");
+    let marks="";
+    const critical=[ [h(22,0),"lockers close"], [h(20,0),"Mara closes"], [h(21,0),"Herald prints"] ];
+    critical.forEach(function(c){
+      if(S.time<c[0] && c[0]-S.time<=180){
+        const p=c[0]/1440*100;
+        marks+='<div class="hz" title="'+c[1]+" at "+fmt(c[0])+'" style="left:'+p+'%"></div>';
+      }
+    });
+    hz.innerHTML=marks;
+
+    const L=DATA.LOCATIONS[S.loc];
+    this.el("scene-loc-name").textContent=L.name;
+    this.el("scene-loc-hours").textContent=L.hoursLabel;
+    this.el("scene-desc").textContent=L.desc[phaseName(S.time)];
+
+    const people=Object.keys(DATA.CHARS).filter(function(c){ return charWhere(c).loc===S.loc && charWhere(c).talkable; });
+    this.el("scene-people").innerHTML = people.length
+      ? people.map(function(c){ var w=charWhere(c); return '<span class="person-chip">'+DATA.CHARS[c].name+' <span class="dim">· '+w.note+'</span></span>'; }).join("")
+      : '<span class="dim" style="font-size:.7rem;">No one here to talk to.</span>';
+
+    this.renderActions(people);
+    this.renderMapState();
+    this.renderObjectives();
+    this.renderFeed();
+    if(this.selTo) this.selectLoc(this.selTo);
+  },
+
+  remColor(rem){ if(rem>300) return "var(--accent)"; if(rem>120) return "#e0a050"; return "#e0705e"; },
+
+  renderActions(people){
+    const box=this.el("scene-actions");
+    const self=this;
+    box.innerHTML="";
+    const locActions=STORY.ACTIONS[S.loc]||[];
+    locActions.forEach(function(a){
+      if(a.cond && !a.cond()) return;
+      if(a.once && has(a.once)) return;
+      let hoursOK=true;
+      if(a.lockersOnly){
+        const Lr=DATA.LOCATIONS[S.loc].lockers;
+        if(Lr && (S.time<Lr[0]||S.time>=Lr[1])) hoursOK=false;
+      } else if(a.hours){ hoursOK = S.time>=a.hours[0] && S.time<=a.hours[1]; }
+      if(!hoursOK) return;
+      const d=document.createElement("div");
+      d.className="action";
+      d.innerHTML='<span class="a-label">'+a.label+(a.sub?'<span class="a-sub">'+a.sub+'</span>':'')+'</span><span class="a-cost">− '+a.cost+' MIN</span>';
+      d.onclick=function(){ Engine.runAction(a, S.loc); };
+      box.appendChild(d);
+    });
+
+    people.forEach(function(id){
+      if(id==="alex") return;
+      const w=charWhere(id);
+      const d=document.createElement("div");
+      d.className="action person";
+      d.innerHTML='<span class="a-label">Talk to '+DATA.CHARS[id].name+'<span class="a-sub">'+ (w.note||"") +'</span>'+(S.rel[id]!==undefined?'<span class="rel">TRUST '+ ("★".repeat(Math.max(1,Math.min(5,Math.round(S.rel[id]||1)))) +"</span>"):'')+'</span><span class="a-cost">− 10 MIN</span>';
+      d.onclick=function(){
+        if(!Engine.canAfford(10)){ UI.toast("No time left for even a conversation.",true); return; }
+        Engine.advance(10);
+        if(S.ending) return;
+        Engine.save();
+        UI.showScene(Engine.openDialog(id));
+      };
+      box.appendChild(d);
+    });
+
+    if(Engine.meetingAvailable()){
+      const d=document.createElement("div");
+      d.className="action special";
+      const hall = has("brandt_told") && has("knows_station_meet");
+      d.innerHTML='<span class="a-label">'+(hall?"Wait under the departures board — station hall":"Wait for Alex at the swans' bench")+'<span class="a-sub">It is late. It is time. −8 min to 23:07.</span></span><span class="a-cost">★★★</span>';
+      d.onclick=function(){ Engine.runMeeting(hall?"hall":"bench"); UI.render(); };
+      box.appendChild(d);
+    }
+
+    const remBool = 1440 - S.time;
+    if(remBool<=60){
+      const d=document.createElement("div");
+      d.className="action special";
+      d.innerHTML='<span class="a-label">Wait until midnight<span class="a-sub">There is nothing left that fits. Let the day end on your terms.</span></span><span class="a-cost">− '+remBool+' MIN</span>';
+      d.onclick=function(){ Engine.wait(1440-S.time); };
+      box.appendChild(d);
+    }
+
+    [10,30,60].forEach(function(m){
+      const d=document.createElement("div");
+      d.className="action";
+      d.innerHTML='<span class="a-label">Wait '+m+' minutes<span class="a-sub">Let the city move without you.</span></span><span class="a-cost">− '+m+' MIN</span>';
+      d.onclick=function(){
+        if(!Engine.canAfford(m)){ UI.toast("That would run past midnight. The day is over whether you like it or not.",true); return; }
+        Engine.wait(m);
+      };
+      box.appendChild(d);
+    });
+  },
+
+  renderMapState(){
+    const NS="http://www.w3.org/2000/svg";
+    document.querySelectorAll(".mnode").forEach(function(g){
+      const id=g.getAttribute("data-loc");
+      const cur = S.loc===id;
+      g.querySelector(".mnode-bg").setAttribute("stroke", cur?"var(--accent)":"#2a2e3a");
+      g.querySelector(".mnode-bg").setAttribute("stroke-width", cur?"2.4":"2");
+      g.querySelector(".mnode-bg").setAttribute("opacity", cur?"1":"0.82");
+      const dot=g.querySelector(".mnode-dot");
+      const chars=Object.keys(DATA.CHARS).filter(function(c){ return charWhere(c).loc===id && charWhere(c).talkable && S.rel[c]!==undefined; });
+      if(chars.length){ dot.setAttribute("fill","#7ec8a0"); dot.setAttribute("r","8"); }
+      else if(has("fraud_link")&&id==="industrial"){ dot.setAttribute("fill","#b06a5a"); dot.setAttribute("r","8"); }
+      else { dot.setAttribute("fill","#2a2e3a"); dot.setAttribute("r","7"); }
+      const L=DATA.LOCATIONS[id];
+      g.querySelector(".mnode-hours").textContent = L.hoursLabel.split("·")[0].trim();
+    });
+    document.querySelectorAll("#map-labels text").forEach(function(t){
+      const id=t.getAttribute("data-label");
+      t.setAttribute("fill", S.loc===id ? "var(--accent)" : "#e8e4da");
+      t.setAttribute("font-weight", S.loc===id ? "700":"400");
+    });
+  },
+
+  renderObjectives(){
+    const o=STORY.OBJECTIVES();
+    this.el("objectives").innerHTML=o.map(function(x){
+      return '<div class="obj '+(x.done?"done":"")+'"><span class="dot">'+(x.done?"✓":"▸")+'</span><span>'+x.t+'</span></div>';
+    }).join("");
+  },
+
+  renderFeed(){
+    const f=this.el("feed");
+    const items=S.feed.slice(-40);
+    f.innerHTML=items.map(function(x){
+      return '<div class="feed-item '+x.kind+'"><span class="ft">'+fmt(x.t)+'</span>'+x.text+'</div>';
+    }).join("");
+    f.scrollTop=f.scrollHeight;
+  },
+
+  /* ---------------- phone ---------------- */
+  openPhone(){
+    this.phoneTab = this.phoneTab||"contacts";
+    if(this.phoneTab==="thread" && !this.phoneThread) this.phoneTab="contacts";
+    this.renderPhone();
+    document.getElementById("overlay").classList.remove("hidden");
+  },
+
+  renderPhone(){
+    const box=this.el("overlay-box");
+    const self=this;
+    let body="";
+    if(this.phoneTab==="contacts"){
+      const rows=DATA.CONTACTS.filter(function(c){
+        if(c==="UNKNOWN") return !!(S.msgs.UNKNOWN && S.msgs.UNKNOWN.length);
+        return c!=="alex" || true;
+      });
+      body='<div>';
+      rows.forEach(function(c){
+        const name = c==="UNKNOWN"?"UNKNOWN NUMBER":DATA.CHARS[c].name;
+        const role = c==="UNKNOWN"?"withheld":DATA.CHARS[c].role;
+        const last=(S.msgs[c]||[]);
+        const sub = last.length ? "last: "+last[last.length-1].text.slice(0,42)+"…" : "no messages";
+        const w = c==="UNKNOWN"?null:charWhere(c);
+        body+='<div class="contact-row" data-c="'+c+'">'
+            + '<span style="display:flex;align-items:center;"><span class="c-avatar">'+name.slice(0,2).toUpperCase()+'</span>'
+            + '<span><span class="c-name">'+name+'</span><br><span class="c-sub">'+sub+'</span></span></span>'
+            + '<span class="c-sub">'+(w?(w.talkable?"●":"○")+(charWhere(c).loc==="?"?"":" "+(DATA.LOCATIONS[w.loc]?UI.shortName(DATA.LOCATIONS[w.loc].name):"")):"")+'</span>'
+            + '</div>';
+      });
+      body+='</div>';
+    } else if(this.phoneTab==="thread"){
+      const c=this.phoneThread;
+      const name=c==="UNKNOWN"?"UNKNOWN NUMBER":DATA.CHARS[c].name;
+      body='<div class="dim" style="font-size:.7rem; letter-spacing:.15em; margin-bottom:.5rem;">◄ THREAD: '+name+'</div>';
+      body+='<div class="thread-msgs">';
+      (S.msgs[c]||[]).forEach(function(m){
+        body+='<div class="msg-b '+m.who+'"><span class="mt">'+fmt(m.t)+(m.who==="me"?" — YOU":"")+'</span>'+m.text.replace(/\n/g,"<br>")+'</div>';
+      });
+      if(!(S.msgs[c]||[]).length) body+='<div class="dim" style="padding:1rem 0;">No messages yet. Say something. It costs a minute; everything does.</div>';
+      body+='</div>';
+      body+='<div class="c-actions"><input id="msg-in" placeholder="Write a message…" style="flex:1; background:#0c1017; border:1px solid var(--line); color:var(--ink); padding:.5rem; border-radius:6px; font:inherit;"><button id="msg-send" class="btn">SEND −1</button><button id="msg-call" class="btn btn-gold">CALL −5</button></div>';
+    } else if(this.phoneTab==="log"){
+      body='<div>';
+      if(!S.callLog.length) body+='<div class="dim" style="padding:1rem 0;">No calls today. Modern.</div>';
+      S.callLog.slice().reverse().forEach(function(l){
+        const name=l.id==="UNKNOWN"?"withheld":DATA.CHARS[l.id].name;
+        body+='<div class="callrow"><span>'+ (l.who==="out"?"↗ to ":"↙ from ") + name +'</span><span class="mt">'+fmt(l.t)+' · 0:0'+(1+ (l.t%2))+'</span></div>';
+      });
+      body+='</div>';
+    }
+    const initials = '<div class="phone"><div class="phone-screen">'
+      + '<div class="phone-topbar"><span>VESPERA-MOB</span><span>'+fmt(S.time)+'</span></div>'
+      + '<div class="phone-tabs">'
+      + '<div class="phone-tab '+(this.phoneTab==="contacts"?"on":"")+'" data-t="contacts">CONTACTS</div>'
+      + '<div class="phone-tab '+(this.phoneTab==="log"?"on":"")+'" data-t="log">CALL LOG</div>'
+      + '</div><div class="phone-body">'+body+'</div>'
+      + '<div style="text-align:center; margin-top:.8rem;"><button id="phone-x" class="btn">CLOSE PHONE</button></div>'
+      + '</div></div>';
+    box.className="phone-holder";
+    box.innerHTML=initials;
+
+    box.querySelectorAll(".phone-tab").forEach(function(t){
+      t.onclick=function(){ UI.phoneTab=t.getAttribute("data-t"); UI.phoneThread=null; UI.renderPhone(); };
+    });
+    box.querySelectorAll(".contact-row").forEach(function(r){
+      r.onclick=function(){ UI.phoneThread=r.getAttribute("data-c"); UI.phoneTab="thread"; UI.renderPhone(); };
+    });
+    const send=box.querySelector("#msg-send");
+    if(send){
+      send.onclick=function(){
+        const inp=box.querySelector("#msg-in");
+        const v=inp.value.trim();
+        if(!v){ UI.toast("Write something first.",true); return; }
+        Engine.sendMessage(UI.phoneThread, v);
+        UI.renderPhone();
+      };
+      const call=box.querySelector("#msg-call");
+      call.onclick=function(){ UI.closeOverlay(); Engine.callChar(UI.phoneThread); };
+      box.querySelector("#msg-in").addEventListener("keydown", function(ev){ if(ev.key==="Enter") send.click(); });
+    }
+    const back=box.querySelector(".dim");
+    if(this.phoneTab==="thread"){
+      back.onclick=function(){ UI.phoneTab="contacts"; UI.phoneThread=null; UI.renderPhone(); };
+      back.style.cursor="pointer";
+    }
+    box.querySelector("#phone-x").onclick=function(){ UI.closeOverlay(); };
+  },
+
+  closeOverlay(){
+    document.getElementById("overlay").classList.add("hidden");
+  },
+
+  /* ---------------- journal ---------------- */
+  openJournal(tab){
+    this.journalTab=tab||this.journalTab||"clues";
+    const box=this.el("overlay-box");
+    box.className="";
+    let body="";
+    if(this.journalTab==="clues"){
+      const cats=["People","Places","Events","Documents"];
+      cats.forEach(function(cat){
+        const list=Object.keys(DATA.CLUES).filter(function(c){ return S.clues[c] && DATA.CLUES[c].cat===cat; });
+        if(!list.length) return;
+        body+='<div class="ov-kicker" style="margin-top:.6rem;">'+cat.toUpperCase()+'</div>';
+        list.forEach(function(c){
+          const cl=DATA.CLUES[c];
+          body+='<div class="journal-note"><b>'+cl.title+'</b>'+cl.text+'</div>';
+        });
+      });
+      if(!body) body='<div class="dim">Nothing written down yet. The day is young — barely.</div>';
+    } else if(this.journalTab==="people"){
+      Object.keys(DATA.CHARS).forEach(function(id){
+        if(id==="alex" && !has("alex_er") && !has("alex_chat")) return;
+        const c=DATA.CHARS[id];
+        const w=charWhere(id);
+        body+='<div class="char-card"><h4>'+c.name+' <span class="dim" style="font-size:.65rem;">· '+c.role+'</span></h4>'
+            + '<div class="cc-loc">'+(id==="alex"?"SCHEDULE: unknown":("NOW: "+(w.loc==="?"?"—":(DATA.LOCATIONS[w.loc]?DATA.LOCATIONS[w.loc].name:w.loc)+" — "+w.note)))+'</div>'
+            + '<div class="cc-bio">'+c.bio+' <i>'+c.personality+'</i><br><span class="dim">'+c.relation+'</span></div></div>';
+      });
+    } else if(this.journalTab==="memory"){
+      const m=S.memories||[];
+      body = m.length
+        ? '<div class="ov-kicker">FROM THE PREVIOUS DAY</div>'+m.map(function(x){ return '<div class="journal-note memory"><b>'+fmt(x.t)+'</b>'+x.text+'</div>'; }).join("")
+        : '<div class="dim">No memories from another day. This is your first.</div>';
+    }
+    const hypo = [];
+    if(has("fraud_link")||has("manifest_seen")) hypo.push("Kessler runs fraudulent manifests, res-published through Sera — the grey envelope is the heartbeat.");
+    if(has("jonas_debt")||has("debt_note")) hypo.push("Jonas's debt is the road in: Sera's people supervise it, and Alex paid it once already.");
+    if(has("alex_witness")||has("alex_chat")) hypo.push("Alex saw the drop at 23:40, photographed one page, and went to ground. He plans to show up at 23:00.");
+    if(has("knows_locker")&&!has("opened_locker")) hypo.push("Locker 14, station hall, 2311. The proof is sitting twelve minutes from anywhere.");
+    if(has("brandt_alerted")) hypo.push("Brandt knows the duplicate exists. The bench may be watched. Plan B matters.");
+    const html='<div class="ov-kicker">JOURNAL — Thursday, 12 October</div><div class="phone-tabs">'
+      + '<div class="phone-tab '+(this.journalTab==="clues"?"on":"")+'" data-j="clues">CLUES</div>'
+      + '<div class="phone-tab '+(this.journalTab==="people"?"on":"")+'" data-j="people">PEOPLE</div>'
+      + '<div class="phone-tab '+(this.journalTab==="memory"?"on":"")+'" data-j="memory">MEMORIES</div>'
+      + '</div><div style="min-height:340px;">'+body+'</div>'
+      + (hypo.length?'<div class="ov-kicker" style="margin-top:.8rem;">WORKING HYPOTHESES</div>'+hypo.map(function(x){return '<div class="hypo">'+x+'</div>';}).join(""):'')
+      + '<button id="journal-x" class="btn ov-continue">CLOSE</button>';
+    box.innerHTML=html;
+    document.getElementById("overlay").classList.remove("hidden");
+    const self=this;
+    box.querySelectorAll(".phone-tab").forEach(function(t){
+      t.onclick=function(){ UI.openJournal(t.getAttribute("data-j")); };
+    });
+    box.querySelector("#journal-x").onclick=function(){ UI.closeOverlay(); };
+  },
+
+  /* ---------------- pause menu ---------------- */
+  pause(){
+    const box=this.el("overlay-box");
+    box.className="";
+    box.innerHTML='<div class="ov-kicker">PAUSED — the city waits for no one, but you can</div>'
+      + '<div class="ov-title">PAUSE</div>'
+      + '<button id="p-resume" class="btn btn-lg">RESUME</button>'
+      + '<button id="p-restart" class="btn btn-lg">RESTART THE DAY</button>'
+      + '<button id="p-settings" class="btn btn-lg">SETTINGS</button>'
+      + '<button id="p-menu" class="btn btn-lg">MAIN MENU</button>';
+    document.getElementById("overlay").classList.remove("hidden");
+    document.getElementById("p-resume").onclick=function(){ UI.closeOverlay(); };
+    document.getElementById("p-menu").onclick=function(){ UI.closeOverlay(); UI.showMenu(); };
+    document.getElementById("p-settings").onclick=function(){ UI.settingsScreen(); };
+    document.getElementById("p-restart").onclick=function(){
+      if(!confirm("Restart the day? Today's progress will be lost.")) return;
+      UI.closeOverlay(); Engine.wipe(); Engine.newGame(false);
+    };
+  },
+
+  /* ---------------- menu Screens ---------------- */
+  archiveScreen(){
+    const box=this.el("overlay-box");
+    box.className="";
+    const arch=this.loadArchive();
+    let body;
+    if(!arch.length) body='<div class="dim">No days archived yet. Midnight hasn\'t happened to you.</div>';
+    else{
+      body='<div style="max-height:50vh; overflow-y:auto;">';
+      arch.slice().reverse().forEach(function(r){
+        body+='<div class="char-card"><h4>'+r.endingNum+' — '+r.endingTitle+' <span class="dim" style="font-size:.6rem;">'+(r.when||"").slice(0,10)+'</span></h4>'
+            + '<div class="cc-loc">CLUES: '+r.cluesFound+' / '+r.clueTotal+(r.metAlex?" · MET ALEX":" · ALONE AT MIDNIGHT")+'</div>'
+            + (r.missed && r.missed.length ? '<div class="cc-bio dim" style="font-size:.7rem;">MISSED:<br>· '+r.missed.slice(0,5).join("<br>· ")+'</div>':'')
+            + '</div>';
+      });
+      body+='</div>';
+    }
+    box.innerHTML='<div class="ov-kicker">DAY ARCHIVE</div><div class="ov-title">EVERY MIDNIGHT, ANOTHER VESPERA</div>'+body
+      + '<button id="arch-x" class="btn ov-continue">BACK</button>';
+    document.getElementById("overlay").classList.remove("hidden");
+    document.getElementById("arch-x").onclick=function(){ UI.closeOverlay(); UI.showMenu(); };
+  },
+
+  settingsScreen(){
+    const box=this.el("overlay-box");
+    box.className="";
+    box.innerHTML='<div class="ov-kicker">SETTINGS</div><div class="ov-title">CONFIGURE THE DAY</div>'
+      + '<div class="set-row"><span>Discrete time simulation</span><span class="note">time only advances with actions (always on)</span></div>'
+      + '<div class="set-row"><span>Autosave</span><span class="note">every action (always on)</span></div>'
+      + '<div class="set-row"><span>New Day+ memories</span><span class="note">journal carried across runs (automatic)</span></div>'
+      + '<button id="set-wipe" class="btn btn-lg" style="margin-top:1rem;">WIPE ALL DATA</button>'
+      + '<button id="set-x" class="btn btn-lg">BACK</button>';
+    document.getElementById("overlay").classList.remove("hidden");
+    document.getElementById("set-wipe").onclick=function(){
+      if(!confirm("Erase saves AND the day archive? This cannot be undone.")) return;
+      try{ localStorage.removeItem("24h_save"); localStorage.removeItem("24h_archive"); }catch(e){}
+      S=null; UI.refreshMenu(); UI.closeOverlay(); UI.showMenu();
+    };
+    document.getElementById("set-x").onclick=function(){ UI.closeOverlay(); UI.showMenu(); };
+  },
+
+  creditsScreen(){
+    const box=this.el("overlay-box");
+    box.className="";
+    box.innerHTML='<div class="ov-kicker">CREDITS</div><div class="ov-title">24 HOURS</div>'
+      + '<div class="ov-text">Design, writing, code and graphics:\none late October.\n\nEngine: discrete-time scheduler, no external dependencies.\nCity: Vespera — entirely fictional; any resemblance to cities you failed to live in is intentional.\n\nPart of a three-game collection about different kinds of impossible:\nThe Impossible Room — spatial problems.\nFalse Memory — truth vs. perception.\n24 Hours — time, opportunity, consequence.</div>'
+      + '<button id="cred-x" class="btn ov-continue">BACK</button>';
+    document.getElementById("overlay").classList.remove("hidden");
+    document.getElementById("cred-x").onclick=function(){ UI.closeOverlay(); UI.showMenu(); };
+  },
+
+  /* ---------------- ending screen ---------------- */
+  endingScreen(id){
+    const box=this.el("overlay-box");
+    const E=STORY.ENDINGS[id];
+    const ev=E.text();
+    const fates=E.fates();
+    const found=Object.keys(S.clues);
+    const total=Object.keys(DATA.CLUES).length;
+    const unDisc=Object.keys(DATA.CLUES).filter(function(c){ return !S.clues[c]; });
+    box.className="ending";
+    let html='<div class="ending-id">'+E.num+' — '+E.title+'</div>'
+      + '<div class="ov-title" style="font-size:1.4rem;">MIDNIGHT, VESPERA</div>'
+      + '<div class="ov-text" style="line-height:1.8;">'+ev.replace(/\n/g,"<br><br>")+'</div>'
+      + '<div class="epi-chars" style="white-space:pre-wrap;">'+fates+'</div>'
+      + '<div class="ending-stats">CLUES RECOVERED: <b>'+found.length+' / '+total+'</b>'+(has("told_anything")?"":"")+'<br>'
+      + 'MET ALEX: <b>'+(S.flags.met_alex?"YES":"NO")+'</b> · EVIDENCE: <b>'+(S.flags.doc_sold?"SOLD":(S.flags.has_document||S.flags.opened_locker?"IN YOUR HANDS":(S.flags.brandt_told?"COMPROMISED":"UNFOUND")))+'</b>'
+      + (S.memories&&S.memories.length?"<br>MEMORIES CARRIED: "+S.memories.length:"")+'</div>'
+      + '<button id="end-arch" class="btn btn-lg">DAY ARCHIVE</button>'
+      + '<button id="end-plus" class="btn btn-lg btn-gold">NEW DAY+ (KEEP THE JOURNAL)</button>'
+      + '<button id="end-menu" class="btn btn-lg">MAIN MENU</button>'
+      + '<div class="ov-kicker" style="margin-top:1.2rem;">WHAT YOU NEVER FOUND</div>'
+      + '<ul class="missed-list">'+unDisc.map(function(c){ return '<li>'+DATA.CLUES[c].title+'</li>'; }).join("") + (S.missed.length?"<li>…and "+S.missed.length+" live moment"+(S.missed.length>1?"s":"")+" that passed without you: see the archive.</li>":"") +'</ul>';
+    box.innerHTML=html;
+    document.getElementById("overlay").classList.remove("hidden");
+    document.getElementById("end-arch").onclick=function(){ UI.archiveScreen(); };
+    document.getElementById("end-plus").onclick=function(){ UI.closeOverlay(); Engine.wipe(); Engine.newGame(true); };
+    document.getElementById("end-menu").onclick=function(){ UI.closeOverlay(); UI.showMenu(); };
+  },
+
+  /* ---------------- archive storage ---------------- */
+  loadArchive(){ try{ return JSON.parse(localStorage.getItem("24h_archive")||"[]"); }catch(e){ return []; } }
+};
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — self-test harness (?test=1 in browser, or node)
+   ============================================================ */
+"use strict";
+
+const TestRunner = {
+  results: [],
+
+  check(name, fn){
+    try{
+      const r = fn();
+      this.results.push({ name:name, ok:r!==false, info:r===true?"":String(r) });
+    }catch(e){
+      this.results.push({ name:name, ok:false, info:e.message });
+    }
+  },
+
+  /* simulated minimal DOM/localStorage so logic tests run headless too */
+  stubEnv(){
+    if(typeof document!=="undefined") return false;
+    global.localStorage = { _m:{}, getItem(k){ return this._m[k]||null; }, setItem(k,v){ this._m[k]=v; }, removeItem(k){ delete this._m[k]; } };
+    function fakeEl(){
+      const el={ classList:{add(){},remove(){},toggle(){},contains(){return true;}}, innerHTML:"", textContent:"", style:{},
+        appendChild(){}, setAttribute(){}, getAttribute(){return null;}, addEventListener(){}, focus(){}, scrollTop:0, scrollHeight:0,
+        querySelectorAll(){ return []; }, value:"" };
+      el.querySelector=function(sel){ return (el.innerHTML.indexOf(String(sel).slice(1))>=0) ? fakeEl() : null; };
+      return el;
+    }
+    global.document = { getElementById(){ return fakeEl(); },
+      querySelector(){ return fakeEl(); }, querySelectorAll(){ return []; }, addEventListener(){}, createElement(){ return fakeEl(); } };
+    global.document.body = fakeEl();
+    global.window = { addEventListener(){}, location:{search:""} };
+    return true;
+  },
+
+  run(){
+    this.stubEnv();
+    const T=this;
+
+    /* --- data integrity --- */
+    T.check("Travel matrix symmetric", function(){
+      for(const a in DATA.MATRIX){
+        for(const b in DATA.MATRIX[a]){
+          if(DATA.MATRIX[b][a]!==undefined && DATA.MATRIX[b][a]!==DATA.MATRIX[a][b]) return false;
+        }
+      } return true;
+    });
+    T.check("Travel matrix complete", function(){
+      const ids=Object.keys(DATA.LOCATIONS);
+      for(const a of ids){ if(DATA.MATRIX[a][a]!==undefined) return false;
+        for(const b of ids){ if(a!==b && DATA.MATRIX[a][b]===undefined) return a+"->"+b; } }
+      return true;
+    });
+    T.check("Schedules: valid locations", function(){
+      for(const c in DATA.SCHED){
+        for(const b of DATA.SCHED[c]) if(!DATA.LOCATIONS[b[2]]) return c+": "+b[2];
+      } return true;
+    });
+    T.check("Schedules: sorted, non-overlapping, full-day", function(){
+      for(const c in DATA.SCHED){
+        const bl=DATA.SCHED[c];
+        if(bl[0][0]!==0) return c+" starts late";
+        let prevEnd=0;
+        for(const b of bl){
+          if(b[0]!==prevEnd) return c+" gap at "+fmt(b[0]);
+          if(b[1]<=b[0]) return c+" bad block";
+          prevEnd=b[1];
+        }
+        if(prevEnd!==h(24,0)) return c+" ends early";
+      } return true;
+    });
+    T.check("Event ids unique", function(){
+      const seen={};
+      for(const e of STORY.EVENTS){ if(seen[e.id]) return e.id; seen[e.id]=true; } return true;
+    });
+    T.check("Events time-sorted", function(){
+      let last=0;
+      for(const e of STORY.EVENTS){ if(e.t<last) return e.id; last=e.t; } return true;
+    });
+    T.check("Every character has a dialogue", function(){
+      for(const c in DATA.CHARS){ if(c==="alex") continue; if(!STORY.DIALOG[c]) return c; } return true;
+    });
+    T.check("Every action ref valid id", function(){
+      for(const loc in STORY.ACTIONS){
+        if(!DATA.LOCATIONS[loc]) return loc;
+        for(const a of STORY.ACTIONS[loc]){
+          const keys=["run","cond","once","hours","lockersOnly","id","label","sub","cost"];
+          for(const k of keys){} 
+          if(typeof a.run!=="function") return loc+"/"+a.id+" no run";
+        }
+      } return true;
+    });
+    T.check("Endings defined (6)", function(){
+      const need=["truth","too_late","wrong_person","alternative","sacrifice","unknown"];
+      for(const n of need) if(!STORY.ENDINGS[n]) return n; return true;
+    });
+
+    /* --- reachability of all six endings via state injection --- */
+    const scenarios = {
+      truth:        { flags:{ met_alex:true, fraud_link:true, jonas_debt:true, final_press:true } },
+      alternative:  { flags:{ met_alex:true, fraud_link:true, publish:true } },
+      wrong_person: { flags:{ met_alex:true, doc_sold:true } },
+      sacrifice:    { flags:{ met_alex:true, helped_mara_night:true } },
+      too_late:     { flags:{ knows_quiet_place:true } },
+      unknown:      { flags:{ } }
+    };
+    T.check("All 6 endings reachable & distinct", function(){
+      const got={};
+      for(const k in scenarios){
+        S = Engine.DEFAULTS();
+        S.flags = scenarios[k].flags;
+        const id = STORY.evaluateEnding();
+        if(!STORY.ENDINGS[id]) return k+" -> missing ending "+id;
+        got[id]=true;
+        const txt = STORY.ENDINGS[id].text();
+        if(typeof txt!=="string" || txt.length<100) return id+": bad epilogue";
+        if(typeof STORY.ENDINGS[id].fates()!=="string") return id+": bad fates";
+      }
+      return Object.keys(got).length===6 ? true : "only "+Object.keys(got).length+" endings matched";
+    });
+
+    /* --- full-day headless simulation --- */
+    T.check("Full day sim: time engine & events", function(){
+      S = Engine.DEFAULTS();
+      S.flags.fraud_link = true; // so the fence is marked known
+      const order=[];
+      for(let t=h(8,0); t<h(23,0); t+=7){ S.time=t; }
+      S = Engine.DEFAULTS();
+      // passive day: wait in 15-min chunks from 08:00 to midnight
+      let steps=0;
+      while(S.time<1440 && steps<120){
+        steps++;
+        const before=S.time;
+        // stay at riverside for bench visit, then at key spots
+        if(before<h(10,0)){ S.loc="apartment"; }
+        else if(before<h(12,0)){ S.loc="station"; }
+        else if(before<h(16,0)){ S.loc="oldtown"; }
+        else if(before<h(20,0)){ S.loc="business"; }
+        else { S.loc="riverside"; }
+        const ok = Engine.advance(Math.min(15, Math.max(1, 1440-S.time)));
+        if(!ok || S.ending){ break; }
+        order.push(before);
+      }
+      if(steps>=120 && S.time<1440) return "cannot advance: time="+fmt(S.time);
+      if(!S.ending) return "no ending at midnight (t="+fmt(S.time)+")";
+      return true;
+    });
+
+    /* --- time cost sanity --- */
+    T.check("Actions always cost time", function(){
+      for(const loc in STORY.ACTIONS){
+        for(const a of STORY.ACTIONS[loc]){
+          if(typeof a.cost!=="number" || a.cost<=0) return loc+"/"+a.id+" cost="+a.cost;
+        }
+      } return true;
+    });
+    T.check("Locker code guard: wrong codes consumed", function(){
+      S=Engine.DEFAULTS(); S.flags.knows_locker=true; S.flags.codeTries=0;
+      S.time=h(10,0);
+      Engine.tryCode("0000"); Engine.tryCode("0000");
+      if(S.flags.codeTries!==2) return "tries not counted";
+      return true;
+    });
+    T.check("Midnight block: no action past 24:00", function(){
+      S=Engine.DEFAULTS(); S.time=1435;
+      if(Engine.canAfford(10)) return "allowed to overshoot";
+      return true;
+    });
+
+    /* --- report --- */
+    const fails=this.results.filter(r=>!r.ok);
+    const report = this.results.map(function(r){ return (r.ok?"PASS":"FAIL")+"  "+r.name+(r.ok?"":"  → "+r.info); }).join("\n");
+    console.log("=== 24 HOURS SELF-TEST ===\n"+report+"\n"+(fails.length? fails.length+" FAILURES" : "ALL TESTS PASSED"));
+
+    if(typeof document!=="undefined"){
+      const box=document.getElementById("overlay-box");
+      box.className="";
+      box.innerHTML='<div class="ov-kicker">24 HOURS — SELF-TEST</div>'
+        + '<div class="ov-text" style="font-family:monospace; font-size:.72rem; white-space:pre-wrap;">'+report.replace(/&/g,"&amp;").replace(/</g,"&lt;")+'\n\n'+(fails.length? fails.length+" FAILURES":"ALL TESTS PASSED")+'</div>'
+        + '<button class="btn ov-continue" onclick="document.getElementById(\'overlay\').classList.add(\'hidden\')">CLOSE</button>';
+      document.getElementById("overlay").classList.remove("hidden");
+    }
+    return fails.length===0;
+  }
+};
+
+</script>
+<script>
+/* ============================================================
+   24 HOURS — boot & menu wiring
+   ============================================================ */
+"use strict";
+
+const Main = {
+  boot(){
+    document.getElementById("btn-new").onclick=function(){ Engine.newGame(false); };
+    document.getElementById("btn-continue").onclick=function(){ if(!Engine.load()) UI.toast("No save found.", true); };
+    document.getElementById("btn-newdayplus").onclick=function(){ Engine.newGame(true); };
+    document.getElementById("btn-archive").onclick=function(){ UI.archiveScreen(); };
+    document.getElementById("btn-settings").onclick=function(){ UI.settingsScreen(); };
+    document.getElementById("btn-credits").onclick=function(){ UI.creditsScreen(); };
+
+    document.getElementById("btn-phone").onclick=function(){ UI.openPhone(); };
+    document.getElementById("btn-journal").onclick=function(){ UI.openJournal(); };
+    document.getElementById("btn-pause").onclick=function(){ UI.pause(); };
+
+    document.getElementById("btn-go").onclick=function(){
+      if(!UI.selTo || UI.selTo===S.loc) return;
+      Engine.travel(UI.selTo);
+      UI.render();
+    };
+
+    document.addEventListener("keydown", function(ev){
+      const overlayOpen = !document.getElementById("overlay").classList.contains("hidden");
+      if(ev.key==="Escape"){
+        if(overlayOpen){ UI.closeOverlay(); }
+        return;
+      }
+      if(overlayOpen || !S || S.ending) return;
+      if(ev.key==="p"||ev.key==="P") UI.openPhone();
+      if(ev.key==="j"||ev.key==="J") UI.openJournal();
+    });
+
+    UI.showMenu();
+    if(window.location.search.indexOf("test=1")>=0){
+      setTimeout(function(){ TestRunner.run(); }, 300);
+    }
+  }
+};
+
+window.addEventListener("load", function(){ Main.boot(); });
+
+</script>
+</body>
+</html>

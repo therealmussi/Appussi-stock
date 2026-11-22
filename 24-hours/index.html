@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>24 HOURS — Vespera</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230c0f16'/><text x='16' y='22' font-size='14' font-family='monospace' fill='%23ffb454' text-anchor='middle'>24</text></svg>">
+</head>
+<body data-phase="morning">
+
+<!-- ======= MAIN MENU ======= -->
+<div id="screen-menu" class="screen">
+  <div class="menu-bg"></div>
+  <div class="menu-inner">
+    <div class="menu-clock" id="menu-clock">08:00</div>
+    <h1 class="menu-title">24 HOURS</h1>
+    <p class="menu-sub">A day in Vespera. The world does not wait for you.</p>
+    <div class="menu-buttons">
+      <button id="btn-new" class="btn btn-lg">NEW GAME</button>
+      <button id="btn-continue" class="btn btn-lg hidden">CONTINUE</button>
+      <button id="btn-newdayplus" class="btn btn-lg btn-gold hidden">NEW DAY+ <span class="men-note">keep your journal</span></button>
+      <button id="btn-archive" class="btn btn-lg">DAY ARCHIVE</button>
+      <button id="btn-settings" class="btn btn-lg">SETTINGS</button>
+      <button id="btn-credits" class="btn btn-lg">CREDITS</button>
+    </div>
+    <p class="menu-hint">Every action takes time. Every decision means giving up another possibility.</p>
+  </div>
+</div>
+
+<!-- ======= GAME SCREEN ======= -->
+<div id="screen-game" class="screen hidden">
+  <header id="hud">
+    <div class="hud-left">
+      <div id="hud-clock">08:00</div>
+      <div>
+        <div id="hud-date">THURSDAY · 12 OCTOBER</div>
+        <div id="hud-phase">MORNING</div>
+      </div>
+    </div>
+    <div class="hud-center">
+      <div class="hud-bar">
+        <div id="hud-bar-fill"></div>
+        <div id="hud-hazards"></div>
+      </div>
+      <div class="hud-bar-label"><span id="hud-elapsed">08:00</span><span id="hud-remaining">16H 00M LEFT</span><span>00:00</span></div>
+    </div>
+    <div class="hud-right">
+      <div id="hud-location">APARTMENT</div>
+      <div class="hud-btns">
+        <button id="btn-phone" class="btn btn-icon" title="Phone">▤</button>
+        <button id="btn-journal" class="btn btn-icon" title="Journal">✎</button>
+        <button id="btn-pause" class="btn btn-icon" title="Pause">‖</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="game-body">
+    <section id="panel-map">
+      <div id="map-wrap">
+        <svg id="map" viewBox="0 0 420 460" preserveAspectRatio="xMidYMid meet">
+          <!-- background layers are injected by ui.js -->
+          <g id="map-river"></g>
+          <g id="map-roads"></g>
+          <g id="map-districts"></g>
+          <g id="map-markers"></g>
+          <g id="map-labels"></g>
+        </svg>
+      </div>
+      <div id="map-side">
+        <div id="map-side-info">Select a district to see travel time.</div>
+        <button id="btn-go" class="btn hidden">TRAVEL</button>
+      </div>
+    </section>
+
+    <section id="panel-scene">
+      <div id="scene-head">
+        <div id="scene-loc-name"></div>
+        <div id="scene-loc-hours" class="dim"></div>
+      </div>
+      <div id="scene-desc"></div>
+      <div id="scene-people"></div>
+      <div id="scene-actions"></div>
+    </section>
+
+    <section id="panel-side">
+      <div class="side-box">
+        <h3>ACTIVE THREAD</h3>
+        <div id="objectives"></div>
+      </div>
+      <div class="side-box grow">
+        <h3>CITY FEED</h3>
+        <div id="feed"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ======= OVERLAYS ======= -->
+<div id="overlay" class="overlay hidden"><div id="overlay-box"></div></div>
+<div id="toast-zone"></div>
+
+<script src="js/data.js"></script>
+<script src="js/story.js"></script>
+<script src="js/actions.js"></script>
+<script src="js/meeting.js"></script>
+<script src="js/endings.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/tests.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
