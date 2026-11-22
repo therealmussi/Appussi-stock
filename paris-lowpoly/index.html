@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paris Low-Poly — Open World</title>
+  <script type="module" crossorigin src="./assets/index-CzwGWefC.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DIFDn_2N.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="minimapWrap">
+      <canvas id="minimap" width="200" height="200"></canvas>
+      <div id="mapLabel"></div>
+    </div>
+
+    <div id="topRight">
+      <div id="moneyBox">€ <span id="moneyVal">500</span></div>
+      <div id="starsBox"></div>
+    </div>
+
+    <div id="speedo" class="hidden">
+      <div id="speedVal">0</div>
+      <div id="speedUnit">km/h</div>
+      <div id="gearLabel"></div>
+    </div>
+
+    <div id="clockBox"><span id="clockVal">08:00</span></div>
+
+    <div id="missionPanel" class="hidden">
+      <div id="missionTitle"></div>
+      <div id="missionObjective"></div>
+      <div id="missionTimer" class="hidden">0</div>
+    </div>
+
+    <div id="hint" class="hidden"></div>
+    <div id="toasts"></div>
+    <div id="wantedFlash"></div>
+  </div>
+
+  <!-- Schermata iniziale -->
+  <div id="startScreen">
+    <div class="startInner">
+      <h1 class="title">PARIS <span>LOW-POLY</span></h1>
+      <p class="subtitle">Open world d'azione e guida sulla Senna · Torre Eiffel · Place de l'Étoile</p>
+
+      <div class="controls">
+        <div class="ctrlRow"><b>W A S D</b><span>Muoviti / Guida</span></div>
+        <div class="ctrlRow"><b>SHIFT</b><span>Scatta (a piedi)</span></div>
+        <div class="ctrlRow"><b>E / F</b><span>Entra / Esci dal veicolo</span></div>
+        <div class="ctrlRow"><b>SPAZIO</b><span>Freno a mano (derapata)</span></div>
+        <div class="ctrlRow"><b>H</b><span>Clacson</span></div>
+        <div class="ctrlRow"><b>R</b><span>Radio in auto (2 stazioni)</span></div>
+        <div class="ctrlRow"><b>MOUSE</b><span>Rotazione telecamera</span></div>
+        <div class="ctrlRow"><b>W / S in auto</b><span>Acceleratore / Retromarcia</span></div>
+      </div>
+
+      <p class="tips">Entra nei cerchi luminosi per iniziare le missioni. Attento alla Gendarmerie: se rubi un'auto o speroni nel traffico le stelle saliranno…</p>
+
+      <button id="playBtn">GIOCA</button>
+      <div id="loadingNote">Caricamento modulo 3D…</div>
+    </div>
+  </div>
+
+  <div id="pauseOverlay" class="hidden">In pausa — clicca per riprendere</div>
+
+</body>
+</html>
