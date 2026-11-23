@@ -215,6 +215,10 @@ h1.title::after {
 .menu-foot {
   margin-top: 18px; font-size: 11px; letter-spacing: 2px; color: rgba(141,135,124,0.75);
 }
+.menu-foot .credit-name {
+  font-size: 12px; font-weight: 700; letter-spacing: 3px;
+  text-transform: uppercase; color: rgba(228,222,209,0.85);
+}
 
 h2 {
   font-size: 22px; letter-spacing: 9px; font-weight: 700; color: var(--paper);
