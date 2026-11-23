@@ -23,6 +23,8 @@ export class UI {
       tape: $('tape-indicator'),
       tapeCount: $('tape-count'),
       crosshair: $('crosshair'),
+      hints: $('hints'),
+      fullscreenBtn: $('set-fullscreen'),
       vignette: $('vignette'),
       clickToPlay: $('click-to-play'),
     };
@@ -36,7 +38,18 @@ export class UI {
     for (const k of ['main', 'chapters', 'credits', 'settings', 'pause']) {
       this.el[k].classList.toggle('visible', k === name);
     }
+    if (name === 'pause') this._fillPauseInfo();
+    if (name === 'main') this.syncContinue();
     this.hud(name === null || name === undefined);
+  }
+
+  _fillPauseInfo() {
+    const g = this.game;
+    if (!g.current) return;
+    const name = ['THE BEGINNING', 'THE WRONG DOOR', 'UPSIDE DOWN', 'THE SMALLER WORLD',
+      'PERSPECTIVE', 'THE LOOP', 'THE ARCHITECT', 'THE IMPOSSIBLE ROOM'][g.current.index] || '';
+    $('pause-tapes').textContent = 'CH. ' + String(g.current.index + 1).padStart(2, '0')
+      + ' — ' + name + '  —  Recordings ' + g.save.tapes.length + ' / ' + g.totalTapes;
   }
 
   hideScreens() {
@@ -49,6 +62,19 @@ export class UI {
     this.el.hud.classList.toggle('visible', !!v);
     this.el.vignette.classList.toggle('visible', !!v);
     this.el.clickToPlay.classList.toggle('visible', !!v && !this.game.input.locked && this.game.state === 'playing');
+    if (!v) this.el.hints.classList.remove('on');
+  }
+
+  setHover(on) {
+    this.el.crosshair.classList.toggle('active', !!on);
+  }
+
+  showHints() {
+    const el = this.el.hints;
+    el.classList.remove('on');
+    clearTimeout(this._hintsT);
+    requestAnimationFrame(() => el.classList.add('on'));
+    this._hintsT = setTimeout(() => el.classList.remove('on'), 7000);
   }
 
   /* ---------- HUD ---------- */
@@ -297,6 +323,21 @@ export class UI {
       g().save.settings.fullscreen = on;
       g().save.persist();
     });
+    document.addEventListener('fullscreenchange', () => {
+      const on = !!document.fullscreenElement;
+      g().save.settings.fullscreen = on;
+      g().save.persist();
+      this._setEls.fullscreen.textContent = on ? 'EXIT FULLSCREEN' : 'ENTER FULLSCREEN';
+    });
+    this._setEls.fullscreen.textContent = document.fullscreenElement ? 'EXIT FULLSCREEN' : 'ENTER FULLSCREEN';
+  }
+
+  syncContinue() {
+    const g = this.game;
+    const btn = $('btn-continue');
+    const has = g.save.maxUnlocked > 1 || g.save.completed.some(Boolean);
+    btn.classList.toggle('disabled', !has);
+    if (has) btn.textContent = 'CONTINUE — CH. ' + String(g.save.chapter + 1).padStart(2, '0');
   }
 
   syncSettings() {

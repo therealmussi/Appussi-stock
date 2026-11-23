@@ -66,6 +66,7 @@ export class Game {
     this.state = 'playing';
     this.ui.hideScreens();
     this.ui.hud(true);
+    this.ui.showHints();
     this.fade.target = 0;
     this.fade.a = 1;
   }
@@ -83,8 +84,20 @@ export class Game {
     this.state = 'transition';
   }
 
-  restartLevel() {
-    if (this.current) this.startLevel(this.current.index, { silent: true });
+  restartLevel({ quick = false } = {}) {
+    if (!this.current) return;
+    if (quick) {
+      if (this.state !== 'playing') return;
+      this.audio.portal();
+      this.ui.fadeTo(1, 180);
+      setTimeout(() => {
+        this.startLevel(this.current.index, { silent: true });
+        this.msg('The level resets itself.');
+      }, 200);
+      this.state = 'transition';
+      return;
+    }
+    this.startLevel(this.current.index, { silent: true });
   }
 
   completeLevel() {
@@ -123,7 +136,9 @@ export class Game {
       const t = rayAABB(_ro, _rd, box, bestT);
       if (t !== null && t < bestT) { bestT = t; best = it; }
     }
+    const changed = (best !== this.hover);
     this.hover = best;
+    if (changed) this.ui.setHover(!!best);
     this.ui.prompt(best ? (best.label || '') : null);
   }
 
@@ -219,7 +234,10 @@ export class Game {
     const p = this.player;
     this.renderer.view = p.view;
     const aspect = this.renderer.w / Math.max(1, this.renderer.h);
-    M4.perspective(this.renderer.proj, 75 * Math.PI / 180, aspect, 0.05, 90);
+    const fov = 75 + 5 * Math.min(1, Math.max(0, (p.speed2d - 4.1) / 2.5));
+    if (this._fov === undefined) this._fov = fov;
+    this._fov += (fov - this._fov) * Math.min(1, 0.12);
+    M4.perspective(this.renderer.proj, this._fov * Math.PI / 180, aspect, 0.05, 90);
     this.renderer.draw({
       ...kit.env,
       camPos: p.camPos,

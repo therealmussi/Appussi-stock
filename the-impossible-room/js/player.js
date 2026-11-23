@@ -14,6 +14,8 @@ const AIR_ACCEL = 6;
 const FRICTION = 11;
 const JUMP = 7.2;
 const GRAV_ACC = 21;
+const COYOTE = 0.09;
+const JUMP_BUFFER = 0.14;
 
 export class Player {
   constructor() {
@@ -28,6 +30,11 @@ export class Player {
     this.grounded = false;
     this.bobT = 0;
     this.stepDist = 0;
+    this.coyote = 0;
+    this.jumpBuf = 0;
+    this.landKick = 0;
+    this.speed2d = 0;
+    this.sprinting = false;
     this.onStepCB = null;
     this.onLandCB = null;
     this.wasGrounded = true;
@@ -46,6 +53,10 @@ export class Player {
     V.copy(this.vel, [0, 0, 0]);
     this.yaw = yaw;
     this.pitch = 0;
+    this.coyote = 0;
+    this.jumpBuf = 0;
+    this.landKick = 0;
+    this.speed2d = 0;
   }
 
   setGravity(g) {
@@ -88,9 +99,13 @@ export class Player {
     Q.rotate(this.camUp, camQ2, _U);
 
     if (this.frozen) {
-      this._computeCam(0);
+      this._computeCam(0, dt);
       return;
     }
+
+    this.coyote = Math.max(0, this.coyote - dt);
+    this.jumpBuf = Math.max(0, this.jumpBuf - dt);
+    if (input.down('Space')) this.jumpBuf = JUMP_BUFFER;
 
     const sprint = input.down('ShiftLeft') || input.down('ShiftRight');
     let ix = 0, iz = 0;
@@ -134,9 +149,11 @@ export class Player {
 
     // gravity along g
     let nvUp = vUp - GRAV_ACC * dt; // up component along player's up is dot(v,up); gravity is -up dir
-    if (input.down('Space') && this.grounded) {
+    if (this.jumpBuf > 0 && this.coyote > 0) {
       nvUp = JUMP;
       this.grounded = false;
+      this.coyote = 0;
+      this.jumpBuf = 0;
     }
 
     // recompose
@@ -155,6 +172,7 @@ export class Player {
 
     this.grounded = isGrounded(this.pos, up, colliders, RADIUS, HALF_H);
     if (this.grounded) {
+      this.coyote = COYOTE;
       // cancel velocity into ground
       const vu2 = V.dot(this.vel, up);
       if (vu2 < 0) {
@@ -162,12 +180,15 @@ export class Player {
       }
       if (!wasG && this.onLandCB) {
         const impact = Math.min(1.5, Math.abs(nvUp) / 8);
+        this.landKick = Math.min(0.085, impact * 0.05);
         this.onLandCB(impact);
       }
     }
 
     // footsteps
     const hs = Math.hypot(_vp[0], _vp[1], _vp[2]);
+    this.speed2d = hs;
+    this.sprinting = !!sprint && hs > 2.0;
     if (this.grounded && hs > 0.5) {
       this.stepDist += hs * dt;
       const stride = sprint ? 2.6 : 2.0;
@@ -177,13 +198,14 @@ export class Player {
       this.bobT += dt * 0.4;
     }
 
-    this._computeCam(hs);
+    this._computeCam(hs, dt);
   }
 
-  _computeCam(hs) {
+  _computeCam(hs, dt) {
+    this.landKick = Math.max(0, this.landKick - this.landKick * dt * 9 - dt * 0.004);
     // head bob offset along visUp
     const bob = Math.min(0.045, hs * 0.004);
-    const off = Math.sin(this.bobT * 2.1) * bob * (this.grounded ? 1 : 0.2);
+    const off = Math.sin(this.bobT * 2.1) * bob * (this.grounded ? 1 : 0.2) - this.landKick;
     V.copy(this.camPos, this.pos);
     this.camPos[0] += this.visUp[0] * off;
     this.camPos[1] += this.visUp[1] * off;

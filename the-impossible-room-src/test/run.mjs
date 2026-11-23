@@ -118,6 +118,9 @@ ok(!document.getElementById('screen-main').classList.contains('visible'),
   'main menu stays hidden during play');
 ok(document.getElementById('click-to-play').classList.contains('visible'),
   'click-to-play overlay shown while the pointer is unlocked');
+await drainRaf(2);
+ok(document.getElementById('hints').classList.contains('on'),
+  'HUD control hints shown at level start');
 
 /* ---------- physics sanity ---------- */
 console.log('\n[physics]');
@@ -154,6 +157,56 @@ game.input.setVirtual('Space', false);
 ok(apex > yGround + 0.4, 'space jumps, apex climbed to y=' + apex.toFixed(2));
 await pump(1200);
 ok(Math.abs(game.player.pos[1] - 0.85) < 0.06, 'lands again on the floor');
+
+/* ---------- coyote & jump buffer ---------- */
+console.log('\n[jump forgiveness]');
+await pump(200);
+game.player.vel[1] = 0;
+await pump(30);
+ok(Math.abs(game.player.pos[1] - 0.85) < 0.09, 'settled, y=' + game.player.pos[1].toFixed(2));
+await pump(1200);
+{
+  game.player.teleport([0, 1.62, 0], 0);
+  await pump(500);
+  game.player.pos[1] = 0.95;
+  game.player.vel[1] = -1.0;
+  game.input.setVirtual('Space', true);
+  let apex3 = 0.95;
+  const t3 = Date.now();
+  while (Date.now() - t3 < 1500) {
+    game.update(1 / 60);
+    apex3 = Math.max(apex3, game.player.pos[1]);
+    if (apex3 > 1.3) break;
+    await sleep(2);
+  }
+  game.input.setVirtual('Space', false);
+  ok(apex3 > 1.3, 'jump still fires shortly after leaving the ground (coyote time), apex y=' + apex3.toFixed(2));
+  await pump(1200);
+}
+
+/* ---------- pause & restart keys ---------- */
+console.log('\n[pause & restart keys]');
+game.input.clear();
+globalThis.window.__fire('keydown', new globalThis.Event('keydown', { code: 'Escape' }));
+ok(game.state === 'paused', 'ESC pauses the game');
+ok(document.getElementById('pause-tapes').textContent.includes('CH. 01'),
+  'pause screen shows chapter name + recordings (was an empty placeholder)');
+globalThis.window.__fire('keydown', new globalThis.Event('keydown', { code: 'Escape' }));
+ok(game.state === 'playing', 'ESC resumes the game');
+{
+  game.player.teleport([5, 1.62, 5], 0);
+  globalThis.window.__fire('keydown', new globalThis.Event('keydown', { code: 'KeyR' }));
+  ok(game.state === 'transition', 'R triggers a quick restart');
+  let back = false;
+  const t0 = Date.now();
+  while (Date.now() - t0 < 3000) {
+    await pump(100);
+    if (game.state === 'playing' && Math.hypot(game.player.pos[0] - 2.4, game.player.pos[2] - 3.2) < 1.5) { back = true; break; }
+  }
+  ok(back, 'quick restart respawns on the level start');
+  await drainRaf(2);
+  ok(document.getElementById('hints').classList.contains('on'), 'hints shown again after restart');
+}
 
 /* ---------- LEVEL 01 — THE BEGINNING ---------- */
 console.log('\n[LEVEL 1 — THE BEGINNING]');
@@ -362,6 +415,9 @@ const fin = JSON.parse(globalThis.localStorage.getItem('impossible-room-save-v1'
 ok(fin && fin.completed.filter(Boolean).length === 8, 'all 8 chapters marked complete in storage');
 ok(fin.maxUnlocked >= 8, 'all chapters unlocked');
 ok(game.save.tapes.length === 11, 'all 11 recordings collected on this run');
+ok(document.getElementById('btn-continue').textContent.includes('CH. 08'),
+  'CONTINUE button shows the current chapter after the campaign: ' + document.getElementById('btn-continue').textContent);
+ok(!document.getElementById('btn-continue').classList.contains('disabled'), 'CONTINUE is enabled');
 await drainRaf(3);
 ok(consoleErrs.filter((e) => !/favicon/.test(e)).length === 0,
   'no console errors during the entire run' + (consoleErrs.length ? ' — got: ' + consoleErrs.slice(0, 3).join(' | ') : ''));

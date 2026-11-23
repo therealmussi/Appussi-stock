@@ -89,6 +89,19 @@ html, body {
 }
 #crosshair span:first-child { left: 50%; top: 0; width: 1.5px; height: 100%; transform: translateX(-50%); }
 #crosshair span:last-child { top: 50%; left: 0; height: 1.5px; width: 100%; transform: translateY(-50%); }
+#crosshair span { transition: background 0.12s, box-shadow 0.12s; }
+#crosshair.active span { background: var(--red); box-shadow: 0 0 6px rgba(160,36,48,0.9); }
+#crosshair.active { transform: translate(-50%, -50%) scale(1.45); transition: transform 0.12s; }
+
+#hints {
+  position: absolute; left: 30px; bottom: 26px;
+  font-size: 11px; letter-spacing: 2px; color: rgba(141,135,124,0.85);
+  opacity: 0; transition: opacity 1.2s ease;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+#hints.on { opacity: 1; }
+
+#pause-tapes { min-height: 16px; }
 
 #prompt {
   position: absolute; left: 50%; top: calc(50% + 34px);

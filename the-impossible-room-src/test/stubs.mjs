@@ -170,6 +170,7 @@ export function installStubs() {
   const winHandlers = {};
   globalThis.window = {
     addEventListener(type, fn) { (winHandlers[type] = winHandlers[type] || []).push(fn); },
+    __fire(type, ev) { (winHandlers[type] || []).forEach((fn) => fn(ev)); },
     removeEventListener() {},
     dispatchEvent() {},
     devicePixelRatio: 1,
@@ -186,7 +187,7 @@ export function installStubs() {
     clear: () => store.clear(),
   };
 
-  globalThis.Event = class Event { constructor(type) { this.type = type; } };
+  globalThis.Event = class Event { constructor(type, init = {}) { this.type = type; Object.assign(this, init); } };
   globalThis.requestAnimationFrame = (cb) => { (globalThis.__rafQ = globalThis.__rafQ || []).push(cb); };
   globalThis.cancelAnimationFrame = () => {};
 }

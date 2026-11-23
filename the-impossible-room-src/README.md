@@ -24,12 +24,13 @@ external assets, no build step, and no network dependencies — everything
 
 | Input | Action |
 | --- | --- |
-| `W A S D` | Move |
+| `W A S D` / arrows | Move |
 | Mouse | Look (click the canvas to capture the pointer) |
-| `Space` | Jump (where the room permits it) |
+| `Space` | Jump (where the room permits it; short late jumps still register) |
 | `E` | Interact — doors, levers, objects, walls |
 | `Shift` | Sprint |
-| `Esc` | Pause |
+| `R` | Restart the current level |
+| `Esc` | Pause / resume |
 
 A crosshair plus a contextual prompt shows exactly what is interactable; the
 game never hides a solution behind an unlabeled object.

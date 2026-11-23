@@ -46,14 +46,20 @@ if (saveData.endingSeen) {
 }
 
 ui.syncSettings();
+ui.syncContinue();
 ui.setTapeCount(saveData.tapes.length, game.totalTapes);
 
 input.onLockChange = (locked) => {
   if (!locked && game.state === 'playing') {
+    game._autoPausedAt = performance.now();
     game.pause();
   }
   ui.hud(game.state === 'playing');
 };
+
+window.addEventListener('focus', () => {
+  if (game.state === 'playing') ui.syncContinue();
+});
 
 /* ---------- resize ---------- */
 const onResize = () => renderer.resize();
@@ -61,8 +67,14 @@ window.addEventListener('resize', onResize);
 
 /* ---------- pause key (ESC handled by pointerlockchange; support ESC without lock) ---------- */
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'Escape' && game.state === 'playing' && !input.locked) {
-    game.pause();
+  if (e.code === 'Escape') {
+    if (game.state === 'playing' && !input.locked) game.pause();
+    else if (game.state === 'paused' && !input.locked
+             && performance.now() - (game._autoPausedAt || 0) > 400) game.resume();
+  }
+  if (e.code === 'KeyR' && game.state === 'playing' && !game.player.frozen
+      && document.activeElement?.tagName !== 'INPUT' && document.activeElement?.tagName !== 'SELECT') {
+    game.restartLevel({ quick: true });
   }
 });
 
