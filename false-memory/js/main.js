@@ -10,7 +10,7 @@
     /* topbar */
     const top = F.el('div', 'topbar');
     top.innerHTML = '<div class="logo"><b>F</b>ALSE MEMORY</div>' +
-      '<div class="caseid">CASE 001 \u00b7 THE DISAPPEARANCE \u00b7 SAINT-AUREL</div>' +
+      '<div class="caseid">CASE 001 · THE DISAPPEARANCE · SAINT-AUREL · BUILD v4</div>' +
       '<div class="spacer"></div>' +
       '<span class="chip chapter" id="chip-chapter"></span>' +
       '<span class="chip proof" id="chip-proof"></span>' +

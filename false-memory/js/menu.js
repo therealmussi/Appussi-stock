@@ -41,7 +41,7 @@
     go('CREDITS', () => showCredits());
 
     const foot = F.el('div', 'menu-foot');
-    foot.innerHTML = 'un gioco di MATTEO MUSSILLON &middot; tutto in locale, nessun server';
+    foot.innerHTML = 'un gioco di MATTEO MUSSILLON &middot; tutto in locale, nessun server<br><span class=\"code-line\" style=\"font-size:9px;color:#4c5661\">BUILD v4</span>';
     box.appendChild(foot);
     o.appendChild(box);
     document.body.appendChild(o);
