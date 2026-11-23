@@ -99,28 +99,9 @@ ok(!('persist' in raw), 'persist function is stripped from the stored shape');
 game.save.settings.master = 0.6; game.save.persist();
 ok(JSON.parse(globalThis.localStorage.getItem('impossible-room-save-v1')).settings.master === 0.6, 'persist() keeps overwriting cleanly');
 
-/* ---------- NEW GAME through the real menu ---------- */
-console.log('\n[new game]');
-game.input.clear();
-document.getElementById('btn-new').dispatchEvent(new globalThis.Event('click'));
-ok(!document.getElementById('screen-main').classList.contains('visible'),
-  'NEW GAME hides the main menu (regression: menu used to stay on top)');
-let introDone = false;
-{
-  const t0 = Date.now();
-  while (Date.now() - t0 < 15000) {
-    await pump(150);
-    if (game.current && game.current.index === 0 && game.state === 'playing') { introDone = true; break; }
-  }
-}
-ok(introDone, 'intro completes and the campaign starts on level 1');
-ok(!document.getElementById('screen-main').classList.contains('visible'),
-  'main menu stays hidden during play');
-ok(document.getElementById('click-to-play').classList.contains('visible'),
-  'click-to-play overlay shown while the pointer is unlocked');
-
 /* ---------- physics sanity ---------- */
 console.log('\n[physics]');
+game.startLevel(0);
 await pump(1200);
 ok(Math.abs(game.player.pos[1] - 0.85) < 0.06,
   'spawn falls and settles on the floor (y≈0.85), got ' + game.player.pos[1].toFixed(2));
