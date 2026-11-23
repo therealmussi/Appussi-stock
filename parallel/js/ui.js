@@ -122,6 +122,7 @@
           <label class="nota" for="input-seed">Seme di riproducibilità della simulazione:</label>
           <input id="input-seed" class="input" style="width:230px" value="84543">
         </div>
+        <p class="home-credit">PARALLEL — un gioco di <strong>Matteo Mussillon</strong></p>
       </div>`;
     const start = el('btn-nuova');
     if (start) start.addEventListener('click', () => {

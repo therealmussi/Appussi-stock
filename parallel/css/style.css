@@ -234,6 +234,8 @@ canvas.grafico { background: var(--carta); }
 .sc-lock { text-transform: uppercase; font-size: 10.5px; letter-spacing: 2px; color: var(--grigio); }
 .home-retake { margin-top: 14px; }
 .home-see { text-align: center; color: var(--grigio); }
+.home-credit { text-align: center; color: var(--grigio); font-size: 12px; letter-spacing: 0.08em; margin-top: 26px; }
+.home-credit strong { color: var(--inchiostro); }
 
 /* ————— modali ————— */
 .modal-overlay {
