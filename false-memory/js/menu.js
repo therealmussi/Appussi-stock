@@ -69,7 +69,7 @@
     go('CREDITS', () => showCredits());
 
     const foot = F.el('div', 'menu-foot');
-    foot.innerHTML = 'un gioco di MATTEO MUSSILLON &middot; tutto in locale, nessun server<br><span class=\"code-line\" style=\"font-size:9px;color:#4c5661\">BUILD v5</span>';
+    foot.innerHTML = 'un gioco di MATTEO MUSSILLON &middot; tutto in locale, nessun server<br><span class=\"code-line\" style=\"font-size:9px;color:#4c5661\">BUILD v6</span>';
     box.appendChild(foot);
     o.appendChild(box);
     document.body.appendChild(o);
@@ -147,6 +147,68 @@
       });
       row5.appendChild(aud);
       c.appendChild(row5);
+
+      /* salvataggio: esporta / importa codice JSON */
+      const saveHead = F.el('div', 'small mono');
+      saveHead.style.cssText = 'margin:16px 0 6px;color:#8fa6b8';
+      saveHead.textContent = 'SALVATAGGIO';
+      c.appendChild(saveHead);
+      const saveRow = F.el('div', 'setrow');
+      const expB = F.el('button', 'btn', 'ESPORTA CODICE');
+      saveRow.appendChild(expB);
+      c.appendChild(saveRow);
+      expB.addEventListener('click', () => {
+        const code = S.exportState();
+        const g = F.el('div');
+        g.innerHTML = '<h2>Salvataggio \u2014 esporta</h2>' +
+          '<p class="small">Copia questo codice e conservalo: contiene tutta l\u2019indagine (prove, bacheca, timeline, risposte).</p>';
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.readOnly = true;
+        ta.style.cssText = 'min-height:130px;font-family:var(--mono);font-size:11px;width:100%';
+        g.appendChild(ta);
+        const bar3 = F.el('div', 'closebar');
+        const cp = F.el('button', 'btn primary', 'COPIA');
+        cp.addEventListener('click', () => {
+          try { ta.select(); document.execCommand('copy'); } catch (e) {}
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).catch(() => {});
+          F.toast('Codice copiato \u2014 incollalo in un posto sicuro.');
+        });
+        bar3.appendChild(cp);
+        g.appendChild(bar3);
+        F.openModal(g);
+      });
+      const impB = F.el('button', 'btn', 'IMPORTA CODICE');
+      impB.style.marginLeft = '8px';
+      saveRow.appendChild(impB);
+      impB.addEventListener('click', () => {
+        const g = F.el('div');
+        g.innerHTML = '<h2>Salvataggio \u2014 importa</h2>' +
+          '<p class="small">Incolla un codice di salvataggio esportato in precedenza. La partita corrente verr\u00e0 sostituita.</p>';
+        const ta = document.createElement('textarea');
+        ta.style.cssText = 'min-height:130px;font-family:var(--mono);font-size:11px;width:100%';
+        g.appendChild(ta);
+        const bar3 = F.el('div', 'closebar');
+        const cab = F.el('button', 'btn', 'ANNULLA');
+        cab.addEventListener('click', () => F.closeModal());
+        const ok3 = F.el('button', 'btn primary', 'CARICA');
+        ok3.addEventListener('click', () => {
+          let ok = false;
+          try { ok = S.importState(JSON.parse(ta.value)); } catch (e) { ok = false; }
+          if (ok) {
+            F.toast('Salvataggio importato.');
+            F.closeModal();
+            F.closeModal();
+            window.FMState.st.started = true;
+            window.FMUI.updateNav();
+            window.FMUI.navigate('casew');
+          } else F.toast('Codice non valido: non \u00e8 un salvataggio di FALSE MEMORY.');
+        });
+        bar3.appendChild(cab);
+        bar3.appendChild(ok3);
+        g.appendChild(bar3);
+        F.openModal(g);
+      });
       const bar = F.el('div', 'closebar');
       const rms = F.el('button', 'btn danger', 'CANCELLA LE IMPOSTAZIONI DI GIOCO');
       rms.addEventListener('click', () => {

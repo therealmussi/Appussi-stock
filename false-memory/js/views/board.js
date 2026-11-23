@@ -72,7 +72,7 @@ window.FMViews = window.FMViews || { views: {} };
     bar.appendChild(hint);
 
     F.hintOnce(root, 'board',
-      'Trascina gli elementi e collegali in modalit\u00e0 <b>COLLEGA</b>: clicca il primo nodo, poi il secondo, poi scegli la relazione. <b>CONTRADDICE</b> conta come contraddizione segnata. Doppio clic su una nota per scriverci.');
+      'Trascina gli elementi e collegali in modalit\u00e0 <b>COLLEGA</b>: clicca il primo nodo, poi il secondo, poi scegli la relazione. <b>CONTRADDICE</b> conta come contraddizione segnata. Doppio clic su una nota per scriverci; doppio clic sullo sfondo per creare una nota lì.');
 
     const wrap = F.el('div', 'board-wrap');
     const canvas = F.el('div', 'board-canvas');
@@ -100,6 +100,16 @@ window.FMViews = window.FMViews || { views: {} };
 
     function nodeOf(id) { return st.board.nodes.find(n => n.id === id); }
     function nodeCenter(n) { return { x: n.x + 95, y: n.y + 45 }; }
+
+    /* doppio clic sullo sfondo: crea una nota nel punto esatto */
+    canvas.addEventListener('dblclick', ev => {
+      if (ev.target !== canvas && ev.target !== svg) return;
+      const r = canvas.getBoundingClientRect();
+      const x = Math.max(0, Math.min(2300 - 190, Math.round((ev.clientX - r.left + window.scrollX) / 25) * 25));
+      const y = Math.max(0, Math.min(1500 - 80, Math.round((ev.clientY - r.top + window.scrollY) / 25) * 25));
+      const node = addNode({ kind: 'note', txt: 'Nuova nota', x, y });
+      editNote(node);
+    });
 
     function delNode(id) {
       st.board.links = st.board.links.filter(l => l.a !== id && l.b !== id);

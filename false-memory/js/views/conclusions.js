@@ -140,12 +140,47 @@ window.FMViews = window.FMViews || { views: {} };
     }
   };
 
+  /* rango del giocatore: valutazione generale dell'indagine, dalla consegna e dal lavoro fatto */
+  function rankOf(key, d, attachedEss) {
+    const S = window.FMState, T = window.FM_TRUTH;
+    const contr = S.contradictionCount();
+    const allEss = attachedEss.length >= (T.essential || []).length;
+    let rank, color;
+    if (key === 'correct') { rank = allEss && contr >= 4 ? 'S' : 'A'; color = 'green'; }
+    else if (key === 'plausible') { rank = 'B'; color = 'amber'; }
+    else if (key === 'unresolved') { rank = 'C'; color = 'amber'; }
+    else { rank = 'D'; color = 'red'; }
+    return { rank, color };
+  }
+
   function renderEnding(root, key, E, d, attachedEss) {
     const F = window.FM, T = window.FM_TRUTH, S = window.FMState, A = d.answers;
     root.innerHTML = '';
     const box = F.el('div', 'ending ' + (E.tone || 'ok'));
     box.innerHTML = '<div class="e-key">CASE 001 \u2014 VERDETTO</div><h1>' + F.esc(E.label) + '</h1>' +
       '<div class="etext">' + F.esc(E.text) + '</div>';
+
+    /* rank e statistiche dell'indagine */
+    const rk = rankOf(key, d, attachedEss);
+    const tot = window.FM_EVIDENCE.length;
+    const disc = S.st.discovered.length;
+    const contr = S.contradictionCount();
+    const exDone = Object.keys(S.st.read || {}).filter(k => k.indexOf('ex_') === 0 && S.st.read[k]).length;
+    const cons = (S.st.endings || []).length;
+    const stats = F.el('div', 'truthbox card');
+    stats.innerHTML = '<h3>Rapporto di fine caso</h3>' +
+      '<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">' +
+      '<div style="text-align:center;flex:none"><div class="badge ' + rk.color + '" style="font-size:30px;padding:6px 18px;display:inline-block">RANGO ' + rk.rank + '</div>' +
+      '<div class="small mono" style="margin-top:4px">valutazione indagine</div></div>' +
+      '<div class="small mono" style="line-height:1.9">' +
+      'PROVE ACQUISITE: ' + disc + '/' + tot + '<br>' +
+      'ANALISI COMPLETATE: ' + exDone + '<br>' +
+      'CONTRADDIZIONI SEGNALATE: ' + contr + '<br>' +
+      'CAPITOLO RAGGIUNTO: ' + ('0' + S.chapter()).slice(-2) + '<br>' +
+      'CONSEGNE TOTALI: ' + cons + '</div></div>' +
+      '<p class="small" style="margin-top:10px">Il rango esalta una consegna corretta sostenuta da tutte le prove essenziali e da un\u2019indagine attenta alle contraddizioni; un verdetto corretto con prove sparse vale comunque un risultato solido.</p>' +
+      '<p class="small">Consegna di nuovo da CONCLUSIONS per migliorare il rango.</p>';
+    box.appendChild(stats);
 
     const tb = F.el('div', 'truthbox card');
     tb.innerHTML = '<h3>Che cosa e successo davvero</h3><p>' + F.esc(T.summary) + '</p>' +

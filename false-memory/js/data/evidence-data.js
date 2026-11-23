@@ -81,7 +81,10 @@ D(code('FOT-07', {
   reliability: 'uncertain', chapter: 3, prereqs: ['ev:P05', 'flag:victor_fishing'],
   examines: [{ id: 'exP07', label: 'Analizza la figura', title: 'Tutto ciò che si porta via',
     text: '<p>La silhouette è compatibile con Daniel Moreau (altezza 1,84 m stimata dal rapporto con lo stipite). Il borsone corrisponde al vano — vuoto, ma con l\'impronta nella polvere — dell\'armadio di P03. La cartella rigida corrisponde alla cartella portadocumenti assente dal cassetto della scrivania. Il passo è regolare. Nessuno lo tocca.</p>',
-    setsFlag: 'daniel_left', reliability: 'verified' }]
+    setsFlag: 'daniel_left', reliability: 'certain' },
+    { id: 'exP07b', label: 'Confronta l\'ora sovraimpressa con DOC-11', title: '22:35 impressa: sono le 22:28',
+    text: '<p>La sovraimpressione «22:35» nasce dall\'orologio della camera A, regolato in manutenzione (DOC-11) con un anticipo di 7 minuti e 10 secondi. Il fotogramma risale quindi alle <strong>22:28</strong>, in piena coerenza con l\'uscita dopo la chiusura «normale» del portone (BUF-05, 22:04) e con il transito di Claire (22:12\u201322:26). Le telecamere non mentono: segnano male. Una differenza che ha generato mezze inchieste.</p>',
+    requires: 'ev:D11', setsFlag: 'stamp_matched', reliability: 'certain' }]
 })),
 
 D(code('FOT-08', {
@@ -245,7 +248,10 @@ D(code('REC-05', {
   reliability: 'verified', chapter: 2, prereqs: ['ev:D11'],
   examines: [{ id: 'exR05', label: 'Migliora l\'audio', title: 'Le voci di due uomini',
     text: '<p>Con il filtraggio del laboratorio: le due voci sono di <strong>due uomini</strong>, la seconda identificabile come Thomas Keller per tre tratti vocali confermati dalla banca vocale della questura. Il tonfo di 21:55 e lo stridore aprono una finestra di 9 secondi: qualcosa di violento, ma tra <em>due persone che si conoscono</em>. Poi una porta chiusa «normalmente». Nessun grido. Nessuna richiesta di aiuto.</p>',
-    setsFlag: 'slam_2204', reliability: 'certain' }]
+    setsFlag: 'slam_2204', reliability: 'certain' },
+    { id: 'exR05b', label: 'Analisi spettro del canale interno', title: 'Due voci. Nessuna terza.',
+    text: '<p>Analisi spettrale dell\'intero buffer: <strong>due sole identità vocali</strong>, nessuna terza presenza, nessun respiro fuori posto. Dopo lo scatto del portone delle 22:04, per due minuti: solo hum del ventilatore condominiale e passi di una persona sola che sale. Nessun trascinamento. Nessun tonfo successivo. Chi ha aperto il portone alle 22:04 è restato dentro; l\'altro era già verso casa.</p>',
+    setsFlag: 'r05_clean', reliability: 'certain' }]
 })),
 
 /* ══════════════════════════════════════ OGGGETTI ══════════════════════════════════════ */
@@ -274,7 +280,10 @@ D(code('OBJ-03', {
   reliability: 'uncertain', chapter: 1,
   examines: [{ id: 'exO03', label: 'Esamina le crepe', title: 'Crepe secche',
     text: '<p>Nelle crepe più strette è penetrata <strong>polvere stabile</strong>: lo schermo è rotto da almeno 24, forse 48 ore prima del 19/10. Le crepe inoltre non attraversano i punti di flessione del telaio, come accade in un impatto da presa in mano: partono dal bordo, coerentemente con una caduta da altezza di mano. Il telefono aveva bisogno di una pratica di garanzia — non di un referto.</p>',
-    unlocks: ['D08'], reliability: 'certain' }]
+    unlocks: ['D08'], reliability: 'certain' },
+    { id: 'exO03b', label: 'Incrocia la pratica di garanzia', title: 'Rottura nota dal 15/10',
+    text: '<p>L\'IMEI coincide con la pratica di garanzia aperta il <strong>15/10 alle 10:02</strong> (DOC-08): schermo crepato quel mattino, telefono attivo fino alle <strong>21:07 del 17/10</strong> (DOC-07). Le crepe sono del 15, non della notte: l\'ipotesi «lotta in cucina» perde il suo solo riscontro fisico. La cucina era ordinata, non un teatro.</p>',
+    requires: 'ev:D08', setsFlag: 'phone_cleared', reliability: 'certain' }]
 })),
 
 D(code('OBJ-04', {

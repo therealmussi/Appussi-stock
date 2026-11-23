@@ -92,6 +92,25 @@
     contradictionCount() {
       const links = (st.board.links || []).filter(l => l.rel === 'contradicts').length;
       return links + (st.timeline.flagged || []).length;
+    },
+
+    /* export/import del salvataggio come codice JSON */
+    exportState() {
+      return JSON.stringify(st);
+    },
+    importState(obj) {
+      try {
+        if (!obj || typeof obj !== 'object') return false;
+        if (!Array.isArray(obj.discovered) || !obj.board || !Array.isArray(obj.board.nodes)) return false;
+        const fs = fresh();
+        const kept = new Set(['discovered', 'exams', 'speakers', 'flags', 'talks', 'confronts', 'read',
+          'reliability', 'board', 'timeline', 'conclusions', 'endings', 'seen', 'started', 'finished', 'chapter']);
+        Object.keys(obj).forEach(k => { if (kept.has(k)) st[k] = obj[k]; });
+        st.settings = Object.assign({}, fs.settings, obj.settings && typeof obj.settings === 'object' ? obj.settings : {});
+        st.seen = st.seen || {};
+        save();
+        return true;
+      } catch (e) { return false; }
     }
   };
   window.FMState = S;
