@@ -62,6 +62,8 @@ body{
 .menu-title{ font-weight:200; font-size:2.6rem; letter-spacing:.55em; text-indent:.55em; color:var(--ink); }
 .menu-sub{ color:var(--dim); letter-spacing:.22em; text-transform:uppercase; font-size:.68rem; margin:.5rem 0 2rem; }
 .menu-hint{ color:var(--dim); font-size:.72rem; font-style:italic; margin-top:2.2rem; letter-spacing:.06em;}
+.menu-credit{ color:var(--dim); font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; margin-top:.55rem; }
+.menu-credit span{ color:var(--gold); letter-spacing:.1em; }
 
 /* ---------- HUD ---------- */
 #hud{
