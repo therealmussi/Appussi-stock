@@ -121,7 +121,7 @@ window.FMViews = window.FMViews || { views: {} };
   V.player = function (e) {
     const F = window.FM;
     const plain = (e.body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    const chunks = plain.split(/(?<=[.?!\u00bb])\s+/).filter(c => c.length > 2);
+    const chunks = plain.replace(/([.?!»])\s+/g, '$1\u0001').split('\u0001').filter(c => c.length > 2);
     const freq = 90 + (F.hash(e.id) % 70);
     const box = F.el('div', 'player');
     box.innerHTML = '<div class="row"><button class="play">\u25B6</button>' +

@@ -41,7 +41,7 @@
     go('CREDITS', () => showCredits());
 
     const foot = F.el('div', 'menu-foot');
-    foot.textContent = 'un thriller investigativo \u00b7 tutto in locale, nessun server';
+    foot.innerHTML = 'un gioco di MATTEO MUSSILLON &middot; tutto in locale, nessun server';
     box.appendChild(foot);
     o.appendChild(box);
     document.body.appendChild(o);
@@ -134,7 +134,8 @@
 
     function showCredits() {
       F.openModal('<h2>CREDITS</h2><div class="code-line">FALSE MEMORY \u2014 CASE 001 \u00b7 THE DISAPPEARANCE</div>' +
-        '<p>Progetto, testi, interfaccia e musica: realizzato per <b>Appussi-stock</b>.</p>' +
+        '<p>Un gioco di <b>Matteo Mussillon</b> (therealmussi).</p>' +
+        '<p class="small">Caso, testo, interfaccia e musica: linea creativa e disegno del gioco di <b>Matteo Mussillon</b>; implementazione tecnica nella piattaforma Appussi-stock.</p>' +
         '<p class="small">Tutta la storia, i personaggi e gli eventi sono inventati. Qualsiasi somiglianza con persone o luoghi reali \u00e8 casuale.</p>' +
         '<p class="small">Audio interamente sintetizzato con Web Audio API \u2014 nessun asset esterno. Immagini generate proceduralmente in SVG.</p>' +
         '<p class="small mono" style="color:#4c5661">ispirazione: i luoghi in cui ci\u00f2 che ricordiamo non corrisponde a ci\u00f2 che \u00e8 successo.</p>');

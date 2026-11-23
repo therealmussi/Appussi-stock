@@ -18,19 +18,23 @@
     };
   }
 
+  /* storage sicuro: nell'anteprima PR (iframe sandbox) localStorage lancia SecurityError */
+  const mem = {};
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return mem[k] === undefined ? null : mem[k]; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { mem[k] = v; } }
+  function lsHas(k) { try { return localStorage.getItem(k) !== null; } catch (e) { return mem[k] !== undefined; } }
+
   let st = null;
 
   function load() {
     try {
-      const raw = localStorage.getItem(KEY);
+      const raw = lsGet(KEY);
       st = raw ? JSON.parse(raw) : fresh();
     } catch (e) { st = fresh(); }
     if (!st.settings) st.settings = fresh().settings;
     return st;
   }
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* pieno o non disponibile */ }
-  }
+  function save() { lsSet(KEY, JSON.stringify(st)); }
   function reset() {
     const prev = st || {};
     st = fresh();
@@ -40,7 +44,7 @@
     save();
     return st;
   }
-  const hasSave = () => !!localStorage.getItem(KEY);
+  const hasSave = () => lsHas(KEY);
 
   const S = {
     get st() { return st || load(); },

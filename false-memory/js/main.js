@@ -61,7 +61,10 @@
 
     S.save();
 
-    window.FMMenu.show();
+    try { window.FMMenu.show(); } catch (e) {
+      /* se il menu non parte (storage bloccato, browser vecchio): il caso si apre comunque */
+      window.FMUI.navigate('casew');
+    }
     updateTopbar();
     setInterval(updateTopbar, 4000);
 
