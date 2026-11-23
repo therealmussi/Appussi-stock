@@ -64,6 +64,8 @@ export class Game {
     this.audio.startDrone(def.mood || kit.mood);
     if (!silent) this.ui.titleCard(def.title, def.subtitle);
     this.state = 'playing';
+    this.ui.hideScreens();
+    this.ui.hud(true);
     this.fade.target = 0;
     this.fade.a = 1;
   }
