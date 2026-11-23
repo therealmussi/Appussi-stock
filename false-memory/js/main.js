@@ -5,6 +5,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     S.load();
     const app = document.getElementById('app');
+    app.innerHTML = '';
 
     /* topbar */
     const top = F.el('div', 'topbar');

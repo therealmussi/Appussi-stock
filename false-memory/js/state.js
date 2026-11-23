@@ -31,7 +31,15 @@
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) { /* pieno o non disponibile */ }
   }
-  function reset() { st = fresh(); st.started = true; save(); return st; }
+  function reset() {
+    const prev = st || {};
+    st = fresh();
+    if (prev.endings && prev.endings.length) st.endings = prev.endings;
+    if (prev.settings) st.settings = prev.settings;
+    st.started = true;
+    save();
+    return st;
+  }
   const hasSave = () => !!localStorage.getItem(KEY);
 
   const S = {
