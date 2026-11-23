@@ -598,7 +598,7 @@ const UI = {
     const box=this.el("overlay-box");
     box.className="";
     box.innerHTML='<div class="ov-kicker">CREDITS</div><div class="ov-title">24 HOURS</div>'
-      + '<div class="ov-text">Design, writing, code and graphics:\none late October.\n\nEngine: discrete-time scheduler, no external dependencies.\nCity: Vespera — entirely fictional; any resemblance to cities you failed to live in is intentional.\n\nPart of a three-game collection about different kinds of impossible:\nThe Impossible Room — spatial problems.\nFalse Memory — truth vs. perception.\n24 Hours — time, opportunity, consequence.</div>'
+      + '<div class="ov-text">A game by Matteo Mussillon.\nDesign, writing, code and graphics: Matteo Mussillon.\n\nEngine: discrete-time scheduler, no external dependencies.\nCity: Vespera — entirely fictional; any resemblance to cities you failed to live in is intentional.\n\nPart of a three-game collection about different kinds of impossible:\nThe Impossible Room — spatial problems.\nFalse Memory — truth vs. perception.\n24 Hours — time, opportunity, consequence.</div>'
       + '<button id="cred-x" class="btn ov-continue">BACK</button>';
     document.getElementById("overlay").classList.remove("hidden");
     document.getElementById("cred-x").onclick=function(){ UI.closeOverlay(); UI.showMenu(); };
