@@ -10,10 +10,11 @@
     /* topbar */
     const top = F.el('div', 'topbar');
     top.innerHTML = '<div class="logo"><b>F</b>ALSE MEMORY</div>' +
-      '<div class="caseid">CASE 001 · THE DISAPPEARANCE · SAINT-AUREL · BUILD v4</div>' +
+      '<div class="caseid">CASE 001 · THE DISAPPEARANCE · SAINT-AUREL · BUILD v5</div>' +
       '<div class="spacer"></div>' +
       '<span class="chip chapter" id="chip-chapter"></span>' +
       '<span class="chip proof" id="chip-proof"></span>' +
+      '<button class="iconbtn" id="btn-help" title="come si gioca (?)">?</button>' +
       '<button class="iconbtn" id="btn-menu" title="menu">\u2630</button>';
     app.appendChild(top);
 
@@ -53,6 +54,34 @@
     document.getElementById('btn-menu').addEventListener('click', () => {
       window.FMAudio.resume();
       window.FMMenu.show();
+    });
+    document.getElementById('btn-help').addEventListener('click', () => {
+      window.FMAudio.sfx.click();
+      if (window.FMMenu.showHelp) window.FMMenu.showHelp();
+    });
+
+    /* scorciatoie da tastiera: 1-7 viste, ESC chiude modal/menu, ? guida */
+    const ORDER = ['casew', 'persons', 'testimonies', 'evidence', 'timeline', 'board', 'conclusions'];
+    document.addEventListener('keydown', ev => {
+      const t = ev.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT')) return;
+      if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+      if (document.querySelector('.chaptercard')) return;
+      if (ev.key === 'Escape') {
+        const ov = document.querySelector('.overlay');
+        if (ov) { window.FM.closeModal(); return; }
+        if (window.FMMenu.isOpen()) {
+          if (window.FMState.st.started) { window.FMMenu.hide(); window.FMUI.navigate('casew'); }
+          return;
+        }
+        return;
+      }
+      if (ev.key === '?') { window.FMMenu.show(); window.FMMenu.showHelp && window.FMMenu.showHelp(); return; }
+      const i = ['1', '2', '3', '4', '5', '6', '7'].indexOf(ev.key);
+      if (i >= 0 && window.FMState.st.started) {
+        ev.preventDefault();
+        window.FMUI.navigate(ORDER[i]);
+      }
     });
 
     /* impostazioni estetiche */

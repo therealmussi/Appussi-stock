@@ -37,6 +37,8 @@ window.FMViews = window.FMViews || { views: {} };
     const F = window.FM, S = window.FMState, st = S.st;
     root.appendChild(F.el('h1', 'pagetitle', 'TIMELINE'));
     root.appendChild(F.el('div', 'pagesub', '17 ottobre 2024 e dintorni \u2014 verde: confermato, ambra: stimato, azzurro: riferito da testimone, grigio: sconosciuto'));
+    F.hintOnce(root, 'timeline',
+      'Gli eventi compaiono man mano che acquisisci prove. Con <b>+ EVENTO PERSONALE</b> aggiungi le tue ricostruzioni, con <b>segna incoerenza</b> marca gli orari impossibili: contano alla consegna.');
 
     const add = F.el('button', 'btn primary', '+ EVENTO PERSONALE');
     add.style.cssText = 'margin-bottom:16px';
@@ -61,7 +63,7 @@ window.FMViews = window.FMViews || { views: {} };
         '<span class="ttype">' + ({ confirmed: 'confermato', estimated: 'stimato', reported: 'riferito', unknown: 'da verificare' })[x.type] + '</span></div>' +
         '<div>' + F.esc(x.text) + '</div>' +
         (x.ev ? '<div class="src">fonte: ' + F.esc(F.ev(x.ev).code + ' \u00b7 ' + F.ev(x.ev).title) + '</div>' : '');
-      const fb = F.el('button', 'flagbtn' + (flagged ? ' on' : ''), flagged ? 'INCOERENZA SEGnalata' : 'segna incoerenza');
+      const fb = F.el('button', 'flagbtn' + (flagged ? ' on' : ''), flagged ? 'INCOERENZA SEGNALATA' : 'segna incoerenza');
       fb.addEventListener('click', () => {
         const fl = st.timeline.flagged = st.timeline.flagged || [];
         const k = stampOf(x);

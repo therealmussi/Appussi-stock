@@ -117,6 +117,25 @@
     setTimeout(() => t.remove(), 4800);
   }
 
+  /* ---------- suggerimento contestuale (una sola volta per vista) ---------- */
+  function hintOnce(root, key, html) {
+    const st = window.FMState.st;
+    st.seen = st.seen || {};
+    if (st.seen['h_' + key]) return;
+    const bar = el('div', 'viewhint');
+    bar.innerHTML = '<span class="vh-tag">COME FUNZIONA</span><span class="vh-txt">' + html + '</span>';
+    const x = el('button', 'vh-x', '\u00d7');
+    x.title = 'chiudi';
+    x.addEventListener('click', () => {
+      st.seen['h_' + key] = 1;
+      window.FMState.save();
+      bar.remove();
+      window.FMAudio.sfx.click();
+    });
+    bar.appendChild(x);
+    root.insertBefore(bar, root.firstChild);
+  }
+
   /* ---------- modal ---------- */
   let modalEl = null, modalCloseCb = null;
   function openModal(content, onClose) {
@@ -143,12 +162,12 @@
   }
   function thumb(e, big) {
     const seed = hash(e.id);
-    const h1 = (seed % 60) + 10, h2 = ((seed >> 6) % 60) + 170;
+    const h1 = (seed % 60) + 10, h2 = ((seed >>> 6) % 60) + 170;
     const a = 'hsl(' + h1 + ',18%,' + (18 + (seed % 10)) + '%)';
-    const b = 'hsl(' + h2 + ',22%,' + (30 + ((seed >> 3) % 12)) + '%)';
+    const b = 'hsl(' + h2 + ',22%,' + (30 + ((seed >>> 3) % 12)) + '%)';
     const w = big ? 760 : 190, hh = big ? 300 : 110;
     let inner = '';
-    const g = (n, m) => (n + ((seed >> m) % n));
+    const g = (n, m) => (n + ((seed >>> m) % n));
     if (e.cat === 'photo') {
       const mx = 20 + g(90, 4), my = 30 + g(40, 8), mw = 60 + g(70, 12);
       inner = '<circle cx="' + (150 + (seed % 60)) + '" cy="26" r="9" fill="' + b + '" opacity=".7"/>' +
@@ -157,10 +176,10 @@
     } else if (e.cat === 'document') {
       inner = '<rect x="40" y="14" width="110" height="' + (hh - 28) + '" fill="#d8d2c4" opacity=".14" transform="rotate(-2 95 55)"/>' +
         '<rect x="52" y="20" width="86" height="' + (hh - 40) + '" fill="#d8d2c4" opacity=".10"/>' +
-        [0, 1, 2, 3, 4].map(i => '<rect x="62" y="' + (34 + i * 14) + '" width="' + (30 + ((seed >> i) % 40)) + '" height="3" fill="' + b + '" opacity=".55"/>').join('');
+        [0, 1, 2, 3, 4].map(i => '<rect x="62" y="' + (34 + i * 14) + '" width="' + (30 + ((seed >>> i) % 40)) + '" height="3" fill="' + b + '" opacity=".55"/>').join('');
     } else if (e.cat === 'recording') {
       inner = Array.apply(null, Array(22)).map((_, i) => {
-        const bh = 6 + ((seed >> (i % 12)) % 46);
+        const bh = 6 + ((seed >>> (i % 12)) % 46);
         return '<rect x="' + (18 + i * 7) + '" y="' + ((hh - bh) / 2) + '" width="4" height="' + bh + '" rx="2" fill="' + b + '" opacity=".8"/>';
       }).join('');
     } else {
@@ -210,7 +229,7 @@
   window.FM = {
     el, esc, ev, ch, byId,
     reqMet, allReqMet, applyEffects, discover, showChapter,
-    toast, openModal, closeModal, thumb, hash,
+    toast, hintOnce, openModal, closeModal, thumb, hash,
     updateNav, markSeen, relBadge, catBadge: c => '<span class="badge ' + (CAT_BADGE[c] || 'grey') + '">' + (CAT_LABEL[c] || c) + '</span>',
     catLabel: CAT_LABEL
   };

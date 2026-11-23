@@ -8,12 +8,16 @@
     const o = F.el('div', 'menu-overlay');
     o.id = 'menu';
     const box = F.el('div', 'menu-box');
-    box.innerHTML = '<div class="menu-title"><b>F</b>ALSE MEMORY</div>' +
-      '<div class="menu-sub">CASE 001 \u00b7 THE DISAPPEARANCE</div>';
+    const sub = F.el('div', 'menu-sub');
+    sub.innerHTML = 'CASE 001 \u00b7 THE DISAPPEARANCE' +
+      ((st.endings && st.endings.length) ? '<br>consegne archiviate: ' + st.endings.length + '/5' : '');
+    box.innerHTML = '<div class="menu-title"><b>F</b>ALSE MEMORY</div>';
+    box.appendChild(sub);
     box.id = 'menu-box';
 
-    const go = (label, fn, dis) => {
-      const b = F.el('button', 'menu-btn', label);
+    const go = (label, fn, dis, subt) => {
+      const b = F.el('button', 'menu-btn');
+      b.innerHTML = label + (subt ? '<span class="menu-btn-sub">' + subt + '</span>' : '');
       if (dis) b.disabled = true;
       else b.addEventListener('click', () => {
         window.FMAudio.resume();
@@ -26,29 +30,54 @@
     };
 
     go('NEW INVESTIGATION', () => {
-      S.reset();
-      hide();
-      window.FM.markSeen();
-      window.FMUI.navigate('casew');
+      const busy = st.started && (st.discovered.length || st.board.nodes.length || st.timeline.custom.length);
+      if (busy) {
+        const c = F.el('div');
+        c.innerHTML = '<h2>Inizi una nuova indagine?</h2><div class="code-line">l\u2019indagine in corso (CAP. 0' + st.chapter +
+          ', ' + st.discovered.length + ' prove acquisite) sar\u00e0 cancellata</div>' +
+          '<p class="small">Le consegne archiviate e le impostazioni restano.</p>';
+        const bar = F.el('div', 'closebar');
+        const no = F.el('button', 'btn', 'ANNULLA');
+        no.addEventListener('click', () => { window.FMAudio.sfx.click(); F.closeModal(); });
+        const yes = F.el('button', 'btn danger', 'CONFERMA: NUOVA INDAGINE');
+        yes.addEventListener('click', () => {
+          F.closeModal();
+          startFresh();
+        });
+        bar.appendChild(no); bar.appendChild(yes);
+        c.appendChild(bar);
+        F.openModal(c);
+      } else startFresh();
+
+      function startFresh() {
+        S.reset();
+        hide();
+        window.FM.markSeen();
+        runIntro(() => window.FMUI.navigate('casew'));
+      }
     }, false);
 
-    go('CONTINUE', () => { hide(); window.FMUI.navigate('casew'); }, !S.hasSave());
+    go('CONTINUE', () => { hide(); window.FMUI.navigate('casew'); }, !S.hasSave(),
+      S.hasSave() && st.started ? 'CAP. 0' + st.chapter + ' \u00b7 ' + st.discovered.length + '/30 prove' : '');
 
     go('CASE ARCHIVE', () => showArchive());
+
+    go('HOW TO PLAY', () => showHelp());
 
     go('SETTINGS', () => showSettings());
 
     go('CREDITS', () => showCredits());
 
     const foot = F.el('div', 'menu-foot');
-    foot.innerHTML = 'un gioco di MATTEO MUSSILLON &middot; tutto in locale, nessun server<br><span class=\"code-line\" style=\"font-size:9px;color:#4c5661\">BUILD v4</span>';
+    foot.innerHTML = 'un gioco di MATTEO MUSSILLON &middot; tutto in locale, nessun server<br><span class=\"code-line\" style=\"font-size:9px;color:#4c5661\">BUILD v5</span>';
     box.appendChild(foot);
     o.appendChild(box);
     document.body.appendChild(o);
 
     function showArchive() {
       const st2 = S.st;
-      F.openModal('<h2>CASE ARCHIVE</h2><div class="code-line">consegne archiviate per il CASE 001</div>' +
+      const done = (st2.endings || []).length;
+      F.openModal('<h2>CASE ARCHIVE</h2><div class="code-line">consegne archiviate: ' + done + '/5 per il CASE 001</div>' +
         ((st2.endings && st2.endings.length)
           ? st2.endings.map(e => '<p class="mono small" style="margin:6px 0">' + F.esc(e.date) + ' \u2014 ' + F.esc(e.label) + '</p>').join('')
           : '<p class="small">Nessuna consegna archiviata. Completa l\u2019indagine e consegna la tua ricostruzione.</p>') +
@@ -148,8 +177,56 @@
     function hide() { closeExisting(); }
   }
 
+  function showHelp() {
+    F.openModal('<h2>COME SI GIOCA</h2><div class="code-line">FALSE MEMORY \u2014 guida rapida</div>' +
+      '<p class="small"><b>Il caso esiste. Ci\u00f2 che ti viene raccontato, quasi mai.</b> Il tuo compito: capire cosa \u00e8 successo davvero, separando bugie, ricordi sbagliati e prove fuorvianti.</p>' +
+      '<table class="mono small" style="border-spacing:0 8px">' +
+      '<tr><td style="padding-right:14px;color:var(--amber);vertical-align:top">PERSONS</td><td>Interroga i quattro contatti. Ogni argomento pu\u00f2 sbloccare qualcosa; confronta le risposte con le prove con \u00abPRESENTA UNA PROVA\u00bb.</td></tr>' +
+      '<tr><td style="padding-right:14px;color:var(--amber);vertical-align:top">EVIDENCE</td><td>Apri ogni prova: gli <b>esami</b> svelano dettagli invisibili al primo sguardo, e sbloccano nuove piste. Assegna un livello di affidabilit\u00e0 a ogni fonte.</td></tr>' +
+      '<tr><td style="padding-right:14px;color:var(--amber);vertical-align:top">TIMELINE</td><td>Ricostruisci la notte del 17/10. Aggiungi eventi con + EVENTO e marca le incoerenze: gli orari dei testimoni non sempre sono veri.</td></tr>' +
+      '<tr><td style="padding-right:14px;color:var(--amber);vertical-align:top">BOARD</td><td>Trascina prove e dichiarazioni sulla bacheca e collegali (CONFERMA, CONTRADDICE...). \u00c8 il tuo ragionamento: il gioco non la risolve mai al posto tuo.</td></tr>' +
+      '<tr><td style="padding-right:14px;color:var(--amber);vertical-align:top">CONCLUSIONS</td><td>Quando la ricostruzione regge, consegnala. Una consegna insufficiente chiude il caso male \u2014 resta in CASE ARCHIVE e potrai riprovare.</td></tr>' +
+      '</table>' +
+      '<p class="small mono" style="margin-top:14px;color:#5f6975">scorciatoie: tasti 1-7 per le viste \u00b7 ESC chiude le finestre e il menu \u00b7 ? apre questa guida</p>');
+  }
+
+  /* ---------- intro narrativa (nuova indagine) ---------- */
+  function runIntro(done) {
+    const pages = [
+      { k: 'SAINT-AUREL \u00b7 OTTOBRE 2024',
+        p: ['Le Sablon, diciotto appartamenti, un inserviente di notte.',
+            'Alle 08:52 del 18 ottobre Claire Moreau denuncia la scomparsa del fratello Daniel: non risponde da ieri sera.'] },
+      { k: 'QUATTRO PERSONE \u00b7 QUATTRO VERSIONI',
+        p: ['Una sorella, un amico, una ex partner, un inserviente.',
+            'Ognuno ricorda la notte a modo suo. Alcuni mentono. Altri credono davvero a ci\u00f2 che raccontano.'] },
+      { k: 'FALSE MEMORY',
+        p: ['La verit\u00e0 esiste.',
+            'Quasi tutto ci\u00f2 che ti diranno su di lei \u00e8 sbagliato.'],
+        cta: 'clicca per aprire il fascicolo' }
+    ];
+    let i = 0;
+    const o = F.el('div', 'chaptercard intro');
+    document.body.appendChild(o);
+    window.FMAudio.sfx.motif();
+    function render() {
+      const pg = pages[i];
+      o.innerHTML = '<div class="inner"><div class="c-n">' + pg.k + '</div>' +
+        pg.p.map(l => '<p>' + F.esc(l) + '</p>').join('') +
+        '<p class="small mono">' + (pg.cta || 'clic per continuare') + '</p></div>';
+    }
+    function advance() {
+      i++;
+      window.FMAudio.sfx.paper();
+      if (i >= pages.length) { o.remove(); done(); return; }
+      render();
+    }
+    o.addEventListener('click', advance);
+    render();
+  }
+
   window.FMMenu = {
-    show, hide() { const m = document.getElementById('menu'); if (m) m.remove(); },
+    show, runIntro, showHelp,
+    hide() { const m = document.getElementById('menu'); if (m) m.remove(); },
     isOpen() { return !!document.getElementById('menu'); }
   };
 })();

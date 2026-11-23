@@ -17,7 +17,9 @@ Thriller investigativo da giocare nel browser, in italiano. Sei un investigatore
 - Verità canonica **unica e predefinita**: nessuna generazione casuale. Tutte le prove sono coerenti con essa.
 - **Ricordi veri e bugie deliberati non sono distinguibili a colpo d'occhio**: alcune testimonianze sono ingannevoli perché sincere, e viceversa.
 - Sblocchi progressivi: la catena di prove è validata da uno script di verifica (`tools/validate.js`).
-- Salvataggio automatico in `localStorage`, menu con NUOVA INDAGINE / CONTINUA / ARCHIVIO CASI / IMPOSTAZIONI / CREDITI.
+- Salvataggio automatico in `localStorage`, menu con NUOVA INDAGINE (con conferma se c'era una partita in corso) / CONTINUA (con progresso) / ARCHIVIO CASI (finali n/5) / COME SI GIOCA / IMPOSTAZIONI / CREDITI.
+- Intro narrativa a tre card all'avvio di una nuova indagine; suggerimenti contestuali al primo utilizzo delle viste; scorciatoie tastiera (1-7 viste, ESC chiude, ? guida).
+- Ricerca testuale in EVIDENCE; etichette delle relazioni direttamente sulle linee della bacheca (con aggancio alla griglia).
 - Audio **interamente sintetizzato con Web Audio API** (musica ambientale, effetti, voci per le registrazioni) — nessun asset esterno.
 - Immagini generate proceduralmente come SVG; testo scalabile; tema scuro da postazione investigativa.
 
