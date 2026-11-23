@@ -3,33 +3,65 @@ window.FMViews = window.FMViews || { views: {} };
 (function () {
   const V = window.FMViews.views;
   let filter = 'all';
+  let searchText = '';
+
+  function stripTags(html) {
+    return String(html || '').replace(/<[^>]*>/g, ' ');
+  }
 
   V.evidence = function (root) {
     const F = window.FM, S = window.FMState;
     root.appendChild(F.el('h1', 'pagetitle', 'EVIDENCE'));
     root.appendChild(F.el('div', 'pagesub', window.FM_EVIDENCE.length + ' elementi catalogati \u2014 ' + S.st.discovered.length + ' acquisiti'));
+    F.hintOnce(root, 'evidence',
+      'Apri una prova e usa le <b>ANALISI disponibili</b>: molti dettagli escono solo al secondo sguardo, e sbloccano nuove prove. Assegna anche un livello di affidabilit\u00e0 \u2014 ti servir\u00e0 alla consegna.');
 
     const bar = F.el('div', 'btoolbar');
     bar.innerHTML = '<span class="small mono" style="margin-right:6px">FILTRO:</span>';
     ['all', 'photo', 'document', 'recording', 'object'].forEach(k => {
       const b = F.el('button', 'modebtn' + (filter === k ? ' on' : ''),
         k === 'all' ? 'TUTTE' : (F.catLabel[k].toUpperCase() + 'S'));
-      b.addEventListener('click', () => { window.FMAudio.sfx.click(); filter = k; V.evidence(root); });
+      b.addEventListener('click', () => { window.FMAudio.sfx.click(); filter = k; render(); });
       bar.appendChild(b);
     });
+    const search = F.el('input', 'searchbox');
+    search.type = 'text';
+    search.placeholder = 'cerca...';
+    search.value = searchText;
+    search.addEventListener('input', () => {
+      searchText = search.value.toLowerCase();
+      render();
+    });
+    bar.appendChild(search);
     root.appendChild(bar);
 
     const grid = F.el('div', 'grid cols3');
-    const disc = window.FM_EVIDENCE.filter(e => S.isDiscovered(e.id));
-    disc.filter(e => filter === 'all' || e.cat === filter).forEach(e => {
-      const card = F.el('div', 'evcard');
-      card.innerHTML = '<div class="thumb">' + F.thumb(e) + '</div>' +
-        '<div class="meta"><div class="code">' + F.esc(e.code) + ' \u00b7 ' + F.catBadge(e.cat) + '</div>' +
-        '<div class="t">' + F.esc(e.title) + '</div><div class="s">' + F.esc(e.short || '') + '</div></div>';
-      card.addEventListener('click', () => window.FMUI.openEvidence(e.id));
-      grid.appendChild(card);
-    });
     root.appendChild(grid);
+
+    const disc = window.FM_EVIDENCE.filter(e => S.isDiscovered(e.id));
+
+    function matches(e) {
+      if (filter !== 'all' && e.cat !== filter) return false;
+      if (!searchText) return true;
+      const hay = (e.code + ' ' + e.title + ' ' + (e.short || '') + ' ' + stripTags(e.body)).toLowerCase();
+      return hay.indexOf(searchText) !== -1;
+    }
+
+    function render() {
+      grid.innerHTML = '';
+      const vis = disc.filter(matches);
+      vis.forEach(e => {
+        const card = F.el('div', 'evcard');
+        card.innerHTML = '<div class="thumb">' + F.thumb(e) + '</div>' +
+          '<div class="meta"><div class="code">' + F.esc(e.code) + ' \u00b7 ' + F.catBadge(e.cat) + '</div>' +
+          '<div class="t">' + F.esc(e.title) + '</div><div class="s">' + F.esc(e.short || '') + '</div></div>';
+        card.addEventListener('click', () => window.FMUI.openEvidence(e.id));
+        grid.appendChild(card);
+      });
+      if (!vis.length) grid.appendChild(F.el('p', 'small', 'Nessun risultato: prova un altro filtro o parola chiave.'));
+    }
+
+    render();
     if (!disc.length) root.appendChild(F.el('p', 'small', 'Nessuna prova acquisita: inizia dal CASE FILE e dagli interrogatori.'));
   };
 

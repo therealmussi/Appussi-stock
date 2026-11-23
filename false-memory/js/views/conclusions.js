@@ -24,6 +24,8 @@ window.FMViews = window.FMViews || { views: {} };
     const d = currentDraft();
     root.appendChild(F.el('h1', 'pagetitle', 'CONCLUSIONS'));
     root.appendChild(F.el('div', 'pagesub', 'ricostruzione finale del caso \u2014 consegnala solo con prove adeguate'));
+    F.hintOnce(root, 'conclusions',
+      'Rispondi alle sei domande e <b>allega le prove essenziali</b>. La valutazione dipende dalla ricostruzione e dalle prove allegate: una consegna affrettata chiude il caso in modo sbagliato (e resta in CASE ARCHIVE).');
 
     window.FM_QUESTIONS.forEach(qk => {
       const b = F.el('div', 'qblock');

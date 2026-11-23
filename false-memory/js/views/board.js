@@ -71,6 +71,9 @@ window.FMViews = window.FMViews || { views: {} };
     const hint = F.el('span', 'small mono', '');
     bar.appendChild(hint);
 
+    F.hintOnce(root, 'board',
+      'Trascina gli elementi e collegali in modalit\u00e0 <b>COLLEGA</b>: clicca il primo nodo, poi il secondo, poi scegli la relazione. <b>CONTRADDICE</b> conta come contraddizione segnata. Doppio clic su una nota per scriverci.');
+
     const wrap = F.el('div', 'board-wrap');
     const canvas = F.el('div', 'board-canvas');
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -177,22 +180,32 @@ window.FMViews = window.FMViews || { views: {} };
       return 'Nota: ' + (n.txt || '');
     }
 
+    function mkPath(l, clickable) {
+      const na = nodeOf(l.a), nb = nodeOf(l.b);
+      if (!na || !nb) return null;
+      const p1 = nodeCenter(na), p2 = nodeCenter(nb);
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M' + p1.x + ' ' + p1.y + ' L' + p2.x + ' ' + p2.y);
+      path.setAttribute('stroke', REL_COLOR[l.rel] || '#3f4a55');
+      path.setAttribute('stroke-width', l.rel === 'contradicts' ? '2.5' : '1.5');
+      path.setAttribute('fill', 'none');
+      if (clickable) path.addEventListener('click', () => openLinkModal(l.id));
+      svg.appendChild(path);
+      /* etichetta del legame a met\u00e0 linea */
+      const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', mx); txt.setAttribute('y', my - 6);
+      txt.setAttribute('class', 'linklabel');
+      txt.setAttribute('fill', REL_COLOR[l.rel] || '#9aa3ad');
+      txt.textContent = REL_IT[l.rel] || '';
+      svg.appendChild(txt);
+    }
+
     function draw() {
       svg.innerHTML = '';
       canvas.querySelectorAll('.bnode').forEach(x => x.remove());
       /* collegamenti */
-      st.board.links.forEach(l => {
-        const na = nodeOf(l.a), nb = nodeOf(l.b);
-        if (!na || !nb) return;
-        const p1 = nodeCenter(na), p2 = nodeCenter(nb);
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M' + p1.x + ' ' + p1.y + ' L' + p2.x + ' ' + p2.y);
-        path.setAttribute('stroke', REL_COLOR[l.rel] || '#3f4a55');
-        path.setAttribute('stroke-width', l.rel === 'contradicts' ? '2.5' : '1.5');
-        path.setAttribute('fill', 'none');
-        path.addEventListener('click', () => openLinkModal(l.id));
-        svg.appendChild(path);
-      });
+      st.board.links.forEach(l => { mkPath(l, true); });
       /* nodi */
       st.board.nodes.forEach(n => {
         const nd = F.el('div', 'bnode' + (sel === n.id ? ' selected' : '') + (n.kind === 'note' ? ' note' : ''));
@@ -231,8 +244,10 @@ window.FMViews = window.FMViews || { views: {} };
           nd.classList.add('dragging');
           const sx = ev.clientX, sy = ev.clientY, ox = n.x, oy = n.y;
           const move = e2 => {
-            n.x = Math.max(0, Math.min(2300 - 190, ox + (e2.clientX - sx)));
-            n.y = Math.max(0, Math.min(1500 - 80, oy + (e2.clientY - sy)));
+            const rx = Math.max(0, Math.min(2300 - 190, ox + (e2.clientX - sx)));
+            const ry = Math.max(0, Math.min(1500 - 80, oy + (e2.clientY - sy)));
+            n.x = Math.round(rx / 25) * 25;
+            n.y = Math.round(ry / 25) * 25;
             nd.style.left = n.x + 'px'; nd.style.top = n.y + 'px';
             drawLinksOnly();
           };
@@ -269,18 +284,7 @@ window.FMViews = window.FMViews || { views: {} };
     }
     function drawLinksOnly() {
       svg.innerHTML = '';
-      st.board.links.forEach(l => {
-        const na = nodeOf(l.a), nb = nodeOf(l.b);
-        if (!na || !nb) return;
-        const p1 = nodeCenter(na), p2 = nodeCenter(nb);
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', 'M' + p1.x + ' ' + p1.y + ' L' + p2.x + ' ' + p2.y);
-        path.setAttribute('stroke', REL_COLOR[l.rel] || '#3f4a55');
-        path.setAttribute('stroke-width', l.rel === 'contradicts' ? '2.5' : '1.5');
-        path.setAttribute('fill', 'none');
-        path.addEventListener('click', () => openLinkModal(l.id));
-        svg.appendChild(path);
-      });
+      st.board.links.forEach(l => { mkPath(l, true); });
     }
 
     draw();
