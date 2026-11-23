@@ -158,6 +158,5 @@ Consequences are delayed but always logically traceable to a decision.
 
 ## Credits
 
-Writing, design, code, procedural art and typography: built as a single-purpose
-indie prototype for the three-game collection. Vespera is fictional; its timetables are
-not negotiable.
+A game by **Matteo Mussillon** — design, writing, code, procedural art and typography.
+Vespera is fictional; its timetables are not negotiable.
