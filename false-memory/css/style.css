@@ -121,7 +121,7 @@ h1.pagetitle {
 
 /* ---------- modal ---------- */
 .overlay {
-  position: fixed; inset: 0; background: rgba(6,8,10,.78); z-index: 60;
+  position: fixed; inset: 0; background: rgba(6,8,10,.78); z-index: 110;
   display: flex; align-items: center; justify-content: center; padding: 4vh 4vw;
 }
 .modal {
@@ -145,7 +145,7 @@ textarea { min-height: 70px; resize: vertical; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: #5d6874; }
 
 /* ---------- toast ---------- */
-#toasts { position: fixed; right: 18px; bottom: 18px; z-index: 90; display: flex; flex-direction: column; gap: 8px; max-width: 340px; }
+#toasts { position: fixed; right: 18px; bottom: 18px; z-index: 140; display: flex; flex-direction: column; gap: 8px; max-width: 340px; }
 .toast {
   background: #22272e; border: 1px solid #3a434e; border-left: 3px solid var(--amber);
   border-radius: 4px; padding: 10px 14px; font-size: 12.5px; color: #d5d9de;
@@ -184,6 +184,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #5d6874
 .answer .who { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--amber); margin-bottom: 6px; }
 .answer.tone-scossa { border-left-color: var(--red); }
 .answer.tone-svolta { border-left-color: var(--green); }
+.answer q { quotes: none; color: #ddd8ce; font-style: italic; display: block; margin: 8px 0; }
 .answer .note { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #333c46; font-size: 12px; color: var(--amber); }
 .gap { height: 18px; }
 
@@ -204,6 +205,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #5d6874
 .board-canvas svg.links path { pointer-events: stroke; cursor: pointer; }
 .bnode {
   position: absolute; width: 190px; background: var(--panel); border: 1px solid #3f4a55;
+  touch-action: none;
   border-radius: 5px; padding: 8px 10px; cursor: grab; user-select: none; box-shadow: 0 8px 24px rgba(0,0,0,.45);
   font-size: 12px;
 }

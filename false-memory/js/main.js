@@ -5,11 +5,12 @@
   document.addEventListener('DOMContentLoaded', () => {
     S.load();
     const app = document.getElementById('app');
+    app.innerHTML = '';
 
     /* topbar */
     const top = F.el('div', 'topbar');
     top.innerHTML = '<div class="logo"><b>F</b>ALSE MEMORY</div>' +
-      '<div class="caseid">CASE 001 \u00b7 THE DISAPPEARANCE \u00b7 SAINT-AUREL</div>' +
+      '<div class="caseid">CASE 001 · THE DISAPPEARANCE · SAINT-AUREL · BUILD v4</div>' +
       '<div class="spacer"></div>' +
       '<span class="chip chapter" id="chip-chapter"></span>' +
       '<span class="chip proof" id="chip-proof"></span>' +
@@ -60,7 +61,10 @@
 
     S.save();
 
-    window.FMMenu.show();
+    try { window.FMMenu.show(); } catch (e) {
+      /* se il menu non parte (storage bloccato, browser vecchio): il caso si apre comunque */
+      window.FMUI.navigate('casew');
+    }
     updateTopbar();
     setInterval(updateTopbar, 4000);
 

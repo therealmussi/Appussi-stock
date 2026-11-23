@@ -22,7 +22,7 @@ window.FMViews = window.FMViews || { views: {} };
     const grid = F.el('div', 'grid cols3');
     const disc = window.FM_EVIDENCE.filter(e => S.isDiscovered(e.id));
     disc.filter(e => filter === 'all' || e.cat === filter).forEach(e => {
-      const card = F.el('div', 'evcard' + (S.getReliability(e) === 'misleading' ? '' : ''));
+      const card = F.el('div', 'evcard');
       card.innerHTML = '<div class="thumb">' + F.thumb(e) + '</div>' +
         '<div class="meta"><div class="code">' + F.esc(e.code) + ' \u00b7 ' + F.catBadge(e.cat) + '</div>' +
         '<div class="t">' + F.esc(e.title) + '</div><div class="s">' + F.esc(e.short || '') + '</div></div>';
@@ -77,7 +77,7 @@ window.FMViews = window.FMViews || { views: {} };
     if ((e.examines || []).length) {
       const ex = F.el('div', null, '<div class="small mono" style="margin:16px 0 8px">ANALISI DISPONIBILI</div>');
       e.examines.forEach(x => {
-        if (S.hasExam(e.id) && S.st.read['ex_' + x.id]) {
+        if (S.st.read['ex_' + x.id]) {
           const done = F.el('div', 'card', '<h3>' + F.esc(x.title) + '</h3>' + x.text);
           ex.appendChild(done);
           return;
@@ -86,7 +86,7 @@ window.FMViews = window.FMViews || { views: {} };
         const b = F.el('button', 'btn' + (met ? ' primary' : ''), met ? F.esc(x.label) : F.esc(x.label) + ' \u2014 prerequisito mancante');
         b.style.marginBottom = '8px';
         b.addEventListener('click', () => {
-          if (!met || S.hasExam(e.id)) { window.FMAudio.sfx.click(); return; }
+          if (!met || S.st.read['ex_' + x.id]) { window.FMAudio.sfx.click(); return; }
           S.markExam(e.id);
           S.st.read['ex_' + x.id] = true;
           S.save();
@@ -121,7 +121,7 @@ window.FMViews = window.FMViews || { views: {} };
   V.player = function (e) {
     const F = window.FM;
     const plain = (e.body || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-    const chunks = plain.split(/(?<=[.?!\u00bb])\s+/).filter(c => c.length > 2);
+    const chunks = plain.replace(/([.?!»])\s+/g, '$1\u0001').split('\u0001').filter(c => c.length > 2);
     const freq = 90 + (F.hash(e.id) % 70);
     const box = F.el('div', 'player');
     box.innerHTML = '<div class="row"><button class="play">\u25B6</button>' +

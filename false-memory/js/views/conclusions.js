@@ -5,6 +5,10 @@ window.FMViews = window.FMViews || { views: {} };
   let draft = null;
 
   function joinSet(a) { return (a || []).slice().sort().join(','); }
+  function persistDraft() {
+    window.FMState.st.conclusions = JSON.parse(JSON.stringify(currentDraft()));
+    window.FMState.save();
+  }
 
   function currentDraft() {
     if (!draft) {
@@ -39,6 +43,7 @@ window.FMViews = window.FMViews || { views: {} };
             const at = arr.indexOf(op.key);
             if (at === -1) arr.push(op.key); else arr.splice(at, 1);
           } else dd.answers[qk.id] = inp.checked ? op.key : null;
+          S2.st.conclusions = JSON.parse(JSON.stringify(dd));
           S2.save();
           [...optGrid.querySelectorAll('.radio-row')].forEach(r => r.classList.remove('picked'));
           if (inp.checked) row.classList.add('picked');
@@ -65,7 +70,7 @@ window.FMViews = window.FMViews || { views: {} };
         const chip = F.el('button', 'badge green', F.esc(e.code) + ' \u00d7');
         chip.style.cursor = 'pointer';
         chip.addEventListener('click', () => {
-          d.attached = d.attached.filter(x => x !== e.id); S.save(); FMAudio.sfx.paper(); drawChips();
+          d.attached = d.attached.filter(x => x !== e.id); persistDraft(); FMAudio.sfx.paper(); drawChips();
         });
         chiplist.appendChild(chip);
       });
@@ -81,7 +86,7 @@ window.FMViews = window.FMViews || { views: {} };
         const b = F.el('button', 'btn', F.esc(e.code + ' \u00b7 ' + e.title));
         b.style.cssText = 'display:block;width:100%;margin-bottom:6px;text-align:left' + (d.attached.indexOf(e.id) !== -1 ? ';opacity:.4' : '');
         b.addEventListener('click', () => {
-          if (d.attached.indexOf(e.id) === -1) { d.attached.push(e.id); S.save(); FMAudio.sfx.paper(); drawChips(); }
+          if (d.attached.indexOf(e.id) === -1) { d.attached.push(e.id); persistDraft(); FMAudio.sfx.paper(); drawChips(); }
           F.closeModal();
         });
         g.appendChild(b);
@@ -124,7 +129,7 @@ window.FMViews = window.FMViews || { views: {} };
       else endingKey = 'unresolved';
 
       const E = window.FM_ENDINGS[endingKey];
-      S.st.conclusions = JSON.parse(JSON.stringify(d2));
+      persistDraft();
       S.st.endings.push({ date: 'ore ' + new Date().toTimeString().slice(0, 5), label: E.label });
       S.st.finished = true;
       S.save();
