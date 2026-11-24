@@ -315,7 +315,7 @@
       <h4>Le dimensioni della città</h4>${dimHtml}
       <h4>Confronto con la storia reale (${S.year}, stime)</h4>${confronto}
       <p class="modal-hint">Non esiste un punteggio universale: questo è il tipo di città emerso dalle tue scelte.
-      La simulazione è un ipotesi, non una ricostruzione esaustiva. Il divertimento vero è ripartire e chiedersi:
+      La simulazione è un'ipotesi, non una ricostruzione esaustiva. Il divertimento vero è ripartire e chiedersi:
       «E se avessi scelto diversamente?»</p>
       <div class="modal-foot">
         <button class="btn" id="f-chiudi">Guarda la città</button>
@@ -404,9 +404,11 @@
     if (leg.stops) {
       box2.innerHTML = `<span class="leg-titolo">${nomeLayer}</span>` +
         leg.stops.map(st => `<span class="leg-stop"><span class="leg-c" style="background:${st.c}"></span>${st.v}</span>`).join('') +
-        '<span class="leg-note">corridoi: blu=metro · ambra=tranvia · viola=ferrovia · scuro=strade · tratteggio=in corso</span>';
+        '<span class="leg-note">' + (leg.testo ? leg.testo + ' · ' : '') +
+        'rotella = zoom · trascina = sposta · doppio clic = azzera · tratteggio = cantiere in corso</span>';
     } else {
-      box2.innerHTML = `<span class="leg-titolo">${nomeLayer}</span><span class="leg-note">corridoi: blu=metro · ambra=tranvia · viola=ferrovia · scuro=strade · tratteggio=in corso</span>`;
+      box2.innerHTML = `<span class="leg-titolo">${nomeLayer}</span>` +
+        '<span class="leg-note">rotella = zoom · trascina = sposta · doppio clic = azzera</span>';
     }
   }
 

@@ -155,12 +155,17 @@ canvas.grafico { background: var(--carta); }
 .toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .layer-btn { font-size: 11.5px; padding: 5px 10px; }
 .layer-btn.attivo { background: var(--inchiostro); color: var(--carta); border-color: var(--inchiostro); }
-.mappa-svg { width: 100%; height: auto; display: block; border-radius: 6px; }
-.mappa-box { border: 1px solid var(--bordo); border-radius: 6px; overflow: hidden; }
-.comune { font-size: 10.5px; fill: #6b6350; font-style: italic; }
-.retico { stroke: rgba(47,62,70,.05); stroke-width: 1; }
+.mappa-svg { width: 100%; height: auto; display: block; border-radius: 6px; touch-action: none; }
+.mappa-box { position: relative; border: 1px solid var(--bordo); border-radius: 6px; overflow: hidden; }
+.mappa-svg.afferra { cursor: grabbing; }
 .distretto { cursor: pointer; }
-.etichetta { font-size: 10px; fill: #3a3529; pointer-events: none; font-weight: 600; }
+.mappa-ctrl { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 2; }
+.mappa-btn { width: 34px; height: 34px; padding: 0; font-size: 16px; line-height: 1; background: var(--carta); }
+.comune { font-size: 19px; fill: #6b6350; font-style: italic; pointer-events: none; }
+.etichetta { font-size: 18px; fill: #3a3529; pointer-events: none; font-weight: 600; paint-order: stroke; stroke: rgba(232,224,200,.7); stroke-width: 4; }
+.stazione { font-size: 20px; fill: #2f3e46; font-weight: 700; pointer-events: none; paint-order: stroke; stroke: rgba(232,224,200,.75); stroke-width: 4; }
+.punto { font-size: 19px; fill: #6b5a3f; font-style: italic; font-weight: 600; pointer-events: none; paint-order: stroke; stroke: rgba(232,224,200,.7); stroke-width: 4; }
+.cantiere { font-size: 22px; fill: #3a3529; font-weight: 700; pointer-events: none; }
 .mappa-legenda { margin-top: 10px; font-size: 11.5px; color: var(--inchiostro-2); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .leg-titolo { font-weight: 700; letter-spacing: .5px; }
 .leg-stop { display: inline-flex; align-items: center; gap: 4px; }
