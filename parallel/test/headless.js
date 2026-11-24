@@ -12,7 +12,7 @@ function load(f) {
   vm.runInContext(fs.readFileSync(f, 'utf8'), sandbox, { filename: f });
 }
 
-['js/core.js', 'js/data-torino.js', 'js/data-torino-contenuti.js', 'js/engine.js', 'js/actions.js']
+['js/core.js', 'js/data-torino.js', 'js/data-torino-contenuti.js', 'js/engine.js', 'js/actions.js', 'js/map.js']
   .forEach(f => load(f));
 
 const PAR = sandbox.PAR;
@@ -182,6 +182,26 @@ S7.treasury = 100; S7.debt = 400;
 const r8 = PAR.Actions.approve(S7, 'densifica');
 check('debito impostato: nessun cantiere', r8.ok === false, r8.motivo);
 check('registri di finanza aggiornati', S7.finanza.ricavi > 40 && S7.finanza.spese > 40, S7.finanza.ricavi.toFixed(1) + '/' + S7.finanza.spese.toFixed(1));
+
+// ———————— TEST 8: integrità dei dati cartografici ————————
+console.log('\n[8] integrità dei dati cartografici');
+{
+  PAR.Engine.rebindScenario(PAR.SCENARIOS[0]);
+  const m = PAR.Engine.scenario.mappa;
+  const DT = PAR.Engine.scenario.territorioInit().distretti;
+  const senzaPol = DT.map(d => d.id).filter(i => !m.poligoni[i]);
+  check('ogni distretto ha un poligono', senzaPol.length === 0, senzaPol.join(','));
+  const fuoriCasa = Object.keys(m.poligoni).filter(id =>
+    m.poligoni[id].some(p => p[0] < -0.5 || p[0] > 8.5 || p[1] < -0.5 || p[1] > 8.5));
+  check('poligoni dentro lo spazio celle 8×8', fuoriCasa.length === 0, fuoriCasa.join(','));
+  const corridoi = PAR.Engine.progetti.filter(p => p.corridoio).reduce((a, p) => a.concat(p.corridoio), []);
+  const corridoiCattivi = [...new Set(corridoi)].filter(i => !DT.some(d => d.id === i));
+  check('i corridoi citano solo distretti esistenti', corridoiCattivi.length === 0, corridoiCattivi.join(','));
+  const coordOk = arr => arr.every(s => s.x >= 0 && s.x <= 8 && s.y >= 0 && s.y <= 8 && s.nome);
+  check('stazioni, punti e comuni entro i confini e nominati', coordOk(m.stazioni) && coordOk(m.punti) && coordOk(m.comuni));
+  check('i tre fiumi sono presenti', m.fiumi.length === 3 && m.fiumi.map(f => f.nome).join('|') === 'Po|Dora Riparia|Stura di Lanzo');
+  check('renderer mappa registrato', !!PAR.Map && typeof PAR.Map.render === 'function' && typeof PAR.Map.legenda === 'function');
+}
 
 // ————————————————— REPORT —————————————————
 console.log('\\n——————————————');
