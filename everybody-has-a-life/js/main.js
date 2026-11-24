@@ -29,8 +29,15 @@ window.EHL = window.EHL || {};
     continueBtn.addEventListener('click', function () {
       const raw = D.load(SAVE_KEY);
       if (!raw) return;
-      const revived = EN.revive(raw);
-      start(revived);
+      try {
+        start(EN.revive(raw));
+      } catch (err) {
+        $('splash').querySelector('.hint').textContent =
+          'Il salvataggio era danneggiato ed è stato rimosso: riparti con “Nuova città”.';
+        D.remove(SAVE_KEY);
+        continueBtn.disabled = true;
+        continueBtn.textContent = 'Continua (salvataggio non valido)';
+      }
     });
     $('seed').value = 'northbridge';
   }
@@ -104,11 +111,19 @@ window.EHL = window.EHL || {};
   function daysInMonth(y, m) { return D.DPM[(m - 1) % 12]; }
 
   function jump(amt) {
-    if (state.jumping) return;
+    if (state.jumping || !state.S) return;
     if (amt === 'mese') {
       const d = D.dateFromMinutes(state.S.dayIndex * D.MPD);
       amt = daysInMonth(d.year, d.month) * 1440;
     } else if (amt === 'anno') amt = 365 * 1440;
+    if (amt < 1440) {
+      setSpeed(0);
+      state.S.minutes = state.S.dayIndex * D.MPD + Math.floor(state.carry);
+      state.carry = Math.min(1439, Math.floor(state.carry) + amt);
+      state.S.minutes = state.S.dayIndex * D.MPD + Math.floor(state.carry);
+      afterSim();
+      return;
+    }
     const minutes = amt; let left = amt;
     state.jumping = true;
     setSpeed(0);
@@ -116,16 +131,21 @@ window.EHL = window.EHL || {};
     function step() {
       const t0 = performance.now();
       while (left > 0 && performance.now() - t0 < 12) {
-        const dminutes = Math.min(left, 15 * 1440);
-        const days = Math.round(dminutes / 1440);
+        const days = Math.min(Math.ceil(left / 1440), 15);
         state.S.minutes = state.S.dayIndex * D.MPD;
+        state.carry = 0;
         EN.stepDays(state.S, days);
         left -= days * 1440;
       }
-      label.textContent = '⏳ Salto in corso… ' + Math.round((1 - left / minutes) * 100) + '%';
-      afterSim();
-      if (left > 0) requestAnimationFrame(step);
-      else { state.jumping = false; label.style.display = 'none'; }
+      if (left > 0) {
+        label.textContent = '⏳ Salto in corso… ' + Math.round((1 - left / minutes) * 100) + '%';
+        afterSim();
+        requestAnimationFrame(step);
+      } else {
+        state.jumping = false;
+        label.style.display = 'none';
+        afterSim();
+      }
     }
     requestAnimationFrame(step);
   }
@@ -189,4 +209,7 @@ window.EHL = window.EHL || {};
   UI.refreshTopbarThrottled = UI.refreshTopbar;
 
   function refresh() { UI.refreshTopbar(); }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSplash);
+  else initSplash();
 })(window.EHL);
