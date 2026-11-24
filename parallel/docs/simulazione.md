@@ -152,3 +152,7 @@ I vincoli sono veri: niente approvazioni senza cassa o con debito > 380 Mld; mas
 - **SIMULATO**: ogni conseguenza del giocatore. `S.timeline` etichetta ogni voce; la vista Parallel Timelines mostra divergenze crescenti rispetto alla baseline.
 
 La baseline di confronto non è una predizione di ciò che sarebbe realmente successo, sempre un riferimento di stima. La verità controfattuale non viene predicata: si esplora.
+
+## 9. Rappresentazione cartografica
+
+La mappa (`js/map.js`) è pura visualizzazione, non fonte di verità: legge gli stessi valori del motore. La geometria di `data-torino.js` (poligoni distrettuali, fiumi, parchi, assi, ferrovia, stazioni, comuni) definisce solo le posizioni; il colore di ogni distretto deriva da `E.valoreDistretto` sugli indicatori simulati (densità, accessibilità, uso del suolo…). I corridoi progettuali vengono tracciati solo quando il cantiere esiste in `S.projects`, con tratteggio finché incompleti e anello di percentuale sul punto medio. La vista è zoomabile/pannabile e persiste tra i re-render.
