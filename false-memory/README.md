@@ -19,7 +19,9 @@ Thriller investigativo da giocare nel browser, in italiano. Sei un investigatore
 - Sblocchi progressivi: la catena di prove è validata da uno script di verifica (`tools/validate.js`).
 - Salvataggio automatico in `localStorage`, menu con NUOVA INDAGINE (con conferma se c'era una partita in corso) / CONTINUA (con progresso) / ARCHIVIO CASI (finali n/5) / COME SI GIOCA / IMPOSTAZIONI / CREDITI.
 - Intro narrativa a tre card all'avvio di una nuova indagine; suggerimenti contestuali al primo utilizzo delle viste; scorciatoie tastiera (1-7 viste, ESC chiude, ? guida).
-- Ricerca testuale in EVIDENCE; etichette delle relazioni direttamente sulle linee della bacheca (con aggancio alla griglia).
+- Ricerca testuale in EVIDENCE con badge **NUOVO** sulle prove mai aperte; etichette delle relazioni direttamente sulle linee della bacheca (con aggancio alla griglia); **doppio clic sullo sfondo della bacheca** crea una nota nel punto esatto.
+- Filtro **INCOERENZE** nella timeline; **rapporto di fine caso con rango (S/A/B/C/D) e statistiche** (prove, analisi, contraddizioni, capitolo, consegne).
+- **Esportazione e importazione del salvataggio** come codice JSON dalle impostazioni, per portare l'indagine su un altro dispositivo.
 - Audio **interamente sintetizzato con Web Audio API** (musica ambientale, effetti, voci per le registrazioni) — nessun asset esterno.
 - Immagini generate proceduralmente come SVG; testo scalabile; tema scuro da postazione investigativa.
 

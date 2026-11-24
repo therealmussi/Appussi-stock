@@ -52,8 +52,9 @@ window.FMViews = window.FMViews || { views: {} };
       const vis = disc.filter(matches);
       vis.forEach(e => {
         const card = F.el('div', 'evcard');
+        const isNew = !S.st.seen['e_' + e.id];
         card.innerHTML = '<div class="thumb">' + F.thumb(e) + '</div>' +
-          '<div class="meta"><div class="code">' + F.esc(e.code) + ' \u00b7 ' + F.catBadge(e.cat) + '</div>' +
+          '<div class="meta"><div class="code">' + F.esc(e.code) + ' \u00b7 ' + F.catBadge(e.cat) + (isNew ? ' <span class="badge amber">nuovo</span>' : '') + '</div>' +
           '<div class="t">' + F.esc(e.title) + '</div><div class="s">' + F.esc(e.short || '') + '</div></div>';
         card.addEventListener('click', () => window.FMUI.openEvidence(e.id));
         grid.appendChild(card);
@@ -70,6 +71,7 @@ window.FMViews = window.FMViews || { views: {} };
     const F = window.FM, S = window.FMState;
     const e = F.ev(id);
     if (!e) return;
+    if (!S.st.seen['e_' + id]) { S.st.seen['e_' + id] = 1; S.save(); }
     const content = F.el('div');
     content.innerHTML =
       '<h2>' + F.esc(e.title) + '</h2>' +

@@ -2,6 +2,7 @@
 window.FMViews = window.FMViews || { views: {} };
 (function () {
   const V = window.FMViews.views;
+  let onlyFlagged = false;
 
   /* eventi ricostruiti dalle prove: visibili solo con la prova acquisita.
      sort. Composizione: data formata 'GG/10 HH:MM' -> ordinamento lessicografico sicuro */
@@ -33,7 +34,9 @@ window.FMViews = window.FMViews || { views: {} };
   /* evento trabocchetto: l'orologio fermo non e' un evento della notte */
   const TRAP = { sort: '17/10 21:47', time: '17/10 21:47', type: 'unknown', text: 'Che cosa farebbe un’orologio fermo alle 21:47 sul pianerottolo? (da verificare: quando si e fermato davvero?)', ev: 'O02' };
 
+  /* i re-render in-view (toggle filtri, flag, eventi custom) arrivano qui con root gia popolato */
   V.timeline = function (root) {
+    root.innerHTML = '';
     const F = window.FM, S = window.FMState, st = S.st;
     root.appendChild(F.el('h1', 'pagetitle', 'TIMELINE'));
     root.appendChild(F.el('div', 'pagesub', '17 ottobre 2024 e dintorni \u2014 verde: confermato, ambra: stimato, azzurro: riferito da testimone, grigio: sconosciuto'));
@@ -45,19 +48,34 @@ window.FMViews = window.FMViews || { views: {} };
     add.addEventListener('click', () => openCustom(null));
     root.appendChild(add);
 
-    const items = [];
+    /* build the item list once so the filter and its counter are consistent */
+    const all = [];
     SOURCE.concat(TRAP).forEach(x => {
       if (x.ev && !F.reqMet('ev:' + x.ev)) return;
-      items.push(Object.assign({ custom: false }, x));
+      all.push(Object.assign({ custom: false }, x));
     });
     (st.timeline.custom || []).forEach((c, i) => {
-      items.push(Object.assign({ custom: true, idx: i }, c));
+      all.push(Object.assign({ custom: true, idx: i }, c));
     });
+    const isFlagged = x => (st.timeline.flagged || []).indexOf(stampOf(x)) !== -1;
+    const flagN = all.filter(isFlagged).length;
+
+    const flt = F.el('button', 'btn' + (onlyFlagged ? ' primary' : ''), 'INCOERENZE (' + flagN + ')');
+    flt.style.cssText = 'margin-bottom:16px;margin-left:10px';
+    flt.addEventListener('click', () => {
+      onlyFlagged = !onlyFlagged;
+      FMAudio.sfx.click();
+      V.timeline(root);
+    });
+    root.appendChild(flt);
+
+    const items = all.slice();
     items.sort((a, b) => (a.sort || '').localeCompare(b.sort || ''));
 
     const tl = F.el('div', 'tl');
     items.forEach(x => {
-      const flagged = (st.timeline.flagged || []).indexOf(stampOf(x)) !== -1;
+      const flagged = isFlagged(x);
+      if (onlyFlagged && !flagged) return;
       const it = F.el('div', 'tl-item ' + x.type + (flagged ? ' flagged' : ''));
       it.innerHTML = '<div class="tl-time">' + F.esc(x.time) +
         '<span class="ttype">' + ({ confirmed: 'confermato', estimated: 'stimato', reported: 'riferito', unknown: 'da verificare' })[x.type] + '</span></div>' +
