@@ -26,8 +26,8 @@ const FRAG = `
 precision highp float;
 varying vec3 vNrm, vCol, vWorld;
 varying vec2 vUV;
-uniform vec3 uAmbient, uSunDir, uSunColor, uFogColor, uCamPos, uTint;
-uniform float uFogDensity, uEmissive, uAlpha, uTexOn, uUnlit;
+uniform vec3 uAmbient, uSunDir, uSunColor, uFogColor, uCamPos, uTint, uRimColor;
+uniform float uFogDensity, uEmissive, uAlpha, uTexOn, uUnlit, uRim;
 uniform vec3 uPointPos[4];
 uniform vec3 uPointColor[4];
 uniform int uPointCount;
@@ -58,12 +58,17 @@ void main() {
     // gentle occlusion by face normal (ceilings darker, floors lit)
     float ao = mix(0.82, 1.0, clamp(n.y * 0.5 + 0.5, 0.0, 1.0));
     col = albedo * light * ao;
+    vec3 vDir = normalize(uCamPos - vWorld);
+    float fres = pow(1.0 - clamp(dot(n, vDir), 0.0, 1.0), 3.0);
+    col += fres * uRimColor * uRim;
   }
   col += uEmissive * albedo;
+  float lum = dot(col, vec3(0.299, 0.587, 0.114));
+  col = clamp(mix(vec3(lum), col, 1.14), 0.0, 1.0);
   float dist = length(vWorld - uCamPos);
   float fog = 1.0 - exp(-dist * uFogDensity);
   col = mix(col, uFogColor, clamp(fog, 0.0, 1.0));
-  gl_FragColor = vec4(col, uAlpha * gl_FragCoord.w * 0.0 + uAlpha);
+  gl_FragColor = vec4(col, uAlpha);
 }`;
 
 export class Renderer {
@@ -108,7 +113,8 @@ export class Renderer {
     this.u = {};
     for (const name of ['uProj', 'uView', 'uModel', 'uNormal', 'uAmbient', 'uSunDir',
       'uSunColor', 'uFogColor', 'uCamPos', 'uTint', 'uFogDensity', 'uEmissive',
-      'uAlpha', 'uTexOn', 'uUnlit', 'uPointPos', 'uPointColor', 'uPointCount', 'uTex']) {
+      'uAlpha', 'uTexOn', 'uUnlit', 'uPointPos', 'uPointColor', 'uPointCount', 'uTex',
+      'uRim', 'uRimColor']) {
       this.u[name] = gl.getUniformLocation(prog, name);
     }
     this.a = {
@@ -133,7 +139,7 @@ export class Renderer {
   }
 
   resize() {
-    const q = this.quality === 'low' ? 0.66 : this.quality === 'high' ? Math.min(window.devicePixelRatio || 1, 1.5) : 1;
+    const q = this.quality === 'low' ? 0.66 : this.quality === 'high' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
     const w = Math.max(1, Math.floor(this.canvas.clientWidth * q));
     const h = Math.max(1, Math.floor(this.canvas.clientHeight * q));
     if (this.canvas.width !== w || this.canvas.height !== h) {
@@ -172,10 +178,24 @@ export class Renderer {
     gl.bindTexture(gl.TEXTURE_2D, t.glTex);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, t.source);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+    const isPOT = (v) => (v & (v - 1)) === 0;
+    if (isPOT(t.width) && isPOT(t.height) && typeof gl.generateMipmap === 'function') {
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      const ext = typeof gl.getExtension === 'function'
+        && (gl.getExtension('EXT_texture_filter_anisotropic')
+          || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic'));
+      if (ext && typeof gl.getParameter === 'function') {
+        const max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+        gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, max));
+      }
+    } else {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    }
   }
 
   _bindTex(t) {
@@ -251,6 +271,8 @@ export class Renderer {
     gl.uniform3fv(this.u.uPointPos, paddedPos);
     gl.uniform3fv(this.u.uPointColor, paddedCol);
     gl.uniform1i(this.u.uPointCount, env.glowAll ? 4 : pc);
+    gl.uniform1f(this.u.uRim, env.rim ? env.rim.strength : 0.16);
+    gl.uniform3fv(this.u.uRimColor, env.rim ? env.rim.color : [0.5, 0.52, 0.58]);
 
     this.meshes.sort((m1, m2) => (m1.transparent ? 1 : 0) - (m2.transparent ? 1 : 0));
 

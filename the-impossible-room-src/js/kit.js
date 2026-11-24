@@ -4,7 +4,7 @@
 
 import { V, Q, M4 } from './engine/math3.js';
 import { makeBox, makeQuad, makeCylinder } from './engine/geo.js';
-import { texText, texPainting, texTape, texBlob } from './engine/textures.js';
+import { texText, texPainting, texTape, texBlob, texSurface } from './engine/textures.js';
 import { AABB, castDown } from './physics.js';
 import { Batcher } from './engine/batcher.js';
 
@@ -79,10 +79,20 @@ export class LevelKit {
     };
     this.mood = { root: 55, mood: 'grey', airAmt: 0.5 };
     this.state = {};
+    this._surfaceSet = new Set(['wallGrey', 'wallOff', 'wallBeige', 'floorWarm', 'floorGrey', 'floorPale', 'ceilDark', 'ceilPale', 'char']);
+  }
+
+  /* subtle shared detail texture for large architectural surfaces */
+  _surfaceTex() {
+    if (!this.__surfTex) this.__surfTex = this.renderer.makeTexture(texSurface());
+    return this.__surfTex;
   }
 
   /* ---------- materials (shared by params -> batchable) ---------- */
   mat(name, opts = {}) {
+    if (!opts.tex && this._surfaceSet && this._surfaceSet.has(name)) {
+      opts = { ...opts, tex: this._surfaceTex() };
+    }
     const def = {
       color: opts.color || PAL[name] || PAL.wallGrey,
       tex: opts.tex || null,
@@ -103,7 +113,7 @@ export class LevelKit {
   /* ---------- static geometry ---------- */
   box(pos, size, matName, opts = {}) {
     const mat = this.mat(matName, opts);
-    this.batcher.addBox(pos, size, mat);
+    this.batcher.addBox(pos, size, mat, !mat.unlit);
     if (opts.collide !== false) {
       this.colliders.push(new AABB(pos[0], pos[1], pos[2], size[0] / 2, size[1] / 2, size[2] / 2));
     }
@@ -115,8 +125,9 @@ export class LevelKit {
     const t = 0.26;
     const uC = (u0 + u1) / 2, vC = (v0 + v1) / 2;
     const su = u1 - u0, sv = v1 - v0;
-    if (axis === 'z') this.box([uC, vC, fixed], [su, sv, t], matName, opts);
-    else this.box([fixed, vC, uC], [t, sv, su], matName, opts);
+    const o = { uvScale: Math.max(1, Math.round(Math.max(su, sv) / 1.8)), ...opts };
+    if (axis === 'z') this.box([uC, vC, fixed], [su, sv, t], matName, o);
+    else this.box([fixed, vC, uC], [t, sv, su], matName, o);
   }
 
   wallHole(axis, fixed, u0, u1, v0, v1, hole, matName, opts = {}) {
@@ -164,8 +175,9 @@ export class LevelKit {
      hole: {x, z, w, d} in room-local offsets from room center. */
   _plate(cx, y, cz, w, d, matName, hole) {
     const T = 0.26;
+    const uv = Math.max(1, Math.round(Math.max(w, d) / 1.8));
     if (!hole) {
-      this.box([cx, y, cz], [w + T * 2, T, d + T * 2], matName, {});
+      this.box([cx, y, cz], [w + T * 2, T, d + T * 2], matName, { uvScale: uv });
       return;
     }
     const x0 = cx - w / 2 - T, x1 = cx + w / 2 + T;
@@ -173,10 +185,10 @@ export class LevelKit {
     const hx0 = cx + hole.x - hole.w / 2, hx1 = cx + hole.x + hole.w / 2;
     const hz0 = cz + hole.z - hole.d / 2, hz1 = cz + hole.z + hole.d / 2;
     // four strips around the hole
-    this.box([cx, y, (z0 + hz0) / 2], [x1 - x0, T, hz0 - z0], matName, {});
-    this.box([cx, y, (hz1 + z1) / 2], [x1 - x0, T, z1 - hz1], matName, {});
-    this.box([(x0 + hx0) / 2, y, (hz0 + hz1) / 2], [hx0 - x0, T, hz1 - hz0], matName, {});
-    this.box([(hx1 + x1) / 2, y, (hz0 + hz1) / 2], [x1 - hx1, T, hz1 - hz0], matName, {});
+    this.box([cx, y, (z0 + hz0) / 2], [x1 - x0, T, hz0 - z0], matName, { uvScale: uv });
+    this.box([cx, y, (hz1 + z1) / 2], [x1 - x0, T, z1 - hz1], matName, { uvScale: uv });
+    this.box([(x0 + hx0) / 2, y, (hz0 + hz1) / 2], [hx0 - x0, T, hz1 - hz0], matName, { uvScale: uv });
+    this.box([(hx1 + x1) / 2, y, (hz0 + hz1) / 2], [x1 - hx1, T, hz1 - hz0], matName, { uvScale: uv });
   }
 
   /* ---------- dynamic nodes ---------- */

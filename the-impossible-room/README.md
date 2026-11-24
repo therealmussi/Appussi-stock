@@ -20,6 +20,14 @@ Any static file server with correct ES-module MIME types works
 external assets, no build step, and no network dependencies — everything
 (geometry, textures, sounds) is generated procedurally at runtime.
 
+## Rendering notes
+
+Single-shard WebGL 1 renderer (one GLSL program, interleaved vertex stream,
+material batching). Surfaces carry procedural plaster textures with world-scale
+UV density, per-face tonal jitter, mipmapped + anisotropically filtered
+textures, a soft fresnel rim light, gently flickering lamp lights and
+distance fog. High quality renders up to 2× device pixel ratio.
+
 ## Controls
 
 | Input | Action |

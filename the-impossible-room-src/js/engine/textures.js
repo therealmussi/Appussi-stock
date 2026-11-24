@@ -30,6 +30,35 @@ export function texNoise(g, w = 256, h = 256, base = [0.72, 0.7, 0.67], variance
   return bind(c);
 }
 
+/* Neutral surface detail: fine plaster grain, soft stains, faint vertical
+   streaks. Multiplied against albedo — base stays near white. */
+export function texSurface(w = 256, h = 256) {
+  const { c, g: x } = canvas2d(w, h);
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < 26; i++) {
+    const r = 14 + Math.random() * 52;
+    const a = 0.015 + Math.random() * 0.045;
+    x.fillStyle = Math.random() < 0.55 ? `rgba(40,36,32,${a})` : `rgba(255,255,252,${a})`;
+    x.beginPath();
+    x.ellipse(Math.random() * w, Math.random() * h, r, r * (0.4 + Math.random() * 0.6), Math.random() * Math.PI, 0, Math.PI * 2);
+    x.fill();
+  }
+  for (let i = 0; i < 10; i++) {
+    const sw = 1 + Math.random() * 3;
+    x.fillStyle = `rgba(52,47,42,${0.02 + Math.random() * 0.035})`;
+    const sx = Math.random() * w;
+    x.fillRect(sx, Math.random() * h * 0.3, sw, h * (0.3 + Math.random() * 0.7));
+  }
+  const img = x.getImageData(0, 0, w, h);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const n = 1 + (Math.random() * 2 - 1) * 0.035;
+    d[i] *= n; d[i + 1] *= n; d[i + 2] *= n;
+  }
+  x.putImageData(img, 0, 0);
+  return bind(c);
+}
+
 export function texChecker(c1 = '#2a2a2e', c2 = '#e8e4da', n = 8, w = 256, h = 256) {
   const { c, g: x } = canvas2d(w, h);
   const s = w / n;

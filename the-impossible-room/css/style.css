@@ -211,6 +211,22 @@ h1.title::after {
 
 .menu-list { display: flex; flex-direction: column; gap: 10px; align-items: center; }
 
+/* entrance choreography */
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.screen.visible .menu-box > *, .screen.visible .panel > * {
+  animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.screen.visible .menu-box > *:nth-child(2) { animation-delay: 0.07s; }
+.screen.visible .menu-box > *:nth-child(3) { animation-delay: 0.14s; }
+.screen.visible .menu-box > *:nth-child(4) { animation-delay: 0.21s; }
+.screen.visible .menu-box > *:nth-child(5) { animation-delay: 0.28s; }
+.screen.visible .menu-box > *:nth-child(6) { animation-delay: 0.35s; }
+.screen.visible .panel > *:nth-child(2) { animation-delay: 0.07s; }
+.screen.visible .panel > *:nth-child(3) { animation-delay: 0.13s; }
+.screen.visible .panel > *:nth-child(n+4) { animation-delay: 0.19s; }
+
+body.void-mode #main-eyebrow { color: var(--blue); }
+
 .mbtn {
   font-family: Georgia, serif;
   background: transparent; color: var(--paper);

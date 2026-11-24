@@ -219,6 +219,19 @@ export class Game {
       // level updaters
       for (const u of this.current.kit.updaters) u(dt, this);
       if (this.current.def.update) this.current.def.update(dt, this.current.kit);
+
+      // light flicker (procedural, per-lamp phase)
+      const pts = this.current.kit.points;
+      const now = performance.now() / 1000;
+      for (let i = 0; i < pts.length; i++) {
+        const pt = pts[i];
+        if (pt.noFlicker) continue;
+        if (!pt._base) { pt._base = [pt.color[0], pt.color[1], pt.color[2]]; pt._ph = i * 2.39 + 0.7; }
+        const f = 0.95 + 0.04 * Math.sin(now * 6.7 + pt._ph) + 0.015 * Math.sin(now * 21.3 + pt._ph * 2.7);
+        pt.color[0] = pt._base[0] * f;
+        pt.color[1] = pt._base[1] * f;
+        pt.color[2] = pt._base[2] * f;
+      }
     }
     // fade overlay
     if (this.fade.target !== this.fade.a) {

@@ -19,12 +19,15 @@ export class Batcher {
     return g;
   }
 
-  /* Transform-space helper: bake a transform into raw vertex/normal data. */
-  _bake(geo, pos, quat, scale, color) {
+  /* Transform-space helper: bake a transform into raw vertex/normal data.
+     When jitter is set, each face of the geometry gets a stable tonal offset
+     hashed from its world position — a subtle weathered-concrete variation. */
+  _bake(geo, pos, quat, scale, color, jitter = false) {
     const out = [];
     const n = geo.verts.length / STRIDE;
     const m = M4.fromTRS(M4.ident(), pos, quat, scale);
     const p = V.make(), nr = V.make();
+    let j = 1;
     for (let i = 0; i < n; i++) {
       const o = i * STRIDE;
       p[0] = geo.verts[o]; p[1] = geo.verts[o + 1]; p[2] = geo.verts[o + 2];
@@ -37,17 +40,24 @@ export class Batcher {
       const nx = m[0] * nr[0] + m[4] * nr[1] + m[8] * nr[2];
       const ny = m[1] * nr[0] + m[5] * nr[1] + m[9] * nr[2];
       const nz = m[2] * nr[0] + m[6] * nr[1] + m[10] * nr[2];
-      out.push(px, py, pz, nx, ny, nz,
-        geo.verts[o + 6], geo.verts[o + 7],
-        color[0], color[1], color[2]);
+      if (jitter) {
+        if (i % 4 === 0) j = _faceJitter(px, py, pz);
+        out.push(px, py, pz, nx, ny, nz,
+          geo.verts[o + 6], geo.verts[o + 7],
+          color[0] * j, color[1] * j, color[2] * j);
+      } else {
+        out.push(px, py, pz, nx, ny, nz,
+          geo.verts[o + 6], geo.verts[o + 7],
+          color[0], color[1], color[2]);
+      }
     }
     return out;
   }
 
-  addGeo(geo, pos, quat, scale, mat) {
+  addGeo(geo, pos, quat, scale, mat, jitter = false) {
     const g = this._group(mat);
     const base = g.verts.length / STRIDE;
-    const baked = this._bake(geo, pos, quat, scale, mat.color);
+    const baked = this._bake(geo, pos, quat, scale, mat.color, jitter);
     g.verts.push(...baked);
     for (let i = 0; i < geo.indices.length; i++) g.indices.push(base + geo.indices[i]);
   }
@@ -92,3 +102,8 @@ export class Batcher {
   }
 }
 const _v0 = V.make();
+
+function _faceJitter(x, y, z) {
+  const h = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
+  return 0.965 + 0.07 * (h - Math.floor(h));
+}
