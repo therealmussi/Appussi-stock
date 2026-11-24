@@ -107,7 +107,7 @@
     root.innerHTML = `<h2 class="pan-titolo">Mobilità e reti</h2>
       <div class="cards">
       ${H.card('Rete del trasporto pubblico', Math.round(T.tramKm) + ' km tranvia', 'metropolitana: ' + (Math.round(T.metroKm * 10) / 10) + ' km · ferrovie: ' + Math.round(T.railKm) + ' km')}
-      ${H.card('auto ogni 1.000 ab.', Math.round(T.autoMille), 'sentiero tracciato nel 1962 si trova qui')}
+      ${H.card('auto ogni 1.000 ab.', Math.round(T.autoMille), 'il livello di motorizzazione si decide qui')}
       ${H.card('modal share', Math.round(T.shareAuto * 100) + '% auto', 'trasporto pubblico ' + Math.round(T.shareTpubb * 100) + '% · spostamenti attivi ' + Math.round(T.shareAttivo * 100) + '%')}
       ${H.card('tempo medio di spostamento', Math.round(T.tempiMin) + ' min', T.congestione > 0.8 ? 'congestione critica: ' + Math.round(T.congestione * 100) + '/100' : 'congestione ' + Math.round(T.congestione * 100) + '/100')}
       </div>
@@ -243,7 +243,7 @@
       <p class="pan-nota">Eventi della storia reale <span class="chip chip-st">STORICO</span>,
       scelte controfattuali <span class="chip chip-ip">IPOTESI</span>,
       esiti della simulazione <span class="chip chip-si">SIMULATO</span>.
-      Tenere separate le tre planisole è la regola d\u2019ingaggio di PARALLEL.</p>
+      Tenere separate le tre voci è la regola d\u2019oro di PARALLEL.</p>
       <div class="tl-list">${item}</div>`;
   };
 
@@ -336,7 +336,7 @@
 
     root.innerHTML = `<h2 class="pan-titolo">Timeline Parallele</h2>
       <p class="pan-nota"><strong>La tua Torino</strong> contro la Torino reale. Le serie storiche sono stime
-      illustrative ricostruite per dare un termine di confronto, non misurazioni puntuale: e la simulazione
+      illustrative ricostruite per dare un termine di confronto, non misurazioni puntuali: la simulazione
       non pretende di prevedere che cosa «sarebbe successo comunque», mostra solo un ramo possibile dipendente dalle tue scelte.</p>
       ${charts}
       <h3 class="cat-titolo">Sintesi al ${last.year}</h3>${table}

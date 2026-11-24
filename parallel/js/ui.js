@@ -78,7 +78,13 @@
     el('btn-advance').addEventListener('click', avanza);
     el('btn-menu').addEventListener('click', () => { if (U.S) { U.tab = 'sistema'; renderView(); } });
     document.addEventListener('keydown', ev => {
-      if (ev.key.toLowerCase() === 't' && !ev.target.matches('input,textarea')) avanza();
+      if (ev.target.matches('input,textarea')) return;
+      const ev2 = ev;
+      if (ev2.key === 'Escape') {
+        const ov = el('modal-root').querySelector('.modal-overlay');
+        if (ov && ov.classList.contains('dismissible')) chiudiModal();
+      }
+      if (ev.key.toLowerCase() === 't') avanza();
     });
     U.menu();
   };
@@ -193,6 +199,21 @@
   }
 
   function mostraResoconto(report) {
+    const S = U.S;
+    const h = S.history, ora = h[h.length - 1], prima = h.length > 1 ? h[h.length - 2] : null;
+    let delta = '';
+    if (prima) {
+      const fmtDelta = (v1, v0, d, f) => {
+        const dv = (v1 - v0) / d;
+        return (dv >= 0 ? '+' : '') + f(dv);
+      };
+      delta = '<div class="resoconto-delta">' +
+        '<span>abitanti ' + fmtDelta(ora.popolazione, prima.popolazione, 1, x => PAR.fmt.num(Math.round(x))) + '</span>' +
+        '<span>PIL ' + fmtDelta(ora.pil, prima.pil, 1, x => x.toFixed(1) + ' Mld') + '</span>' +
+        '<span>disoccupazione ' + fmtDelta(ora.disoccupazione, prima.disoccupazione, 0.01, x => x.toFixed(2) + 'pp') + '</span>' +
+        '<span>cassa ' + fmtDelta(ora.cassa, prima.cassa, 1, x => x.toFixed(1) + ' Mld') + '</span>' +
+        '</div>';
+    }
     let righe = '';
     report.completati.forEach(c => { righe += `<li class="ok">Completato: <strong>${PAR.UIU.esc(c.nome)}</strong> — ${PAR.UIU.esc(c.effetto)}</li>`; });
     report.decisioni.forEach(d => { righe += `<li class="dec">Decisione: ${PAR.UIU.esc(d.titolo)} — ${PAR.UIU.esc(d.scelta)}</li>`; });
@@ -202,6 +223,7 @@
     if (!righe) righe = '<li class="eco">Anno tranquillo, nessun cambio rilevante.</li>';
     const m = modal(`
       <h3 class="modal-titolo">Anno ${report.anno} — che cosa è successo</h3>
+      ${delta}
       <ul class="resoconto">${righe}</ul>
       <div class="modal-foot">
         <button class="btn" id="m-chiudi">Chiudi</button>
@@ -396,7 +418,8 @@
     const box = el('mappa-svg');
     if (!box) return;
     PAR.Map.render(box, U.S, U.layer, U.selDistretto, {
-      onSelect: function (id) { U.selDistretto = id; drawMappa(); mostraDistretto(); }
+      onSelect: function (id) { U.selDistretto = id; drawMappa(); mostraDistretto(); },
+      onProject: function () { U.tab = 'progetti'; renderView(); }
     });
     const leg = PAR.Map.legenda(U.S, U.layer);
     const box2 = el('mappa-legenda');
@@ -419,6 +442,13 @@
     const d = U.selDistretto ? S.territorio.distretti.find(x => x.id === U.selDistretto) : S.territorio.distretti[0];
     if (!d) { side.innerHTML = ''; return; }
     const esp = (d.costruitoHa - (d.costruito0 || d.costruitoHa)).toFixed(1);
+    const opere = PAR.Engine.progetti.filter(def => (def.corridoio || []).indexOf(d.id) >= 0).map(def => {
+      const pr = S.projects.find(p => p.id === def.id);
+      const stato = !pr ? 'non avviata'
+        : pr.completato ? 'completata nel ' + pr.annoCompletamento
+        : 'in cantiere al ' + Math.round(pr.progresso) + '%';
+      return '<li class="' + (pr ? (pr.completato ? 'ok' : 'dec') : 'eco') + '">' + PAR.UIU.esc(def.nome) + ' — ' + stato + '</li>';
+    }).join('');
     side.innerHTML = `<h3>${d.nome}</h3>
       <table class="tabella"><tbody>
       ${PAR.UIU.riga('residenti', PAR.fmt.num(Math.round(d.residenti)))}
@@ -431,6 +461,7 @@
       ${PAR.UIU.riga('frazione costruita', Math.round(d.costruitoHa / d.supHa * 100) + '%')}
       ${PAR.UIU.riga('edificato dal 1962', '+' + esp + ' ha')}
       </tbody></table>
+      ${opere ? '<h4>Opere che attraversano il distretto</h4><ul class="resoconto">' + opere + '</ul>' : ''}
       <p class="nota">Il dettaglio è una ripartizione interna della simulazione: i totali di riferimento sono nei pannelli analitici.</p>`;
   }
 
