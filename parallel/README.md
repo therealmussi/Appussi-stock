@@ -11,7 +11,7 @@ Torino, 1962: pieno miracolo economico, immigrazione interna, motorizzazione in 
 - **7 sistemi interconnessi** con tick annuale: demografia, economia, trasporti, territorio, ambiente, sociale, politica.
 - **10 decisioni storiche** con alternative plausibili (l'alluvione del Po 1966, l'emergenza abitativa 1968, il patto Fiat 1971, lo shock petrolifero 1973, la crisi industriale 1978, il Lingotto 1982, i Mondiali '90…), più **8 eventi dinamici** condizionati dallo stato della simulazione.
 - **24 progetti infrastrutturali** con costo, durata, cofinanziamento, manutenzione e conseguenze a decenni.
-- **Mappa interattiva SVG** di Torino a geometria vettoriale: 14 distretti con contorni irregolari riconoscibili, Po arginato, Dora Riparia e Stura di Lanzo, 6 parchi, assi stradali con doppio tratteggio, spina ferroviaria, 4 stazioni, punti di riferimento (Mole Antonelliana, Lingotto, Superga…), 9 comuni dell'area metropolitana; 7 livelli tematici (densità, accessibilità, attività, uso del suolo, ambiente, espansione, progetti); **zoom con rotella, pan col trascinamento e controlli +/−/⌂**; i cantieri appaiono come anelli di progresso sui corridoi.
+- **Mappa interattiva SVG** di Torino a geometria vettoriale: 14 distretti con contorni irregolari riconoscibili, Po arginato, Dora Riparia e Stura di Lanzo, 6 parchi, assi stradali con doppio tratteggio, spina ferroviaria, 4 stazioni, punti di riferimento (Mole Antonelliana, Lingotto, Superga…), 9 comuni dell'area metropolitana; 7 livelli tematici (densità, accessibilità, attività, uso del suolo, ambiente, espansione, progetti); **zoom con rotella al cursore o pinch a due dita, pan col trascinamento e controlli +/−/⌂**; i cantieri appaiono come anelli di progresso sui corridoi; un clic su un corridoio apre la scheda Progetti; la scheda distretto elenca le opere che lo attraversano.
 - **Parallel Timelines**: confronto sistematico tra la tua linea temporale e quella storica di riferimento, con etichettatura rigorosa **STORICO** (dato documentato) / **IPOTESI** (valore illustrativo stimato) / **SIMULATO** (risultato della simulazione).
 - **Rapporto finale** con valutazione su 7 dimensioni e **archetipo di città emergente** dai risultati (nessuna città perfetta).
 - **Saving**: autosave annuale + 3 slot manuali + export/import JSON, su `localStorage`.
@@ -54,7 +54,7 @@ Ulteriori scenari (Paris 1965, New York 1950, Venice 1960, Grenoble 1970, London
 node test/headless.js
 ```
 
-Esegue campagne complete (1962→2000) senza browser: consistenza dello stato iniziale, campagna neutra in range, divergenza metro vs strade (mobilità, suolo, motorizzazione), ciclo di vita dei progetti, determinismo del seed, round-trip di salvataggio, vincoli di bilancio.
+Esegue campagne complete (1962→2000) senza browser: consistenza dello stato iniziale, campagna neutra in range, divergenza metro vs strade (mobilità, suolo, motorizzazione), ciclo di vita dei progetti, determinismo del seed, round-trip di salvataggio, vincoli di bilancio, integrità dei dati cartografici (poligoni, corridoi, stazioni, fiumi).
 
 ## Avvertenza sui dati
 

@@ -233,16 +233,55 @@
         const r = svg.getBoundingClientRect();
         zoom(ev.deltaY < 0 ? 1.18 : 1 / 1.18, (ev.clientX - r.left) / r.width * W, (ev.clientY - r.top) / r.height * H);
       }, { passive: false });
-      let trascina = null;
-      svg.addEventListener('pointerdown', ev => { trascina = { x: ev.clientX, y: ev.clientY, ox: V.x, oy: V.y }; svg.classList.add('afferra'); });
-      window.addEventListener('pointermove', ev => {
-        if (!trascina) return;
-        const r = svg.getBoundingClientRect();
-        V.x = Math.max(Math.min(trascina.ox + (ev.clientX - trascina.x) / r.width * W, 0), W - W * V.k);
-        V.y = Math.max(Math.min(trascina.oy + (ev.clientY - trascina.y) / r.height * H, 0), H - H * V.k);
-        aplica();
+      if (PAR.Map._winMove) window.removeEventListener('pointermove', PAR.Map._winMove);
+      if (PAR.Map._winUp) window.removeEventListener('pointerup', PAR.Map._winUp);
+      if (PAR.Map._winCancel) window.removeEventListener('pointercancel', PAR.Map._winUp);
+
+      let attivi = [];
+      const pinch = () => {
+        if (attivi.length < 2) return null;
+        const a = attivi[0], b = attivi[1];
+        return { d: Math.hypot(a.x - b.x, a.y - b.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+      };
+      svg.addEventListener('pointerdown', ev => {
+        attivi.push({ id: ev.pointerId, x: ev.clientX, y: ev.clientY });
+        svg.classList.add('afferra');
       });
-      window.addEventListener('pointerup', () => { trascina = null; svg.classList.remove('afferra'); });
+      const su = ev => {
+        attivi = attivi.filter(p => p.pointerId !== ev.pointerId);
+        if (!attivi.length) svg.classList.remove('afferra');
+      };
+      PAR.Map._winMove = ev => {
+        const i = attivi.findIndex(p => p.pointerId === ev.pointerId);
+        if (i < 0) return;
+        const prima = pinch();
+        attivi[i].x = ev.clientX; attivi[i].y = ev.clientY;
+        const r = svg.getBoundingClientRect();
+        const versoPx = (cx, cy) => [(cx - r.left) / r.width * W, (cy - r.top) / r.height * H];
+        if (attivi.length >= 2) {
+          const dopo = pinch(), davanti = prima;
+          if (davanti && davanti.d > 0) {
+            const [qx, qy] = versoPx(davanti.cx, davanti.cy);
+            zoom(dopo.d / davanti.d, qx, qy);
+            const dispX = (dopo.cx - davanti.cx) / r.width * W * V.k;
+            const dispY = (dopo.cy - davanti.cy) / r.height * H * V.k;
+            V.x = Math.max(Math.min(V.x - dispX, 0), W - W * V.k);
+            V.y = Math.max(Math.min(V.y - dispY, 0), H - H * V.k);
+            aplica();
+          }
+        } else {
+          const p = attivi[0];
+          const ax = p.x, ay = p.y;
+          V.x = Math.max(Math.min(V.x + (ev.clientX - ax) / r.width * W, 0), W - W * V.k);
+          V.y = Math.max(Math.min(V.y + (ev.clientY - ay) / r.height * H, 0), H - H * V.k);
+          aplica();
+          p.x = ev.clientX; p.y = ev.clientY;
+        }
+      };
+      PAR.Map._winUp = su;
+      window.addEventListener('pointermove', PAR.Map._winMove);
+      window.addEventListener('pointerup', PAR.Map._winUp);
+      window.addEventListener('pointercancel', PAR.Map._winUp);
       svg.addEventListener('dblclick', () => { V.k = 1; V.x = 0; V.y = 0; aplica(); });
     },
 
