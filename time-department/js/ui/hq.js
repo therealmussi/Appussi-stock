@@ -92,14 +92,14 @@
     var p = h("div", { class: "panel" }, [h("h3", null, ["ACTIVE & COMPLETED INVESTIGATIONS"])]);
     TD.CASES.forEach(function (c) {
       var cs = state.cases[c.id];
-      var done = TD.STATE.isComplete(c.id);
+      var done = TD.STATE.isComplete(c.id) && cs && cs.submitted;
       var unlocked = TD.STATE.caseUnlocked(c);
       var row = h("button", {
         class: "case-row" + (unlocked ? "" : " locked"),
         onclick: function () {
           if (!unlocked) { TD.UI.toast("Case seal: closes with " + TD.CASES[c.number - 2].id + ".", "amber"); return; }
           TD.AUDIO.click();
-          if (done && cs && cs.submitted) { TD.SCREENS.go("results", c); return; }
+          if (done) { TD.SCREENS.go("results", c); return; }
           TD.SCREENS.go("case", c);
         }
       }, [
@@ -108,12 +108,23 @@
           h("span", { html: c.title.toUpperCase() }),
           h("small", null, [c.location + " \u00b7 " + c.dateOfAnomaly + " \u00b7 Severity CLASS " + c.severity + " \u00b7 Difficulty " + "\u25c8".repeat(c.difficulty)])
         ]),
-        done && cs && cs.submitted ? h("span", { class: "done-mark" }, ["CLOSED \u00b7 " + cs.submitted.score + "/100 \u00b7 " + cs.submitted.grade]) :
-          (unlocked ? h("span", { class: "mono tiny amber" }, ["OPEN \u2014 INVESTIGATE"]) : h("span", { class: "locked-note" }, ["SEALED"]))
+        done ? h("span", { class: "done-mark" }, ["CLOSED \u00b7 " + TD.STATE.bestOf(c.id) + "/100 \u00b7 " + cs.submitted.grade]) :
+          (state.bestScore[c.id] ? h("span", { class: "mono tiny amber" }, ["REOPENED \u2014 BEST " + state.bestScore[c.id] + "/100"]) :
+          (unlocked ? h("span", { class: "mono tiny amber" }, ["OPEN \u2014 INVESTIGATE"]) : h("span", { class: "locked-note" }, ["SEALED"])))
       ]);
       p.appendChild(row);
     });
-    p.appendChild(h("div", { class: "small", style: "margin-top:8px" }, ["The Division accepts only monotony as proof of good paperwork. Each case, once closed, may be reopened from the ARCHIVE at the cost of its current state."]));
+    p.appendChild(h("div", { class: "small", style: "margin-top:8px" }, ["The Division accepts only monotony as proof of good paperwork. A closed case may be reopened below; your best filed score keeps its place in the record."]));
+
+    var soon = h("div", { class: "case-row locked soon-row" }, [
+      h("span", { class: "cn red" }, ["UF\u2014??"]),
+      h("span", { class: "ct" }, [
+        h("span", { html: "UNSOLVED FILES" }),
+        h("small", null, ["Hard-mode division: no consultations, unmarked contradictions, rosters by reconstruction quality. Access pending classification."])
+      ]),
+      h("span", { class: "locked-note amber" }, ["COMING SOON"])
+    ]);
+    p.appendChild(soon);
     body.appendChild(p);
   }
 

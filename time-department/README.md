@@ -5,7 +5,9 @@ Gioco investigativo da giocare nel browser. Sei un **Temporal Investigator** app
 ## Come si gioca
 
 - **OPERATIONS ROOM** — la scrivania del dipartimento: indice di stabilità temporale, casi attivi, avvisi del personale.
-- **CASE FILES** — i cinque casi iniziali (TC-001…TC-005), con classificazione di gravità, difficoltà e stato (SEALED / aperto / CLOSED · punteggio).
+- **CASE FILES** — i cinque casi iniziali (TC-001…TC-005), con classificazione di gravità, difficoltà e stato (SEALED / aperto / REOPENED / CLOSED · migliore punteggio). I casi chiusi si possono **riaprire**: il fascicolo riparte pulito, il best score resta in archivio. In fondo alla lista, in attesa di classificazione, **UNSOLVED FILES**.
+
+Scorciatoie tastiera nell'area caso: tasti **1–7** attivano le schede (Overview, Evidence, Scanner, Timeline, Causality, Board, Comms), **0** apre la Final Report, **ESC** chiude la finestra corrente o torna al menu.
 - **EVIDENCE** — fino a 12 esibiti per caso (documenti, fotografie, intercettazioni, filmati, dichiarazioni, misure scientifiche, firme temporali): lettura dettagliata, note personali, marcatura (UNVERIFIED / FACT / SUSPICION / CONTRADICTION), analisi di laboratorio, pin sulla bacheca.
 - **TEMPORAL SCANNER** — letture di firma temporale per bersaglio: normal, displaced, duplicate, missing, fragmented, unknown. Le scansioni generations ulteriori esibiti consultabili.
 - **TIMELINE** — ricostruzione cronologica interattiva: trascina gli eventi nell'ordine giusto, con timestamp confermati / stimati / riferiti dai testimoni. Auto-Fill usa i cartellini stampati; sta a te capire se sono attendibili.
@@ -29,7 +31,7 @@ Dietro i casi c'è la meta-storia di **PROJECT JANUS**: dipendenti che ricordano
 - **Verità canonica scritta prima dei casi**: nessun indizio arbitrario; validatore dedicato che controlla riferimenti incrociati, permutazioni della timeline, relazioni causali e giocata perfetta.
 - Alcune prove sono incomplete, fuorvianti o contradditorie — ma **ogni contraddizione ha una spiegazione logica** nel caso.
 - **L'intervento migliore non è sempre quello moralmente giusto**: massimizzare la stabilità può costare qualcosa a qualcuno (guarda il caso 004).
-- Progressione a ranghi basata sulle prestazioni (media punteggi ≥ 55), sblocchi di archivio e fascicoli riservati.
+- Progressione a ranghi basata sulle prestazioni (media punteggi ≥ 55), sblocchi di archivio e fascicoli riservati. Il rango usa sempre il **migliore punteggio archiviato** per ogni caso: il replay non penalizza.
 - Salvataggio automatico in `localStorage` (autosave 15s + ad ogni azione + chiusura), **export/import JSON** dalle impostazioni.
 - Audio **interamente sintetizzato con Web Audio API** (hum, ticchettio, blip, chime) con volumi separati per master / musica / ambiente / effetti, plus effetti CRT disattivabili.
 - Desktop-first, tastiera parziale (ESC chiude modali e torna al menu), tema CRT istituzionale ambra/turchese.

@@ -202,6 +202,62 @@ setTimeout(function () {
     must(/SEALED/.test(document.body.textContent.toUpperCase()), "locked cases missing");
   });
 
+  step("unsolved files teaser in case files", function () {
+    click(/CASE FILES/);
+    must(/UNSOLVED FILES/.test(document.body.textContent), "teaser missing");
+    must(/COMING SOON/.test(document.body.textContent), "soon tag missing");
+  });
+  step("keyboard shortcuts switch tabs", function () {
+    var row2 = [].slice.call(document.querySelectorAll(".case-row")).filter(function (r) { return /TC-002/.test(r.textContent); })[0];
+    row2.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    must(/CASE BRIEFING/.test(document.body.textContent), "tc002 not open");
+    function press(k) { window.dispatchEvent(new window.KeyboardEvent("keydown", { key: k, bubbles: true })); }
+    press("2");
+    var on = document.querySelector(".tabs .on");
+    must(on && on.textContent === "EVIDENCE", "shortcut 2 failed: " + (on && on.textContent));
+    press("6");
+    on = document.querySelector(".tabs .on");
+    must(on && on.textContent === "BOARD", "shortcut 6 failed");
+    press("0");
+    on = document.querySelector(".tabs .on, .tab-report.on");
+    must(/OFFICIAL INVESTIGATION REPORT/.test(document.body.textContent), "shortcut 0 (report) failed");
+    press("1");
+    must(/CASE BRIEFING/.test(document.body.textContent), "shortcut 1 failed");
+  });
+  step("reopen completed case: wipe + keep best score", function () {
+    window.TD.SCREENS.go("hq");
+    click(/CASE FILES/);
+    var row1 = [].slice.call(document.querySelectorAll(".case-row")).filter(function (r) { return /TC-001/.test(r.textContent); })[0];
+    row1.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    must(/CASE CLOSED/.test(document.body.textContent.toUpperCase()), "results not shown");
+    var before = window.TD.STATE.cs("TC-001").submitted.score;
+    click(/REOPEN INVESTIGATION/);
+    var cs = window.TD.STATE.cs("TC-001");
+    must(!cs.submitted, "submitted not cleared");
+    must(cs.board.cards.length === 0 && Object.keys(cs.notes).length === 0, "case state not wiped");
+    must(window.TD.STATE.get().bestScore["TC-001"] === before, "best score lost");
+    must(window.TD.STATE.isComplete("TC-001"), "completion unlisted");
+    must(window.TD.STATE.caseUnlocked(window.TD.CASES[1]), "case 2 relocked");
+    window.TD.SCREENS.go("hq");
+    click(/CASE FILES/);
+    must(/REOPENED \u2014 BEST/.test(document.body.textContent) || /REOPENED . BEST/.test(document.body.textContent), "reopened label missing");
+  });
+  step("settings: sliders, export/import round-trip", function () {
+    click(/MAIN MENU/);
+    click(/SETTINGS/);
+    var slider = document.querySelector('input[type="range"]');
+    slider.value = "35";
+    slider.dispatchEvent(new window.Event("input", { bubbles: true }));
+    must(Math.abs(window.TD.STATE.get().settings.master - 0.35) < 0.005, "master slider not applied");
+    click(/EXPORT/);
+    var code = document.querySelector("textarea").value;
+    var parsed = JSON.parse(code);
+    must(parsed.profile && parsed.cases && parsed.settings.master === 0.35, "export malformed");
+    click(/IMPORT/);
+    must(Math.abs(window.TD.STATE.get().settings.master - 0.35) < 0.005, "import did not restore");
+    must(window.TD.STATE.isComplete("TC-001"), "import lost completion");
+  });
+
   console.log(failures ? "\nSMOKE TEST: " + failures + " FAILURES" : "\nSMOKE TEST: ALL PASSED");
   process.exit(failures || process.exitCode === 2 ? 1 : 0);
 }, 500);

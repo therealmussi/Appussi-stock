@@ -45,12 +45,12 @@
     ];
     tabDefs.forEach(function (t) {
       var unread = t[0] === "comms" && hasUnread(caseData, cs);
-      var b = h("button", { class: t[0] === currentTab ? "on" : "", onclick: function () { TD.AUDIO.click(); currentTab = t[0]; render(current); } }, [t[1]]);
+      var b = h("button", { title: "Shortcut: " + (tabDefs.indexOf(t) + 1), class: t[0] === currentTab ? "on" : "", onclick: function () { TD.AUDIO.click(); currentTab = t[0]; render(current); } }, [t[1]]);
       if (unread) b.appendChild(h("span", { class: "dot" }));
       tabs.appendChild(b);
     });
     tabs.appendChild(h("span", { class: "tab-gap" }));
-    var rb = h("button", { class: "tab-report" + (currentTab === "report" ? " on" : ""), onclick: function () { TD.AUDIO.click(); currentTab = "report"; render(current); } }, ["\u25b6 FINAL REPORT"]);
+    var rb = h("button", { title: "Shortcut: 0", class: "tab-report" + (currentTab === "report" ? " on" : ""), onclick: function () { TD.AUDIO.click(); currentTab = "report"; render(current); } }, ["\u25b6 FINAL REPORT"]);
     tabs.appendChild(rb);
     wrap.appendChild(tabs);
 
@@ -299,6 +299,17 @@
   function renderReport(body, caseData, cs) { TD.PANELS.report(body, caseData, cs, render, current); }
 
   TD.CASEVIEWS = {
-    render: render, openEvidence: openEvidence, allEvidence: allEvidence, checkTriggers: checkTriggers, currentRef: function () { return current; }
+    render: render, openEvidence: openEvidence, allEvidence: allEvidence, checkTriggers: checkTriggers, currentRef: function () { return current; },
+    setTab: function (t) {
+      if (!current || TD.STATE.isComplete(current.id) && TD.STATE.cs(current.id).submitted) return;
+      currentTab = t; TD.AUDIO.click(); render(current);
+    }
+  };
+  TD.SCREENS.replay = function (caseData) {
+    if (!root.confirm("Reopen " + caseData.id + "? The current contents of the case file are cleared; your best filed score remains in the record.")) return;
+    TD.STATE.reopenCase(caseData.id);
+    TD.AUDIO.click();
+    TD.SCREENS.go("case", caseData);
+    TD.UI.toast("Case " + caseData.id + " reopened \u2014 the exhibits file in again, the truth stays put.");
   };
 })(typeof window !== "undefined" ? window : globalThis);

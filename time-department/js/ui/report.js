@@ -152,7 +152,8 @@
       wrap.appendChild(h("div", { class: "btn-row" }, [
         h("button", { class: "btn teal", onclick: function () { TD.AUDIO.click(); TD.SCREENS.go("case", TD.CASES[caseData.number]); } }, ["PROCEED TO " + TD.CASES[caseData.number].id]),
         h("button", { class: "btn", onclick: function () { TD.AUDIO.click(); TD.SCREENS.go("hq"); } }, ["RETURN TO HEADQUARTERS"]),
-        h("button", { class: "btn ghost", onclick: function () { TD.AUDIO.click(); TD.SCREENS.go("archive"); } }, ["CASE ARCHIVE"])
+        h("button", { class: "btn ghost", onclick: function () { TD.AUDIO.click(); TD.SCREENS.go("archive"); } }, ["CASE ARCHIVE"]),
+        h("button", { class: "btn ghost", onclick: function () { TD.AUDIO.click(); TD.SCREENS.replay(caseData); } }, ["REOPEN INVESTIGATION"])
       ]));
     } else {
       wrap.appendChild(h("div", { class: "rankup-note", style: "margin-top:20px" }, [
@@ -160,6 +161,8 @@
       ]));
       wrap.appendChild(h("div", { class: "btn-row" }, [
         h("button", { class: "btn", onclick: function () { TD.AUDIO.click(); TD.SCREENS.go("hq"); } }, ["RETURN TO HEADQUARTERS"]),
+        h("button", { class: "btn ghost", onclick: function () { TD.AUDIO.click(); TD.SCREENS.go("archive"); } }, ["CASE ARCHIVE"]),
+        h("button", { class: "btn ghost", onclick: function () { TD.AUDIO.click(); TD.SCREENS.replay(caseData); } }, ["REOPEN INVESTIGATION"]),
         h("button", { class: "btn ghost", onclick: function () { TD.AUDIO.click(); TD.SCREENS.go("menu"); } }, ["MAIN MENU"])
       ]));
     }

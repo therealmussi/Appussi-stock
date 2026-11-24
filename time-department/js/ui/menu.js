@@ -86,7 +86,7 @@
 
     function step0() {
       app.appendChild(h("div", { class: "screen" }, [paper(
-        "<h4>DEPARTMENT FOR TEMPORAL STABILITY<br>OFFICE OF PERSONNEL \u2014 FORM TS-11 ($ ASSIGNMENT)</h4>" +
+        "<h4>DEPARTMENT FOR TEMPORAL STABILITY<br>OFFICE OF PERSONNEL \u2014 FORM TS-11 \u2014 ASSIGNMENT</h4>" +
         "<div class='stamp'>APPOINTMENT CONFIRMED</div>" +
         "<div class='stamp-fields'>" +
         "<div><span>EMPLOYEE:</span><b>" + (st.profile.name || "NEW RECRUIT") + " \u2014 " + st.profile.id + "</b></div>" +

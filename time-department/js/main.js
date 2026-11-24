@@ -147,7 +147,6 @@
 
   function applyDisplay(s) {
     var layers = document.querySelector(".crt-layers");
-    if (layers && layers.length !== undefined) {}
     if (layers && layers.children) {
       layers.children[0].style.display = s.scanlines ? "" : "none";
     }
@@ -180,8 +179,14 @@
     /* autosave heartbeat */
     setInterval(function () { TD.STATE.save(); }, 15000);
 
+    var TAB_KEYS = { "1": "overview", "2": "evidence", "3": "scanner", "4": "timeline", "5": "causality", "6": "board", "7": "comms", "0": "report" };
     window.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !document.querySelector(".modal-backdrop") && currentScreen !== "menu") go("menu");
+      if (e.key === "Escape" && !document.querySelector(".modal-backdrop") && currentScreen !== "menu") { go("menu"); return; }
+      if (currentScreen !== "case" || e.ctrlKey || e.metaKey || e.altKey || document.querySelector(".modal-backdrop")) return;
+      var tn = e.target && e.target.tagName;
+      if (tn === "INPUT" || tn === "TEXTAREA" || tn === "SELECT") return;
+      var tab = TAB_KEYS[e.key];
+      if (tab && TD.CASEVIEWS.setTab) { TD.CASEVIEWS.setTab(tab); if (e.key !== "0") e.preventDefault(); }
     });
 
     window.addEventListener("beforeunload", function () { TD.STATE.save(); });

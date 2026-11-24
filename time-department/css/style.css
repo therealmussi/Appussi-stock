@@ -505,3 +505,12 @@ label.fld { display: block; font-family: var(--mono); font-size: 10px; letter-sp
 
 /* print-like classified stamp on locked panels */
 .locked-note { border: 1px solid #4a2a26; background: #191014; color: #e3796b; font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; padding: 4px 10px; border-radius: 3px; display: inline-block; }
+
+/* case archive \u2014 UNSOLVED FILES teaser */
+.soon-row {
+  cursor: not-allowed;
+  background: repeating-linear-gradient(-45deg, rgba(196, 87, 74, 0.05) 0 8px, transparent 8px 16px), var(--panel-2);
+  opacity: 0.85;
+}
+.soon-row .cn.red { color: var(--red); }
+.locked-note.amber { color: var(--amber); border-color: rgba(217, 164, 65, 0.4); }

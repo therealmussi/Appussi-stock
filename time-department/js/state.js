@@ -21,6 +21,7 @@
       comms: [],                /* global comms log: {case, from, text, time} */
       hintsUsed: {},            /* caseId -> count */
       janus: 0,
+      bestScore: {},            /* caseId -> best submitted score (survives replays) */
       completed: []            /* ordered case ids */
     };
   }
@@ -53,6 +54,7 @@
       var s = JSON.parse(raw);
       if (!s || s.version !== 1) return null;
       s.settings = Object.assign({ master: 0.8, music: 0.5, ambient: 0.6, sfx: 0.7, tick: true, scanlines: true, reducedMotion: false }, s.settings || {});
+      s.bestScore = s.bestScore || {};
       return s;
     } catch (e) { return null; }
   }
@@ -72,11 +74,17 @@
 
   /* ---------- progression ---------- */
   function completedCount() { return state.completed.length; }
+  function bestOf(caseId) {
+    var cs = state.cases[caseId];
+    var sub = cs && cs.submitted ? cs.submitted.score : null;
+    var best = state.bestScore[caseId] || 0;
+    return Math.max(best, sub || 0) || sub || 0;
+  }
   function avgScore() {
     var n = 0, t = 0;
     TD.CASES.forEach(function (c) {
       var cs = state.cases[c.id];
-      if (cs && cs.submitted) { n++; t += cs.submitted.score; }
+      if ((cs && cs.submitted) || state.bestScore[c.id] || isComplete(c.id)) { n++; t += bestOf(c.id); }
     });
     return n ? Math.round(t / n) : 0;
   }
@@ -98,12 +106,6 @@
     var d = 0;
     TD.CASES.forEach(function (c) {
       var cs = state.cases[c.id];
-      if (cs && cs.submitted) d += cs.submitted.stabilityAfter - 84.0; /* submitted stores new global */
-    });
-    /* simpler: store per-case applied delta at submit time */
-    d = 0;
-    TD.CASES.forEach(function (c) {
-      var cs = state.cases[c.id];
       if (cs && cs.submitted && typeof cs.submitted.stabilityApplied === "number") d += cs.submitted.stabilityApplied;
     });
     return d;
@@ -115,6 +117,15 @@
     return state.completed.indexOf(TD.CASES[caseData.number - 2].id) !== -1;
   }
   function isComplete(caseId) { return state.completed.indexOf(caseId) !== -1; }
+  function reopenCase(caseId) {
+    var cs = state.cases[caseId];
+    if (cs && cs.submitted) {
+      var best = state.bestScore[caseId] || 0;
+      state.bestScore[caseId] = Math.max(best, cs.submitted.score);
+    }
+    state.cases[caseId] = emptyCaseState();
+    save();
+  }
   function addJanus(n) { state.janus += n; }
   function logComm(caseId, fromId, text) {
     state.comms.push({ case: caseId, from: fromId, text: text, time: Date.now() });
@@ -139,6 +150,7 @@
     exportSave: function () { return JSON.stringify(state); },
     completedCount: completedCount, avgScore: avgScore, rank: rank,
     nextRank: nextRank, caseUnlocked: caseUnlocked, isComplete: isComplete,
+    bestOf: bestOf, reopenCase: reopenCase,
     addJanus: addJanus, logComm: logComm, stabilityDeltaTotal: stabilityDeltaTotal
   };
 })(typeof window !== "undefined" ? window : globalThis);
