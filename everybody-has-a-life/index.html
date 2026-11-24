@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EVERYBODY HAS A LIFE — le cronache di Northbridge</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="splash">
+  <div class="box">
+    <h1>EVERYBODY HAS A LIFE</h1>
+    <div class="sub">Una sociale di <b>NORTHBRIDGE</b>, città europea di fantasia.<br>
+      Tu non dai ordini: osservi. Il vero protagonista è la società.</div>
+    <input id="seed" placeholder="Seme della città (opzionale)">
+    <div class="row">
+      <button id="btn-new" class="primary">Nuova città</button>
+      <button id="btn-continue">Continua</button>
+    </div>
+    <div class="hint">~120 abitanti simulati uno per uno: relazioni, lavoro, matrimoni,<br>
+      figli, emigrazioni e morti, tutto generato dagli eventi reali.<br>
+      Il salvataggio resta nel tuo browser.</div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <header id="topbar">
+    <span class="title">EVERYBODY HAS A LIFE</span>
+    <nav>
+      <button id="nav-citta" class="on">Città</button>
+      <button id="nav-cittadini">Cittadini</button>
+      <button id="nav-famiglie">Famiglie</button>
+      <button id="nav-relazioni">Relazioni</button>
+      <button id="nav-economia">Economia</button>
+      <button id="nav-statistiche">Statistiche</button>
+      <button id="nav-giornale">Giornale</button>
+      <button id="nav-storia">Storia</button>
+    </nav>
+    <div id="clockbox">
+      <div class="date"><span id="clock">00:00</span> · <span id="datefull">—</span></div>
+      <div class="meta" id="metainfo">—</div>
+    </div>
+  </header>
+
+  <div id="main">
+    <div id="center">
+      <canvas id="map"></canvas>
+      <div id="maptools">
+        <button id="zoom-in" title="Zoom +">+</button>
+        <button id="zoom-out" title="Zoom −">−</button>
+        <button id="zoom-home" title="Vista città">⌂</button>
+        <button id="followcam" title="La camera segue il cittadino seguito">🎥</button>
+      </div>
+      <div id="citycards">
+        <div class="pill" id="pill-hood">Clicca un edificio o un puntino per aprire una vita.</div>
+      </div>
+      <div id="followbanner"></div>
+    </div>
+
+    <aside id="side">
+      <div class="head">📡 Cronaca in diretta</div>
+      <div id="feedfilters"></div>
+      <div id="feed"></div>
+    </aside>
+  </div>
+
+  <footer id="bottombar">
+    <span class="muted">Velocità:</span>
+    <span class="speeds">
+      <button id="speed-0"></button>
+      <button id="speed-1"></button>
+      <button id="speed-2"></button>
+      <button id="speed-3"></button>
+    </span>
+    <span class="sep"></span>
+    <span class="muted">Salta:</span>
+    <button id="jump-h">+1h</button>
+    <button id="jump-d">+1g</button>
+    <button id="jump-w">+1 sett.</button>
+    <button id="jump-m">+1 mese</button>
+    <button id="jump-y">+1 anno</button>
+    <span class="sep"></span>
+    <span id="jumpbar" class="muted" style="display:none">⏳ …</span>
+    <span class="sep"></span>
+    <button id="savebtn">💾 Salva</button>
+    <button id="observer">🔬 Modalità osservatore pura</button>
+    <button id="interventionsbtn">🏛️ Interventi della città</button>
+    <div id="interventions" style="display:none; position:absolute; bottom:54px; right:14px; width:380px; z-index:30; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; box-shadow:var(--shadow); max-height:60vh; overflow-y:auto;">
+      <b>Cosa può fare la città — mai i singoli</b>
+      <div id="intervresult" class="muted" style="margin-top:6px"></div>
+    </div>
+  </footer>
+</div>
+
+<div id="panel"></div>
+
+<div id="modal">
+  <div class="box" id="modalbox"></div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/data.js"></script>
+<script src="js/people.js"></script>
+<script src="js/biography.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/society.js"></script>
+<script src="js/economy.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/map.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/views.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
